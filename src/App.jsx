@@ -1385,8 +1385,27 @@ export default function App() {
   const [pageData, setPageData] = useState(null);
   const [toast, setToast] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  // Admin bar: detect if loaded from admin context (query param or localStorage)
-  const isAdmin = typeof window !== "undefined" && (new URLSearchParams(window.location.search).get("admin") === "1" || localStorage.getItem("protech_admin") === "1");
+  const ADMIN_PASSWORD = "protech2024";
+  const [adminUnlocked, setAdminUnlocked] = useState(() => { try { return sessionStorage.getItem("protech_admin_unlocked") === "1"; } catch { return false; } });
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
+
+  const isAdmin = typeof window !== "undefined" && (
+    new URLSearchParams(window.location.search).get("admin") === "1" ||
+    localStorage.getItem("protech_admin") === "1" ||
+    adminUnlocked
+  );
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput === ADMIN_PASSWORD) {
+      try { sessionStorage.setItem("protech_admin_unlocked", "1"); } catch {}
+      setAdminUnlocked(true);
+      setPasswordInput("");
+    } else {
+      setPasswordError(true);
+      setTimeout(() => setPasswordError(false), 2000);
+    }
+  };
 
   // Load products + settings from Supabase
   useEffect(() => {
@@ -1439,6 +1458,41 @@ export default function App() {
     <>
       <style>{CSS}</style>
       <ComingSoon settings={settings} logoSrc={logoSrc} />
+      <div style={{
+        position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+        background: "#1a1614", border: "1px solid #333", borderRadius: 12,
+        padding: "16px 20px", display: "flex", gap: 10, alignItems: "center",
+        zIndex: 999, boxShadow: "0 8px 32px rgba(0,0,0,.4)", direction: "rtl"
+      }}>
+        <input
+          type="password"
+          placeholder="كلمة المرور"
+          value={passwordInput}
+          onChange={e => setPasswordInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handlePasswordSubmit()}
+          style={{
+            background: "#2a2420", border: `1px solid ${passwordError ? "#D4352A" : "#444"}`,
+            borderRadius: 6, padding: "8px 14px", color: "#fff",
+            fontFamily: "Cairo, sans-serif", fontSize: "0.9rem", outline: "none",
+            width: 180, transition: "border-color .2s", direction: "rtl"
+          }}
+        />
+        <button
+          onClick={handlePasswordSubmit}
+          style={{
+            background: "#F26A21", color: "#fff", border: 0, borderRadius: 6,
+            padding: "8px 16px", fontFamily: "Cairo, sans-serif", fontWeight: 700,
+            fontSize: "0.88rem", cursor: "pointer"
+          }}
+        >
+          دخول
+        </button>
+        {passwordError && (
+          <span style={{ color: "#D4352A", fontSize: "0.82rem", fontFamily: "Cairo, sans-serif" }}>
+            كلمة المرور خاطئة
+          </span>
+        )}
+      </div>
     </>
   );
 
