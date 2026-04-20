@@ -127,7 +127,7 @@ input,select,textarea{font-family:inherit;}
 .hdr-cart-badge{position:absolute;top:-6px;inset-inline-end:-6px;width:20px;height:20px;background:var(--brand);color:#fff;border-radius:50%;display:grid;place-items:center;font-size:0.7rem;font-weight:800;font-family:var(--f-mono);border:2px solid var(--bg);}
 
 /* NAVBAR */
-.navbar{border-top:1px solid var(--line);background:var(--bg);position:relative;overflow-x:auto;}
+.navbar{border-top:1px solid var(--line);background:var(--bg);position:relative;}
 .nav-inner{display:flex;align-items:center;height:44px;min-width:max-content;padding:0 8px;}
 .nav-all{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:44px;background:var(--ink);color:var(--bg);font-weight:700;font-size:0.85rem;margin-inline-end:6px;flex-shrink:0;border:0;white-space:nowrap;}.nav-all:hover{background:var(--brand);}
 .nav-link{padding:0 10px;height:44px;display:inline-flex;align-items:center;gap:5px;font-weight:600;font-size:0.85rem;color:var(--ink-2);white-space:nowrap;}.nav-link:hover{color:var(--brand);}
@@ -707,26 +707,53 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
           </button>
         </div>
       </div>
-<nav className="navbar" onMouseLeave={() => setMenu(false)}>
+<nav className="navbar">
   <div className="wrap nav-inner">
-    <button className="nav-all" 
-      onMouseEnter={() => setMenu(true)} 
-      onClick={() => setMenu(m => !m)}
-      style={{position:"relative",zIndex:31}}>
-      <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
-    </button>
-          <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
-          {CATS.slice(0,4).map(c => (
-            <button key={c.id} className="nav-link" onClick={() => navigate("shop", { category: c.id })} style={{ border:0, background:"none" }}>{c.ar}</button>
+    <div style={{position:"relative"}}>
+      <button className="nav-all"
+        onMouseEnter={() => setMenu(true)}
+        onClick={() => setMenu(m => !m)}>
+        <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
+      </button>
+    </div>
+    <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
+    {CATS.slice(0,4).map(c => (
+      <button key={c.id} className="nav-link" onClick={() => navigate("shop", { category: c.id })} style={{ border:0, background:"none" }}>{c.ar}</button>
+    ))}
+    <div className="nav-spacer" />
+    <a className="nav-link muted" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> واتساب</a>
+  </div>
+  {menu && (
+    <div className="mega" onMouseLeave={() => setMenu(false)}>
+      <div className="wrap mega-inner">
+        <div className="mega-cats">
+          {CATS.map(c => (
+            <button key={c.id} className="mega-cat" onClick={() => { navigate("shop", { category: c.id }); setMenu(false); }} style={{ width:"100%", border:0, background:"none", cursor:"pointer", textAlign:"right" }}>
+              <span className="mega-cat-icon"><Icon name={c.icon} size={20} /></span>
+              <span className="mega-cat-text"><b>{c.ar}</b><small>{c.en}</small></span>
+              <span className="mega-cat-chev"><Icon name="chev" size={13} /></span>
+            </button>
           ))}
-          <div className="nav-spacer" />
-          <a className="nav-link muted" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> واتساب</a>
         </div>
-        <MegaMenu open={menu} onClose={() => setMenu(false)} navigate={navigate} />
-      </nav>
-    </header>
-  );
-};
+        <div className="mega-cols">
+          {[
+            { title:"الأكثر طلباً", items:["دريل بطارية 18V","جلاخة زاوية","طقم مفاتيح","ليزر قياس","منشار دائري"] },
+            { title:"حسب الاستخدام", items:["النجارة","السيارات","الحدائق","السباكة","الكهرباء"] },
+            { title:"عروض وخصومات", items:["عروض اليوم","تصفية المخزون","حزم موفرة","وصل حديثاً"] },
+          ].map(col => (
+            <div key={col.title} className="mega-col"><h4>{col.title}</h4><ul>{col.items.map(it=><li key={it}><a href="#">{it}</a></li>)}</ul></div>
+          ))}
+          <div className="mega-promo">
+            <div className="mega-promo-tag">خصم حصري</div>
+            <div className="mega-promo-title">خصم ١٠٪ على أول طلب</div>
+            <div className="mega-promo-sub">استخدم كود WELCOME10 عند إتمام الشراء</div>
+            <span className="mega-promo-cta">ابدأ التسوق <Icon name="arrow" size={13} /></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</nav>
 
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 const HeroTicker = () => (
