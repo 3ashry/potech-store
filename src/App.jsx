@@ -1280,9 +1280,11 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     setLoading(true);
     try {
       const code = mkCode();
+      const orderId = uid();
       await sb("orders", {
         method:"POST", prefer:"return=minimal",
         body: JSON.stringify({
+          id: orderId,
           code, customer_name:form.name, phone:form.phone,
           ship_code:`${form.address} — ${form.city}`,
           products: cart.map(i=>({id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i)})),
