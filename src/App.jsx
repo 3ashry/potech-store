@@ -1792,9 +1792,14 @@ export default function App() {
   const toggleComingSoon = async () => {
     const current = settings.coming_soon?.value || {};
     const next = { ...current, enabled: !current.enabled };
-    await sb("site_settings?key=eq.coming_soon",{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({value:next})});
-    updateSettings("coming_soon",next);
-    showToast(next.enabled?"الموقع الآن في وضع Coming Soon":"الموقع منشور الآن 🚀");
+    await sb("site_settings", {
+      method:"POST",
+      prefer:"return=minimal",
+      headers:{ "Prefer": "resolution=merge-duplicates" },
+      body: JSON.stringify({ key:"coming_soon", value: next }),
+    });
+    updateSettings("coming_soon", next);
+    showToast(next.enabled ? "الموقع الآن في وضع Coming Soon" : "الموقع منشور الآن 🚀");
   };
 
   const addToCart = (p) => {
