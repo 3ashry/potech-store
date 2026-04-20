@@ -594,7 +594,7 @@ const ProductCard = ({ p, onAdd, onNavigate }) => {
       <div className="card-body">
         <div className="card-sku">
           <span className="sku-mono">{p.code}</span>
-          {p.rating > 0 && <span className="card-rating"><Stars rating={p.rating} size={10} /> <b>{p.rating}</b></span>}
+
         </div>
         <h3 className="card-name">{p.name}</h3>
         {p.brand && <div style={{ fontSize:"0.72rem", color:"var(--ink-3)", fontFamily:"var(--f-mono)" }}>{p.brand.toUpperCase()}</div>}
@@ -832,16 +832,51 @@ const OffersSection = ({ products, onAdd, navigate }) => {
   );
 };
 
-const CategoriesSection = ({ products, navigate }) => {
-  const catsWithCount = CATS.filter(c=>!["new","offers"].includes(c.id)).map(c=>({ ...c, count:products.filter(p=>p.category===c.id).length }));
+// Category background images stored in site_settings under key "cat_images"
+const CAT_BG_COLORS = {
+  electric: "linear-gradient(135deg,#1a1a2e,#16213e)",
+  battery:  "linear-gradient(135deg,#0f3460,#533483)",
+  hand:     "linear-gradient(135deg,#2d1b0e,#5c3317)",
+  measuring:"linear-gradient(135deg,#0d2137,#1a4a6b)",
+  safety:   "linear-gradient(135deg,#1a0a00,#7c2d00)",
+  car:      "linear-gradient(135deg,#0a1628,#1e3a5f)",
+  garden:   "linear-gradient(135deg,#0a2010,#1a4d2e)",
+  new:      "linear-gradient(135deg,#1a0d2e,#3d1a6e)",
+};
+
+const CategoriesSection = ({ products, navigate, settings, onUpdateSettings, showToast, editMode }) => {
+  const catImages = settings.cat_images?.value || {};
+  const catsWithCount = CATS.filter(c=>!["new","offers"].includes(c.id)).map(c=>({ ...c, count:products.filter(p=>{
+    const cats = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    return cats.includes(c.id) || p.category === c.id;
+  }).length }));
+
+  const updateCatImage = async (catId, url) => {
+    const next = { ...catImages, [catId]: url };
+    await sb(`site_settings?key=eq.cat_images`, { method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ value: next }) });
+    onUpdateSettings("cat_images", next);
+  };
+
   return (
     <Section id="categories" num="05" eyebrow="ALL DEPARTMENTS" title="تسوق حسب القسم">
       <div className="cats-grid">
         {catsWithCount.map((c,i) => (
           <button key={c.id} className="cat-tile" onClick={()=>navigate("shop",{category:c.id})} style={{border:"1px solid var(--line)",background:"var(--bg-2)",cursor:"pointer","--i":i}}>
-            <div className="cat-tile-media">
-              <div className="cat-tile-icon"><Icon name={c.icon} size={32} stroke={1.4}/></div>
-              <div className="cat-tile-stripes" />
+            <div className="cat-tile-media" style={{position:"relative"}}>
+              {catImages[c.id]
+                ? <img src={catImages[c.id]} alt={c.ar} style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}} />
+                : <div style={{position:"absolute",inset:0,background:CAT_BG_COLORS[c.id]||"var(--bg-3)"}} />
+              }
+              <div className="cat-tile-stripes" style={{zIndex:1}} />
+              <div className="cat-tile-icon" style={{zIndex:2}}><Icon name={c.icon} size={32} stroke={1.4}/></div>
+              {editMode && (
+                <SiteImageSlot src={null} folder={`categories/${c.id}`}
+                  fallback={null}
+                  onUpdate={url => updateCatImage(c.id, url)}
+                  showToast={showToast}
+                  style={{position:"absolute",inset:0,zIndex:3,opacity:0,transition:"opacity .2s"}}
+                />
+              )}
             </div>
             <div className="cat-tile-body">
               <div className="cat-tile-title"><b>{c.ar}</b><small>{c.en}</small></div>
@@ -1169,7 +1204,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate }) => {
           <div style={{fontFamily:"var(--f-mono)",fontSize:"0.72rem",color:"var(--ink-3)"}}>{product.code}</div>
           <h1 style={{margin:0,fontSize:"1.6rem",fontWeight:900,lineHeight:1.3}}>{product.name}</h1>
           {product.brand && <div style={{fontSize:"0.78rem",fontFamily:"var(--f-mono)",color:"var(--brand)",fontWeight:700}}>{product.brand.toUpperCase()}</div>}
-          {product.rating>0 && <div style={{display:"flex",alignItems:"center",gap:8}}><Stars rating={product.rating} size={15}/><span style={{color:"var(--ink-3)",fontSize:"0.85rem"}}>({product.review_count||0} تقييم)</span></div>}
+
           {product.description && <p style={{color:"var(--ink-2)",lineHeight:1.7,fontSize:"0.92rem",margin:0}}>{product.description}</p>}
           <div style={{display:"flex",alignItems:"baseline",gap:12}}>
             <span style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"var(--f-mono)",color:hasOffer?"var(--red)":"var(--brand)"}}>{fmtEGP(displayPrice)}</span>
@@ -1236,7 +1271,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
 
   const sendWhatsApp = (code) => {
     const items = cart.map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
-    const msg = `✅ تأكيد طلب جديد — بروتيك\n\nرقم الطلب: ${code}\nالاسم: ${form.name}\nالهاتف: ${form.phone}\nالعنوان: ${form.address}، ${form.city}\n\nالمنتجات:\n${items}\n\nالشحن: ${shipping===0?"مجاني":`${shipping} ج.م`}\nالإجمالي: ${fmtEGP(grand)} ج.م\nطريقة الدفع: عند الاستلام\n\n${form.notes ? `ملاحظات: ${form.notes}` : ""}`;
+    const msg = `✅ طلب جديد — بروتيك\n\nرقم الطلب: ${code}\nالاسم: ${form.name}\nالهاتف: ${form.phone}\nالعنوان: ${form.address}، ${form.city}\n\nالمنتجات:\n${items}\n\nالشحن: ${shipping===0?"مجاني":`${shipping} ج.م`}\nالإجمالي: ${fmtEGP(grand)} ج.م\nالدفع: عند الاستلام${form.notes ? `\nملاحظات: ${form.notes}` : ""}`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -1321,9 +1356,9 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
           <div className="summary-row"><span style={{color:"var(--ink-3)"}}>الشحن</span><b style={{color:shipping===0?"var(--green)":undefined}}>{shipping===0?"مجاني 🎉":`${shipping} ج.م`}</b></div>
           <div className="summary-total"><span>الإجمالي</span><span className="amt">{fmtEGP(grand)} ج.م</span></div>
           <button className="btn btn-primary btn-block" style={{marginTop:18,padding:14,fontSize:"0.95rem",border:0}} onClick={submit} disabled={loading}>
-            {loading?"جاري تأكيد الطلب…":<><Icon name="whatsapp" size={16}/> تأكيد الطلب عبر واتساب</>}
+            {loading?"جاري إتمام الطلب…":"اشترِ الآن 🛒"}
           </button>
-          <p style={{textAlign:"center",fontSize:"0.72rem",color:"var(--ink-3)",marginTop:8}}>بالضغط توافق على شروط الخدمة. سيتم فتح واتساب لتأكيد الطلب.</p>
+          <p style={{textAlign:"center",fontSize:"0.72rem",color:"var(--ink-3)",marginTop:8}}>بالضغط توافق على شروط الخدمة.</p>
         </div>
       </div>
     </div>
@@ -1755,14 +1790,13 @@ export default function App() {
           <HeroA {...sharedProps} settings={settings} onUpdateSettings={updateSettings} editMode={editMode}/>
           <OffersSection {...sharedProps}/>
           <TopSellingSection {...sharedProps}/>
-          <CategoriesSection products={products} navigate={navigate}/>
+          <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners {...sharedProps} settings={settings} onUpdateSettings={updateSettings} editMode={editMode}/>
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." {...sharedProps}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
             <div className="rail rail-4">{products.slice(-4).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate}/>)}</div>
           </Section>
-          <BrandsSection/>
           <ReviewsSection/>
         </>
       )}
