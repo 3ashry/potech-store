@@ -7,9 +7,16 @@ const FREE_SHIPPING_THRESHOLD = 5000;
 const SHIPPING_COST = 80;
 
 const sb = async (path, opts = {}) => {
+  const { prefer, ...fetchOpts } = opts;
   const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
-    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: opts.prefer || "return=representation", ...opts.headers },
-    ...opts,
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: prefer || "return=representation",
+      ...opts.headers,
+    },
+    ...fetchOpts,
   });
   if (!res.ok) { const t = await res.text(); throw new Error(t); }
   return res.json().catch(() => null);
