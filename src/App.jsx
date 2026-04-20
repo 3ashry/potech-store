@@ -1789,18 +1789,22 @@ export default function App() {
 
   const comingSoon = settings.coming_soon?.value?.enabled === true;
 
-  const toggleComingSoon = async () => {
-    const current = settings.coming_soon?.value || {};
-    const next = { ...current, enabled: !current.enabled };
-    await sb("site_settings", {
-      method:"POST",
-      prefer:"return=minimal",
-      headers:{ "Prefer": "resolution=merge-duplicates" },
-      body: JSON.stringify({ key:"coming_soon", value: next }),
-    });
-    updateSettings("coming_soon", next);
-    showToast(next.enabled ? "الموقع الآن في وضع Coming Soon" : "الموقع منشور الآن 🚀");
-  };
+ const toggleComingSoon = async () => {
+  const current = settings.coming_soon?.value || {};
+  const next = { ...current, enabled: !current.enabled };
+  await fetch(`${SB_URL}/rest/v1/site_settings?key=eq.coming_soon`, {
+    method: "PATCH",
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({ value: next }),
+  });
+  updateSettings("coming_soon", next);
+  showToast(next.enabled ? "الموقع الآن في وضع Coming Soon" : "الموقع منشور الآن 🚀");
+};
 
   const addToCart = (p) => {
     setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; });
