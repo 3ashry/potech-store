@@ -1274,8 +1274,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     const msg = `✅ طلب جديد — بروتيك\n\nرقم الطلب: ${code}\nالاسم: ${form.name}\nالهاتف: ${form.phone}\nالعنوان: ${form.address}، ${form.city}\n\nالمنتجات:\n${items}\n\nالشحن: ${shipping===0?"مجاني":`${shipping} ج.م`}\nالإجمالي: ${fmtEGP(grand)} ج.م\nالدفع: عند الاستلام${form.notes ? `\nملاحظات: ${form.notes}` : ""}`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
   };
-
-  const submit = async () => {
+const submit = async () => {
     if(!validate()||!cart.length) return;
     setLoading(true);
     try {
@@ -1286,7 +1285,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
         body: JSON.stringify({
           id: orderId,
           code, customer_name:form.name, phone:form.phone,
-          ship_code:`${form.address} — ${form.city}`,
+          ship_code:"",
           products: cart.map(i=>({id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i)})),
           total:grand, status:"Processing",
           date: new Date().toISOString().split("T")[0],
@@ -1299,8 +1298,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
       }
       setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
       setCart([]);
-      sendWhatsApp(code);
-      navigate("confirmation",{orderCode:code,customerName:form.name,total:grand});
+      navigate("confirmation",{orderCode:code,orderId,customerName:form.name,phone:form.phone,total:grand,cart:[...cart]});
     } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
     setLoading(false);
   };
@@ -1369,27 +1367,72 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
 
 /* ─── Confirmation ───────────────────────────────────────────────────────── */
 const ConfirmationPage = ({ pageData, navigate }) => {
-  const { orderCode, customerName, total } = pageData || {};
+  const { orderCode, orderId, customerName, phone, total, cart } = pageData || {};
+  const [shipCode, setShipCode] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
+
+  const saveAndNotify = async () => {
+    if(!shipCode.trim()) { alert("من فضلك أدخل كود الشحن أولاً"); return; }
+    setSaving(true);
+    try {
+      if(orderId) {
+        await sb(`orders?id=eq.${orderId}`, {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ship_code: shipCode})});
+      }
+      setSaved(true);
+      const items = (cart||[]).map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
+      const shipping = total >= 5000 ? 0 : 80;
+      const msg = `أهلاً ${customerName} 👋\n\nطلبك اتأكد مع بروتيك! 🔧\n\n📦 تفاصيل طلبك:\n• رقم الطلب: ${orderCode}\n• شركة الشحن: بوسطة\n• كود التتبع: ${shipCode}\n• إجمالي الطلب: ${fmtEGP(total)} ج.م\n\nالمنتجات:\n${items}\n\n🔍 تقدر تتابع شحنتك من هنا:\nhttps://bosta.co/en-eg/tracking-shipments\n\nشكراً لثقتك فينا! 💙`;
+      const waPhone = phone?.startsWith("0") ? "2"+phone : phone;
+      window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+    } catch(e) { alert("فشل حفظ كود الشحن"); }
+    setSaving(false);
+  };
+
   return (
     <div className="confirm-wrap">
       <div className="confirm-card">
         <div className="confirm-icon"><Icon name="check" size={32}/></div>
         <h2 style={{margin:"0 0 4px",fontWeight:900,color:"var(--green)"}}>تم تأكيد طلبك!</h2>
-        <p style={{color:"var(--ink-3)",margin:"0 0 8px"}}>شكراً لك {customerName}، تم إرسال تفاصيل طلبك عبر واتساب.</p>
+        <p style={{color:"var(--ink-3)",margin:"0 0 8px"}}>شكراً لك {customerName}، تم حفظ طلبك بنجاح.</p>
         <div className="confirm-code">{orderCode}</div>
+
         <div className="confirm-meta">
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>إجمالي الطلب</span><b>{fmtEGP(total)} ج.م</b></div>
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>طريقة الدفع</span><b>الدفع عند الاستلام</b></div>
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>التوصيل المتوقع</span><b style={{color:"var(--green)"}}>٣ - ٤ أيام</b></div>
         </div>
-        <div style={{background:"var(--bg-2)",borderRadius:"var(--radius)",padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10,textAlign:"right"}}>
-          <span style={{fontSize:22}}>📦</span>
-          <div>
-            <div style={{fontWeight:700,fontSize:"0.88rem",marginBottom:2}}>تتبع شحنتك</div>
-            <div style={{color:"var(--ink-3)",fontSize:"0.78rem"}}>بعد الشحن ستصلك رسالة واتساب برقم التتبع</div>
+
+        {/* Shipping code input */}
+        <div style={{background:"var(--bg-2)",border:"1.5px solid var(--line)",borderRadius:"var(--radius-md)",padding:"18px",marginBottom:20}}>
+          <div style={{fontWeight:800,fontSize:"0.95rem",marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+            <Icon name="truck" size={18}/> أدخل كود الشحن (بوسطة)
           </div>
-          <button className="btn btn-ghost sm" style={{marginInlineStart:"auto"}} onClick={()=>window.open("https://bosta.co/en-eg/tracking-shipments","_blank")}>تتبع</button>
+          <div style={{display:"flex",gap:8}}>
+            <input
+              className="form-input"
+              placeholder="BST-XXXXXXXX"
+              value={shipCode}
+              onChange={e=>setShipCode(e.target.value)}
+              style={{flex:1, direction:"ltr"}}
+              disabled={saved}
+            />
+            <button
+              className={`btn ${saved?"btn-ghost":"btn-primary"}`}
+              style={{border:0,whiteSpace:"nowrap",flexShrink:0}}
+              onClick={saveAndNotify}
+              disabled={saving||saved}
+            >
+              {saving ? "جاري الحفظ…" : saved ? "✓ تم الإرسال" : <><Icon name="whatsapp" size={14}/> حفظ وإرسال</>}
+            </button>
+          </div>
+          <p style={{fontSize:"0.75rem",color:"var(--ink-3)",margin:"8px 0 0"}}>
+            بعد الضغط سيتم حفظ الكود وفتح واتساب لإرسال تفاصيل الطلب للعميل تلقائياً.
+          </p>
         </div>
+
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <button className="btn btn-primary btn-block" style={{padding:13,border:0}} onClick={()=>navigate("home")}>العودة للرئيسية</button>
           <button className="btn btn-ghost btn-block" style={{padding:11}} onClick={()=>navigate("shop")}>مواصلة التسوق</button>
@@ -1755,7 +1798,7 @@ export default function App() {
   };
 
   const addToCart = (p) => {
-    setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+(p.qty||1)}:i); return [...c,{...p,qty:p.qty||1}]; });
+    setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; });
     setCartOpen(true);
     showToast("تمت الإضافة للسلة ✓");
   };
