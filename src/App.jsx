@@ -706,13 +706,14 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
           </button>
         </div>
       </div>
-      <nav className="navbar" onMouseLeave={() => setMenu(false)}>
+<nav className="navbar" onMouseLeave={() => setMenu(false)}>
   <div className="wrap nav-inner">
     <button className="nav-all" 
       onMouseEnter={() => setMenu(true)} 
       onClick={() => setMenu(m => !m)}
       style={{position:"relative",zIndex:31}}>
       <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
+    </button>
     </button>
           <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
           {CATS.slice(0,4).map(c => (
@@ -841,9 +842,9 @@ const OffersSection = ({ products, onAdd, navigate }) => {
   if (!offerProducts.length) return null;
   return (
     <Section id="offers" num="04" eyebrow="DAILY OFFERS" title="عروض اليوم" cta={{ label:"كل العروض", fn:()=>navigate("shop",{category:"offers"}) }}>
-      <div className="rail rail-4">
-        {offerProducts.slice(0,4).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}
-      </div>
+     <div className="cat-carousel">
+  {offerProducts.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}
+</div>
     </Section>
   );
 };
