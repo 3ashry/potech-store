@@ -229,7 +229,7 @@ input,select,textarea{font-family:inherit;}
 .cat-tile-foot{display:flex;justify-content:space-between;align-items:center;color:var(--ink-3);font-size:0.8rem;padding-top:6px;border-top:1px dashed var(--line);}
 
 /* PRODUCT CARD */
-.card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;transition:all .15s;cursor:pointer;height:100%;}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;transition:all .15s;cursor:pointer;}
 .card:hover{border-color:var(--ink-3);box-shadow:var(--shadow-md);}
 .card-media{position:relative;width:100%;height:200px;overflow:hidden;background:var(--bg-2);flex-shrink:0;}
 .card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s;}
@@ -488,7 +488,7 @@ input,select,textarea{font-family:inherit;}
 .sidebar-cat-btn{display:block;width:100%;text-align:right;padding:7px 10px;background:none;border:none;border-radius:var(--radius);font-family:var(--f-ar);font-size:0.85rem;cursor:pointer;color:var(--ink-2);font-weight:400;margin-bottom:2px;transition:all .15s;}
 .sidebar-cat-btn.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:700;border-right:3px solid var(--brand);}
 .sidebar-cat-btn:hover:not(.on){background:var(--bg-2);}
-.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:flex-start;}
+.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:stretch;}
 .cat-carousel::-webkit-scrollbar{height:4px;}
 .cat-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
 .cat-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
@@ -714,7 +714,6 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
       onClick={() => setMenu(m => !m)}
       style={{position:"relative",zIndex:31}}>
       <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
-    </button>
     </button>
           <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
           {CATS.slice(0,4).map(c => (
@@ -1830,7 +1829,7 @@ export default function App() {
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." {...sharedProps}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
-            <div className="rail rail-4">{products.slice(-4).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate}/>)}</div>
+            <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate}/>)}</div>
           </Section>
           <ReviewsSection/>
         </>
