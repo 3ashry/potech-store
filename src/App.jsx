@@ -110,7 +110,7 @@ input,select,textarea{font-family:inherit;}
 .hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:10px 16px;}
 @media(max-width:767px){.hdr{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px;}}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
-.brand-mark{width:44px;height:44px;border-radius:6px;overflow:hidden;background:#fff;display:grid;place-items:center;box-shadow:var(--shadow-sm);border:1px solid var(--line);flex-shrink:0;}
+.brand-mark{width:52px;height:52px;border-radius:8px;overflow:hidden;background:#fff;display:grid;place-items:center;box-shadow:0 2px 12px rgba(242,106,33,0.25);border:2px solid var(--brand);flex-shrink:0;}
 .brand-mark img{width:100%;height:100%;object-fit:contain;}
 .brand-text b{display:block;font-size:1rem;line-height:1;}
 .brand-text small{display:block;font-family:var(--f-mono);font-size:0.62rem;color:var(--ink-3);letter-spacing:0.06em;margin-top:3px;}
@@ -487,6 +487,12 @@ input,select,textarea{font-family:inherit;}
 .sidebar-cat-btn{display:block;width:100%;text-align:right;padding:7px 10px;background:none;border:none;border-radius:var(--radius);font-family:var(--f-ar);font-size:0.85rem;cursor:pointer;color:var(--ink-2);font-weight:400;margin-bottom:2px;transition:all .15s;}
 .sidebar-cat-btn.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:700;border-right:3px solid var(--brand);}
 .sidebar-cat-btn:hover:not(.on){background:var(--bg-2);}
+.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;}
+.cat-carousel::-webkit-scrollbar{height:4px;}
+.cat-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
+.cat-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
+.cat-carousel .card{min-width:220px;scroll-snap-align:start;flex-shrink:0;}
+@media(min-width:768px){.cat-carousel .card{min-width:260px;}}
 `;
 
 /* ─── Icons ──────────────────────────────────────────────────────────────── */
@@ -701,10 +707,13 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
         </div>
       </div>
       <nav className="navbar" onMouseLeave={() => setMenu(false)}>
-        <div className="wrap nav-inner">
-          <button className="nav-all" onMouseEnter={() => setMenu(true)} onClick={() => setMenu(!menu)}>
-            <Icon name="menu" size={15} /> كل الأقسام <Icon name="chevdown" size={11} />
-          </button>
+  <div className="wrap nav-inner">
+    <button className="nav-all" 
+      onMouseEnter={() => setMenu(true)} 
+      onClick={() => setMenu(m => !m)}
+      style={{position:"relative",zIndex:31}}>
+      <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
+    </button>
           <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
           {CATS.slice(0,4).map(c => (
             <button key={c.id} className="nav-link" onClick={() => navigate("shop", { category: c.id })} style={{ border:0, background:"none" }}>{c.ar}</button>
@@ -821,7 +830,7 @@ const TopSellingSection = ({ products, onAdd, navigate }) => {
       </div>
       {items.length===0
         ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>لا توجد منتجات بعد.</div>
-        : <div className="rail rail-3">{items.slice(0,6).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}</div>
+        : <div className="cat-carousel">{items.slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}</div>
       }
     </Section>
   );
@@ -945,15 +954,19 @@ const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navig
             <div className="sec-eyebrow"><span className="num">{num}</span> <b>{eyebrow}</b></div>
             <h2 className="sec-title">{title}</h2>
             <p className="rail-desc">{desc}</p>
-            <button className="btn btn-dark" onClick={()=>navigate("shop",{category:catId})} style={{border:0,cursor:"pointer",alignSelf:"flex-start"}}>تصفح القسم كاملاً <Icon name="arrow" size={13}/></button>
+            <button className="btn btn-dark" onClick={()=>navigate("shop",{category:catId})} style={{border:0,cursor:"pointer",alignSelf:"flex-start"}}>
+              تصفح القسم كاملاً <Icon name="arrow" size={13}/>
+            </button>
             <div className="rail-stat">
               <div><b>{items.length}</b><small>منتج متاح</small></div>
               <div><b>٦ أشهر</b><small>ضمان الوكيل</small></div>
               <div><b>٤.٨</b><small>تقييم العملاء</small></div>
             </div>
           </div>
-          <div className="rail-items">
-            {items.slice(0,4).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}
+          <div style={{overflow:"hidden"}}>
+            <div className="cat-carousel">
+              {items.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}
+            </div>
           </div>
         </div>
       </div>
@@ -1374,72 +1387,31 @@ const submit = async () => {
 
 /* ─── Confirmation ───────────────────────────────────────────────────────── */
 const ConfirmationPage = ({ pageData, navigate }) => {
-  const { orderCode, orderId, customerName, phone, total, cart } = pageData || {};
-  const [shipCode, setShipCode] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
-
-  const saveAndNotify = async () => {
-    if(!shipCode.trim()) { alert("من فضلك أدخل كود الشحن أولاً"); return; }
-    setSaving(true);
-    try {
-      if(orderId) {
-        await sb(`orders?id=eq.${orderId}`, {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ship_code: shipCode})});
-      }
-      setSaved(true);
-      const items = (cart||[]).map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
-      const shipping = total >= 5000 ? 0 : 80;
-      const msg = `أهلاً ${customerName} 👋\n\nطلبك اتأكد مع بروتيك! 🔧\n\n📦 تفاصيل طلبك:\n• رقم الطلب: ${orderCode}\n• شركة الشحن: بوسطة\n• كود التتبع: ${shipCode}\n• إجمالي الطلب: ${fmtEGP(total)} ج.م\n\nالمنتجات:\n${items}\n\n🔍 تقدر تتابع شحنتك من هنا:\nhttps://bosta.co/en-eg/tracking-shipments\n\nشكراً لثقتك فينا! 💙`;
-      const waPhone = phone?.startsWith("0") ? "2"+phone : phone;
-      window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, "_blank");
-    } catch(e) { alert("فشل حفظ كود الشحن"); }
-    setSaving(false);
-  };
-
+  const { orderCode, customerName, phone, total } = pageData || {};
   return (
     <div className="confirm-wrap">
       <div className="confirm-card">
         <div className="confirm-icon"><Icon name="check" size={32}/></div>
         <h2 style={{margin:"0 0 4px",fontWeight:900,color:"var(--green)"}}>تم تأكيد طلبك!</h2>
-        <p style={{color:"var(--ink-3)",margin:"0 0 8px"}}>شكراً لك {customerName}، تم حفظ طلبك بنجاح.</p>
+        <p style={{color:"var(--ink-3)",margin:"0 0 8px"}}>شكراً لك {customerName}، تم إرسال تفاصيل طلبك.</p>
         <div className="confirm-code">{orderCode}</div>
-
         <div className="confirm-meta">
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>إجمالي الطلب</span><b>{fmtEGP(total)} ج.م</b></div>
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>طريقة الدفع</span><b>الدفع عند الاستلام</b></div>
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>التوصيل المتوقع</span><b style={{color:"var(--green)"}}>٣ - ٤ أيام</b></div>
         </div>
-
-        {/* Shipping code input */}
-        <div style={{background:"var(--bg-2)",border:"1.5px solid var(--line)",borderRadius:"var(--radius-md)",padding:"18px",marginBottom:20}}>
-          <div style={{fontWeight:800,fontSize:"0.95rem",marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
-            <Icon name="truck" size={18}/> أدخل كود الشحن (بوسطة)
+        <div style={{background:"var(--brand-soft)",border:"1.5px solid var(--brand)",borderRadius:"var(--radius-md)",padding:"18px",marginBottom:20,textAlign:"right"}}>
+          <div style={{fontWeight:800,fontSize:"0.95rem",marginBottom:8,display:"flex",alignItems:"center",gap:8,color:"var(--brand-ink)"}}>
+            <Icon name="whatsapp" size={20}/> سيصلك كود الشحن على واتساب
           </div>
-          <div style={{display:"flex",gap:8}}>
-            <input
-              className="form-input"
-              placeholder="BST-XXXXXXXX"
-              value={shipCode}
-              onChange={e=>setShipCode(e.target.value)}
-              style={{flex:1, direction:"ltr"}}
-              disabled={saved}
-            />
-            <button
-              className={`btn ${saved?"btn-ghost":"btn-primary"}`}
-              style={{border:0,whiteSpace:"nowrap",flexShrink:0}}
-              onClick={saveAndNotify}
-              disabled={saving||saved}
-            >
-              {saving ? "جاري الحفظ…" : saved ? "✓ تم الإرسال" : <><Icon name="whatsapp" size={14}/> حفظ وإرسال</>}
-            </button>
-          </div>
-          <p style={{fontSize:"0.75rem",color:"var(--ink-3)",margin:"8px 0 0"}}>
-            بعد الضغط سيتم حفظ الكود وفتح واتساب لإرسال تفاصيل الطلب للعميل تلقائياً.
+          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)",lineHeight:1.7}}>
+            بعد تجهيز طلبك، سنرسل لك رقم تتبع الشحنة عبر واتساب على رقم <b style={{fontFamily:"var(--f-mono)"}}>{phone}</b> — عادةً خلال ٢٤ ساعة من تأكيد الطلب.
           </p>
+          <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer"
+            style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:12,background:"#25D366",color:"#fff",padding:"8px 16px",borderRadius:"var(--radius)",fontWeight:700,fontSize:"0.85rem",textDecoration:"none"}}>
+            <Icon name="whatsapp" size={14}/> تواصل معنا على واتساب
+          </a>
         </div>
-
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <button className="btn btn-primary btn-block" style={{padding:13,border:0}} onClick={()=>navigate("home")}>العودة للرئيسية</button>
           <button className="btn btn-ghost btn-block" style={{padding:11}} onClick={()=>navigate("shop")}>مواصلة التسوق</button>
