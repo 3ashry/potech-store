@@ -707,53 +707,54 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
           </button>
         </div>
       </div>
-<nav className="navbar">
-  <div className="wrap nav-inner">
-    <div style={{position:"relative"}}>
-      <button className="nav-all"
-        onMouseEnter={() => setMenu(true)}
-        onClick={() => setMenu(m => !m)}>
-        <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
-      </button>
-    </div>
-    <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
-    {CATS.slice(0,4).map(c => (
-      <button key={c.id} className="nav-link" onClick={() => navigate("shop", { category: c.id })} style={{ border:0, background:"none" }}>{c.ar}</button>
-    ))}
-    <div className="nav-spacer" />
-    <a className="nav-link muted" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> واتساب</a>
-  </div>
-  {menu && (
-    <div className="mega" onMouseLeave={() => setMenu(false)}>
-      <div className="wrap mega-inner">
-        <div className="mega-cats">
-          {CATS.map(c => (
-            <button key={c.id} className="mega-cat" onClick={() => { navigate("shop", { category: c.id }); setMenu(false); }} style={{ width:"100%", border:0, background:"none", cursor:"pointer", textAlign:"right" }}>
-              <span className="mega-cat-icon"><Icon name={c.icon} size={20} /></span>
-              <span className="mega-cat-text"><b>{c.ar}</b><small>{c.en}</small></span>
-              <span className="mega-cat-chev"><Icon name="chev" size={13} /></span>
-            </button>
+      <nav className="navbar">
+        <div className="wrap nav-inner">
+          <button className="nav-all"
+            onMouseEnter={() => setMenu(true)}
+            onClick={() => setMenu(m => !m)}>
+            <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
+          </button>
+          <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
+          {CATS.slice(0,4).map(c => (
+            <button key={c.id} className="nav-link" onClick={() => navigate("shop", { category: c.id })} style={{ border:0, background:"none" }}>{c.ar}</button>
           ))}
+          <div className="nav-spacer" />
+          <a className="nav-link muted" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> واتساب</a>
         </div>
-        <div className="mega-cols">
-          {[
-            { title:"الأكثر طلباً", items:["دريل بطارية 18V","جلاخة زاوية","طقم مفاتيح","ليزر قياس","منشار دائري"] },
-            { title:"حسب الاستخدام", items:["النجارة","السيارات","الحدائق","السباكة","الكهرباء"] },
-            { title:"عروض وخصومات", items:["عروض اليوم","تصفية المخزون","حزم موفرة","وصل حديثاً"] },
-          ].map(col => (
-            <div key={col.title} className="mega-col"><h4>{col.title}</h4><ul>{col.items.map(it=><li key={it}><a href="#">{it}</a></li>)}</ul></div>
-          ))}
-          <div className="mega-promo">
-            <div className="mega-promo-tag">خصم حصري</div>
-            <div className="mega-promo-title">خصم ١٠٪ على أول طلب</div>
-            <div className="mega-promo-sub">استخدم كود WELCOME10 عند إتمام الشراء</div>
-            <span className="mega-promo-cta">ابدأ التسوق <Icon name="arrow" size={13} /></span>
+        {menu && (
+          <div className="mega" onMouseLeave={() => setMenu(false)}>
+            <div className="wrap mega-inner">
+              <div className="mega-cats">
+                {CATS.map(c => (
+                  <button key={c.id} className="mega-cat" onClick={() => { navigate("shop", { category: c.id }); setMenu(false); }} style={{ width:"100%", border:0, background:"none", cursor:"pointer", textAlign:"right" }}>
+                    <span className="mega-cat-icon"><Icon name={c.icon} size={20} /></span>
+                    <span className="mega-cat-text"><b>{c.ar}</b><small>{c.en}</small></span>
+                    <span className="mega-cat-chev"><Icon name="chev" size={13} /></span>
+                  </button>
+                ))}
+              </div>
+              <div className="mega-cols">
+                {[
+                  { title:"الأكثر طلباً", items:["دريل بطارية 18V","جلاخة زاوية","طقم مفاتيح","ليزر قياس","منشار دائري"] },
+                  { title:"حسب الاستخدام", items:["النجارة","السيارات","الحدائق","السباكة","الكهرباء"] },
+                  { title:"عروض وخصومات", items:["عروض اليوم","تصفية المخزون","حزم موفرة","وصل حديثاً"] },
+                ].map(col => (
+                  <div key={col.title} className="mega-col"><h4>{col.title}</h4><ul>{col.items.map(it=><li key={it}><a href="#">{it}</a></li>)}</ul></div>
+                ))}
+                <div className="mega-promo">
+                  <div className="mega-promo-tag">خصم حصري</div>
+                  <div className="mega-promo-title">خصم ١٠٪ على أول طلب</div>
+                  <div className="mega-promo-sub">استخدم كود WELCOME10 عند إتمام الشراء</div>
+                  <span className="mega-promo-cta">ابدأ التسوق <Icon name="arrow" size={13} /></span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  )}
-</nav>
+        )}
+      </nav>
+    </header>
+  );
+};
 
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 const HeroTicker = () => (
