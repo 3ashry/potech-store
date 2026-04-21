@@ -1908,7 +1908,7 @@ export default function App() {
 
   const updateSettings = (key, value) => setSettings(s=>({...s,[key]:{...(s[key]||{}),value}}));
 
-  const comingSoon = settings.coming_soon?.value?.enabled === true;
+  const comingSoon = settings.coming_soon?.value?.enabled === false;
 
   const toggleComingSoon = async () => {
     const current = settings.coming_soon?.value || {};
