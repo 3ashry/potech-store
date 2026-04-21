@@ -37,25 +37,24 @@ const fmtEGP = (n) => new Intl.NumberFormat("ar-EG").format(Math.round(n));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
 const CATS = [
-  { id: "electric",  ar: "أدوات كهربائية",  en: "Electric Tools",   icon: "bolt" },
-  { id: "battery",   ar: "أدوات بطارية",    en: "Battery Tools",    icon: "battery" },
-  { id: "hand",      ar: "عدد يدوية",       en: "Hand Tools",       icon: "wrench" },
-  { id: "measuring", ar: "أدوات قياس",      en: "Measuring Tools",  icon: "ruler" },
-  { id: "safety",    ar: "أدوات السلامة",   en: "Safety Tools",     icon: "helmet" },
-  { id: "car",       ar: "أدوات السيارات",  en: "Car Tools",        icon: "car" },
-  { id: "garden",    ar: "أدوات الحدائق",   en: "Gardening Tools",  icon: "leaf" },
-  { id: "new",       ar: "وصل حديثاً",      en: "New Arrivals",     icon: "star" },
-  { id: "offers",    ar: "عروض اليوم",      en: "Daily Offers",     icon: "tag" },
+  { id: "electric",  ar: "أدوات كهربائية",    en: "Electric Tools",      icon: "bolt" },
+  { id: "battery",   ar: "أدوات بطارية",      en: "Battery Tools",       icon: "battery" },
+  { id: "hand",      ar: "عدد يدوية",         en: "Hand Tools",          icon: "wrench" },
+  { id: "measuring", ar: "أدوات قياس",        en: "Measuring Tools",     icon: "ruler" },
+  { id: "safety",    ar: "أدوات السلامة",     en: "Safety Tools",        icon: "helmet" },
+  { id: "car",       ar: "أدوات السيارات",    en: "Car Tools",           icon: "car" },
+  { id: "garden",    ar: "أدوات الحدائق",     en: "Gardening Tools",     icon: "leaf" },
+  { id: "sets",      ar: "اطقم أدوات وكومبو", en: "Tool Sets & Combos",  icon: "case" },
+  { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
+  { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
 ];
 
-const BRANDS = ["Total", "Wadfow"];
-
 const STATUS_MAP = {
-  Processing:  { ar: "قيد المعالجة",  color: "#E8A83A" },
-  Confirmed:   { ar: "مؤكد",          color: "#1E5BA8" },
-  Shipped:     { ar: "في الطريق",     color: "#7B3FBE" },
-  Delivered:   { ar: "تم التسليم",    color: "#2F8F4F" },
-  Cancelled:   { ar: "ملغي",          color: "#D4352A" },
+  Processing: { ar: "قيد المعالجة", color: "#E8A83A" },
+  Confirmed:  { ar: "مؤكد",         color: "#1E5BA8" },
+  Shipped:    { ar: "في الطريق",    color: "#7B3FBE" },
+  Delivered:  { ar: "تم التسليم",   color: "#2F8F4F" },
+  Cancelled:  { ar: "ملغي",         color: "#D4352A" },
 };
 
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
@@ -143,15 +142,6 @@ input,select,textarea{font-family:inherit;}
 .mega-cat-icon{width:32px;height:32px;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);color:var(--brand);flex-shrink:0;}
 .mega-cat-text b{display:block;font-size:0.88rem;}.mega-cat-text small{display:block;font-family:var(--f-mono);font-size:0.66rem;color:var(--ink-3);}
 .mega-cat-chev{margin-inline-start:auto;opacity:0.4;}
-.mega-cols{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:20px;padding:20px 24px;}
-.mega-col h4{margin:0 0 8px;font-size:0.76rem;font-family:var(--f-mono);color:var(--ink-3);letter-spacing:0.06em;text-transform:uppercase;}
-.mega-col ul{list-style:none;margin:0;padding:0;}.mega-col li{padding:4px 0;font-size:0.88rem;}.mega-col li a:hover{color:var(--brand);}
-.mega-promo{background:var(--ink);color:var(--bg);padding:18px;border-radius:var(--radius-md);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
-.mega-promo::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(242,106,33,0.08) 10px 11px);pointer-events:none;}
-.mega-promo-tag{font-family:var(--f-mono);font-size:0.7rem;color:var(--brand);letter-spacing:0.1em;text-transform:uppercase;}
-.mega-promo-title{font-size:1.05rem;font-weight:800;margin:6px 0 4px;line-height:1.3;}
-.mega-promo-sub{font-size:0.8rem;opacity:0.7;margin-bottom:10px;}
-.mega-promo-cta{display:inline-flex;align-items:center;gap:6px;color:var(--brand);font-weight:700;font-size:0.85rem;}
 
 /* HERO */
 .hero{position:relative;background:var(--bg);}
@@ -163,12 +153,12 @@ input,select,textarea{font-family:inherit;}
 .hero-visuals{grid-column:2;grid-row:1;display:grid;grid-template-rows:1fr auto;gap:10px;align-content:center;}
 @media(max-width:900px){.hero-visuals{grid-column:1;grid-row:2;}}
 .hv-main{position:relative;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-2);}
-.hv-badge{position:absolute;top:10px;inset-inline-end:10px;background:var(--ink);color:var(--bg);padding:3px 8px;font-size:0.68rem;font-weight:700;border-radius:var(--radius);z-index:2;font-family:var(--f-mono);}
 .hv-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .hv-thumb{border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-2);}
 .hero-cats{grid-column:1 / -1;grid-row:2;padding:16px;border:1px solid var(--line);background:var(--bg-2);border-radius:var(--radius-md);}
 @media(max-width:900px){.hero-cats{grid-column:1;grid-row:3;}}
-.hero-cats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.hero-cats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media(max-width:900px){.hero-cats-grid{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:600px){.hero-cats-grid{grid-template-columns:repeat(2,1fr);}}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;margin-bottom:14px;color:var(--ink-2);}
 .eyebrow b{font-weight:700;}
@@ -236,11 +226,12 @@ input,select,textarea{font-family:inherit;}
 .card:hover .card-media img{transform:scale(1.04);}
 .badge{position:absolute;top:8px;inset-inline-start:8px;background:var(--brand);color:#fff;font-size:0.68rem;font-weight:800;padding:3px 8px;border-radius:var(--radius);font-family:var(--f-mono);z-index:1;}
 .badge-offer{background:var(--red);}
-.wish{position:absolute;top:8px;inset-inline-end:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.9);display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line);z-index:1;}.wish:hover{color:var(--brand);border-color:var(--brand);}
+.wish{position:absolute;top:8px;inset-inline-end:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.9);display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line);z-index:1;transition:all .15s;}
+.wish:hover{color:var(--brand);border-color:var(--brand);}
+.wish.wished{color:#e53e3e;border-color:#e53e3e;background:#fff0f0;}
 .card-body{padding:12px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
 .card-sku{display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;}
 .sku-mono{font-family:var(--f-mono);color:var(--ink-3);letter-spacing:0.04em;}
-.card-rating{display:inline-flex;align-items:center;gap:3px;color:var(--ink-2);}.card-rating b{font-weight:700;}.card-rating span{color:var(--ink-3);}
 .card-name{margin:0;font-size:0.92rem;font-weight:700;line-height:1.4;min-height:2.6em;}
 .card-price-row{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;}
 .card-price{display:inline-flex;align-items:baseline;gap:6px;}
@@ -273,12 +264,11 @@ input,select,textarea{font-family:inherit;}
 
 /* BANNERS */
 .banners-wrap{max-width:var(--wrap);margin:0 auto;padding:0 16px;}
-.banners{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px;}
+.banners{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
 @media(max-width:768px){.banners{grid-template-columns:1fr;}}
-.bnr{position:relative;border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;min-height:180px;transition:transform .2s;}.bnr:hover{transform:translateY(-2px);}
+.bnr{position:relative;border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;min-height:180px;transition:transform .2s;cursor:pointer;}.bnr:hover{transform:translateY(-2px);}
 .bnr-inner{position:relative;z-index:1;padding:28px 22px;display:flex;flex-direction:column;height:100%;}
 .bnr-bg{position:absolute;inset:0;background-size:cover;background-position:center;}
-.bnr-bg-overlay{position:absolute;inset:0;}
 .bnr-1{background:var(--ink);color:var(--bg);}
 .bnr-2{background:var(--brand);color:#fff;}
 .bnr-3{background:var(--bg-3);color:var(--ink);border:1px solid var(--line);}
@@ -302,9 +292,6 @@ input,select,textarea{font-family:inherit;}
 .rail-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);}
 .rail-stat b{display:block;font-size:1.2rem;font-weight:900;color:var(--brand);font-family:var(--f-mono);}
 .rail-stat small{display:block;font-size:0.68rem;color:rgba(255,255,255,.4);margin-top:2px;}
-.rail-items{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-@media(max-width:1100px){.rail-items{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:600px){.rail-items{grid-template-columns:1fr;}}
 
 /* BRANDS */
 .brands-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;background:var(--bg);}
@@ -375,7 +362,6 @@ input,select,textarea{font-family:inherit;}
 .drawer-del{display:inline-flex;align-items:center;gap:3px;font-size:0.75rem;color:var(--ink-3);border:0;background:none;cursor:pointer;}.drawer-del:hover{color:var(--red);}
 .drawer-foot{border-top:1px solid var(--line);padding:16px 20px;display:flex;flex-direction:column;gap:7px;background:var(--bg-2);}
 .drawer-row{display:flex;justify-content:space-between;font-size:0.9rem;}.drawer-row b{font-weight:800;}
-.drawer-row.green{color:var(--green);}
 .drawer-row.total{font-size:1.05rem;padding-top:8px;border-top:1px solid var(--line);margin-top:4px;}.drawer-row.total b{font-size:1.25rem;font-family:var(--f-mono);}
 .drawer-note{font-size:0.72rem;color:var(--ink-3);display:inline-flex;align-items:center;gap:4px;margin-top:4px;justify-content:center;}
 .drawer-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:32px;text-align:center;}
@@ -488,7 +474,7 @@ input,select,textarea{font-family:inherit;}
 .sidebar-cat-btn{display:block;width:100%;text-align:right;padding:7px 10px;background:none;border:none;border-radius:var(--radius);font-family:var(--f-ar);font-size:0.85rem;cursor:pointer;color:var(--ink-2);font-weight:400;margin-bottom:2px;transition:all .15s;}
 .sidebar-cat-btn.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:700;border-right:3px solid var(--brand);}
 .sidebar-cat-btn:hover:not(.on){background:var(--bg-2);}
-.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:stretch;}
+.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:flex-start;}
 .cat-carousel::-webkit-scrollbar{height:4px;}
 .cat-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
 .cat-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
@@ -520,7 +506,6 @@ const Icon = ({ name, size = 20, stroke = 1.75 }) => {
     case "pin":      return <svg {...p}><path d="M12 22s8-8.1 8-13a8 8 0 0 0-16 0c0 4.9 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>;
     case "sun":      return <svg {...p}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>;
     case "moon":     return <svg {...p}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>;
-    case "globe":    return <svg {...p}><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>;
     case "image":    return <svg {...p}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>;
     case "upload":   return <svg {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
     case "trash":    return <svg {...p}><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>;
@@ -555,7 +540,7 @@ const PP = ({ stripe = 0, label, sku }) => {
   return (
     <div className="pp" style={{ background: `repeating-linear-gradient(${angle}deg,${bg1} 0 14px,${bg2} 14px 28px)` }}>
       <div className="pp-grid" />
-      <div className="pp-label"><span className="pp-sku">{sku}</span><span className="pp-name">{label}</span></div>
+      {label && <div className="pp-label"><span className="pp-sku">{sku}</span><span className="pp-name">{label}</span></div>}
       {["tl","tr","bl","br"].map(c => <div key={c} className={`pp-corner ${c}`} />)}
     </div>
   );
@@ -587,7 +572,7 @@ const SiteImageSlot = ({ src, folder, fallback, onUpdate, showToast, style = {} 
 };
 
 /* ─── Product Card ───────────────────────────────────────────────────────── */
-const ProductCard = ({ p, onAdd, onNavigate }) => {
+const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
   const imgs = Array.isArray(p.images) ? p.images : [];
   const thumb = imgs[0] || null;
   const hasOffer = p.is_offer && p.offer_price && p.offer_price < p.price;
@@ -603,13 +588,15 @@ const ProductCard = ({ p, onAdd, onNavigate }) => {
       <div className="card-media">
         {thumb ? <img src={thumb} alt={p.name} loading="lazy" /> : <PP stripe={(p.id||0) % 6} label={p.name} sku={p.code} />}
         {displayBadge && <span className={`badge ${hasOffer ? "badge-offer" : ""}`}>{displayBadge}</span>}
-        <button className="wish" aria-label="حفظ" onClick={e => e.stopPropagation()}><Icon name="heart" size={15} /></button>
+        <button
+          className={`wish${isWished ? " wished" : ""}`}
+          aria-label="حفظ"
+          onClick={e => { e.stopPropagation(); onWish?.(p); }}>
+          <Icon name="heart" size={15} />
+        </button>
       </div>
       <div className="card-body">
-        <div className="card-sku">
-          <span className="sku-mono">{p.code}</span>
-
-        </div>
+        <div className="card-sku"><span className="sku-mono">{p.code}</span></div>
         <h3 className="card-name">{p.name}</h3>
         {p.brand && <div style={{ fontSize:"0.72rem", color:"var(--ink-3)", fontFamily:"var(--f-mono)" }}>{p.brand.toUpperCase()}</div>}
         <div className="card-price-row">
@@ -633,38 +620,7 @@ const ProductCard = ({ p, onAdd, onNavigate }) => {
 };
 
 /* ─── Header ─────────────────────────────────────────────────────────────── */
-const MegaMenu = ({ open, onClose, navigate }) => !open ? null : (
-  <div className="mega" onMouseLeave={onClose}>
-    <div className="wrap mega-inner">
-      <div className="mega-cats">
-        {CATS.map(c => (
-          <button key={c.id} className="mega-cat" onClick={() => { navigate("shop", { category: c.id }); onClose(); }} style={{ width:"100%", border:0, background:"none", cursor:"pointer", textAlign:"right" }}>
-            <span className="mega-cat-icon"><Icon name={c.icon} size={20} /></span>
-            <span className="mega-cat-text"><b>{c.ar}</b><small>{c.en}</small></span>
-            <span className="mega-cat-chev"><Icon name="chev" size={13} /></span>
-          </button>
-        ))}
-      </div>
-      <div className="mega-cols">
-        {[
-          { title:"الأكثر طلباً", items:["دريل بطارية 18V","جلاخة زاوية","طقم مفاتيح","ليزر قياس","منشار دائري"] },
-          { title:"حسب الاستخدام", items:["النجارة","السيارات","الحدائق","السباكة","الكهرباء"] },
-          { title:"عروض وخصومات", items:["عروض اليوم","تصفية المخزون","حزم موفرة","وصل حديثاً"] },
-        ].map(col => (
-          <div key={col.title} className="mega-col"><h4>{col.title}</h4><ul>{col.items.map(it=><li key={it}><a href="#">{it}</a></li>)}</ul></div>
-        ))}
-        <div className="mega-promo">
-          <div className="mega-promo-tag">خصم حصري</div>
-          <div className="mega-promo-title">خصم ١٠٪ على أول طلب</div>
-          <div className="mega-promo-sub">استخدم كود WELCOME10 عند إتمام الشراء</div>
-          <span className="mega-promo-cta">ابدأ التسوق <Icon name="arrow" size={13} /></span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, logoSrc }) => {
+const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, logoSrc, wishCount, onWishlist }) => {
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState("");
   return (
@@ -700,6 +656,11 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
             <Icon name="user" size={18} />
             <span className="hdr-pill-t"><small>تتبع</small><b>طلباتي</b></span>
           </button>
+          <button className="hdr-pill" onClick={onWishlist} style={{position:"relative"}}>
+            {wishCount > 0 && <span className="hdr-cart-badge" style={{background:"#e53e3e"}}>{wishCount}</span>}
+            <Icon name="heart" size={18} />
+            <span className="hdr-pill-t"><small>قائمة</small><b>المفضلة</b></span>
+          </button>
           <button className="hdr-pill" onClick={onCart}>
             {cartCount > 0 && <span className="hdr-cart-badge">{cartCount}</span>}
             <Icon name="cart" size={18} />
@@ -714,10 +675,15 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
             onClick={() => setMenu(m => !m)}>
             <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
           </button>
-          <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}><Icon name="tag" size={13} /> عروض اليوم</button>
-          {CATS.slice(0,4).map(c => (
-            <button key={c.id} className="nav-link" onClick={() => navigate("shop", { category: c.id })} style={{ border:0, background:"none" }}>{c.ar}</button>
-          ))}
+          <button className="nav-link hot" onClick={() => navigate("shop", { category:"offers" })} style={{ border:0, background:"none" }}>
+            <Icon name="tag" size={13} /> عروض اليوم
+          </button>
+          <button className="nav-link" onClick={() => navigate("shop", { category:"sets" })} style={{ border:0, background:"none" }}>
+            <Icon name="case" size={13} /> اطقم وكومبو
+          </button>
+          <button className="nav-link" onClick={() => navigate("info","loyalty")} style={{ border:0, background:"none" }}>
+            🎁 بطاقة الولاء
+          </button>
           <div className="nav-spacer" />
           <a className="nav-link muted" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> واتساب</a>
         </div>
@@ -733,20 +699,29 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
                   </button>
                 ))}
               </div>
-              <div className="mega-cols">
-                {[
-                  { title:"الأكثر طلباً", items:["دريل بطارية 18V","جلاخة زاوية","طقم مفاتيح","ليزر قياس","منشار دائري"] },
-                  { title:"حسب الاستخدام", items:["النجارة","السيارات","الحدائق","السباكة","الكهرباء"] },
-                  { title:"عروض وخصومات", items:["عروض اليوم","تصفية المخزون","حزم موفرة","وصل حديثاً"] },
-                ].map(col => (
-                  <div key={col.title} className="mega-col"><h4>{col.title}</h4><ul>{col.items.map(it=><li key={it}><a href="#">{it}</a></li>)}</ul></div>
-                ))}
-                <div className="mega-promo">
-                  <div className="mega-promo-tag">خصم حصري</div>
-                  <div className="mega-promo-title">خصم ١٠٪ على أول طلب</div>
-                  <div className="mega-promo-sub">استخدم كود WELCOME10 عند إتمام الشراء</div>
-                  <span className="mega-promo-cta">ابدأ التسوق <Icon name="arrow" size={13} /></span>
+              <div style={{padding:"28px 32px",display:"flex",flexDirection:"column",justifyContent:"center",gap:16,maxWidth:400}}>
+                <div style={{fontFamily:"var(--f-mono)",fontSize:"0.7rem",color:"var(--brand)",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700}}>بطاقة الولاء — LOYALTY CARD</div>
+                <h3 style={{margin:0,fontSize:"1.1rem",fontWeight:900,lineHeight:1.4}}>بطاقة ولاء مجانية مع كل طلب 🎁</h3>
+                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"12px 14px",background:"var(--brand-soft)",borderRadius:"var(--radius)",border:"1px solid var(--brand)"}}>
+                    <span style={{fontSize:20,flexShrink:0}}>🏷️</span>
+                    <div>
+                      <div style={{fontWeight:700,fontSize:"0.88rem",marginBottom:2}}>خصم ١٠٠ ج.م على طلبك التاني</div>
+                      <div style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>استخدم البطاقة اللي بتيجي مع طلبك في أي طلب تاني وتوفر ١٠٠ جنيه.</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"12px 14px",background:"var(--bg-2)",borderRadius:"var(--radius)",border:"1px solid var(--line)"}}>
+                    <span style={{fontSize:20,flexShrink:0}}>🎁</span>
+                    <div>
+                      <div style={{fontWeight:700,fontSize:"0.88rem",marginBottom:2}}>أهدِ صاحبك خصم ١٠٠ ج.م</div>
+                      <div style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>البطاقة التانية في الطرد هدية لأي حد تاني — مش لنفسك — يستخدمها في أول طلب له.</div>
+                    </div>
+                  </div>
                 </div>
+                <button onClick={()=>{navigate("info","loyalty");setMenu(false);}}
+                  style={{alignSelf:"flex-start",background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"8px 16px",fontFamily:"var(--f-ar)",fontWeight:700,fontSize:"0.85rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
+                  اعرف أكثر <Icon name="arrow" size={12}/>
+                </button>
               </div>
             </div>
           </div>
@@ -756,13 +731,19 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
   );
 };
 
-/* ─── Hero ───────────────────────────────────────────────────────────────── */
+/* ─── Hero Ticker ────────────────────────────────────────────────────────── */
 const HeroTicker = () => (
   <div className="ticker">
     <div className="ticker-track">
       {[0,1].map(i => (
         <div className="ticker-group" key={i}>
-          {[["truck","شحن مجاني فوق ٥٠٠٠ ج.م"],["shield","وكيل رسمي Total و Wadfow"],["tag","خصم ١٠٪ على أول طلب: WELCOME10"],["chat","استشارة فنية مجانية"],["phone","واتساب ٠١٠٩١٠١١٣٨٠"]].map(([ic,txt],j)=>(
+          {[
+            ["truck","شحن مجاني فوق ٥٠٠٠ ج.م"],
+            ["shield","وكيل رسمي Total و Wadfow"],
+            ["tag","بطاقة ولاء مجانية مع كل طلب — خصم ١٠٠ ج.م على طلبك التاني"],
+            ["chat","استشارة فنية مجانية"],
+            ["phone","واتساب ٠١٠٩١٠١١٣٨٠"],
+          ].map(([ic,txt],j)=>(
             <><span key={j}><Icon name={ic} size={13}/> {txt}</span><span className="dot">•</span></>
           ))}
         </div>
@@ -771,13 +752,37 @@ const HeroTicker = () => (
   </div>
 );
 
-const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToast, editMode }) => {
+/* ─── Hero ───────────────────────────────────────────────────────────────── */
+const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToast, editMode, onWish, isWished }) => {
   const heroImgs = settings.hero_images?.value || {};
   const updateHeroImg = async (slot, url) => {
     const next = { ...heroImgs, [slot]: url };
     await sb(`site_settings?key=eq.hero_images`, { method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ value: next }) });
     onUpdateSettings("hero_images", next);
   };
+
+  const ShopNowBtn = ({ onClick, label = "تسوق الآن", small = false }) => (
+    <button onClick={onClick} style={{
+      background:"var(--brand)",color:"#fff",border:0,
+      borderRadius:"var(--radius)",
+      padding: small ? "5px 10px" : "8px 14px",
+      fontFamily:"var(--f-ar)",fontWeight:700,
+      fontSize: small ? "0.68rem" : "0.78rem",
+      display:"inline-flex",alignItems:"center",gap:4,
+      cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,0.3)",
+      pointerEvents:"all",
+    }}>
+      {label} <Icon name="arrow" size={small ? 10 : 12}/>
+    </button>
+  );
+
+  const SlotLabel = ({ mono, label }) => (
+    <div style={{background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"4px 8px",borderRadius:"var(--radius)"}}>
+      <div style={{color:"var(--brand)",fontSize:"0.58rem",fontFamily:"var(--f-mono)",fontWeight:700,letterSpacing:"0.08em"}}>{mono}</div>
+      <div style={{color:"#fff",fontSize:"0.68rem",fontWeight:700}}>{label}</div>
+    </div>
+  );
+
   return (
     <section className="hero hero-a">
       <div className="wrap hero-grid">
@@ -795,31 +800,72 @@ const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToas
             <div><b>٢٤/٧</b><small>دعم على واتساب</small></div>
           </div>
         </div>
+
         <div className="hero-visuals">
-          <div className="hv-main" style={{ aspectRatio:"4/3", overflow:"hidden", position:"relative" }}>
+          {/* Slot 1 — Featured Products */}
+          <div className="hv-main" style={{aspectRatio:"4/3",overflow:"hidden",position:"relative",borderRadius:"var(--radius-md)"}}>
             {editMode
-              ? <SiteImageSlot src={heroImgs.slot1} folder="hero" fallback={<PP stripe={3} label="صورة رئيسية" sku="HERO/01"/>} onUpdate={url=>updateHeroImg("slot1",url)} showToast={showToast} style={{height:"100%"}} />
-              : heroImgs.slot1 ? <img src={heroImgs.slot1} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} /> : <PP stripe={3} label="صورة رئيسية — أدوات مميزة" sku="HERO/01" />
+              ? <SiteImageSlot src={heroImgs.slot1} folder="hero"
+                  fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#1a1a2e,#16213e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)"}}><Icon name="bolt" size={64} stroke={1}/></div>}
+                  onUpdate={url=>updateHeroImg("slot1",url)} showToast={showToast} style={{height:"100%"}} />
+              : heroImgs.slot1
+                ? <img src={heroImgs.slot1} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                : <div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#1a1a2e,#16213e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)"}}><Icon name="bolt" size={64} stroke={1}/></div>
             }
-            <span className="hv-badge">صورة رئيسية</span>
-          </div>
-          <div className="hv-thumbs">
-            {["slot2","slot3"].map((slot,idx) => (
-              <div key={slot} className="hv-thumb" style={{aspectRatio:"1/1",overflow:"hidden"}}>
-                {editMode
-                  ? <SiteImageSlot src={heroImgs[slot]} folder="hero" fallback={<PP stripe={idx+1} label={idx===0?"عرض الأسبوع":"وصل حديثاً"} sku={`HERO/0${idx+2}`}/>} onUpdate={url=>updateHeroImg(slot,url)} showToast={showToast} style={{height:"100%"}} />
-                  : heroImgs[slot] ? <img src={heroImgs[slot]} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <PP stripe={idx+1} label={idx===0?"عرض الأسبوع":"وصل حديثاً"} sku={`HERO/0${idx+2}`}/>
-                }
+            <div style={{position:"absolute",bottom:12,left:12,right:12,display:"flex",justifyContent:"space-between",alignItems:"flex-end",zIndex:3,pointerEvents:"none"}}>
+              <div style={{background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"6px 10px",borderRadius:"var(--radius)",pointerEvents:"none"}}>
+                <div style={{color:"var(--brand)",fontSize:"0.62rem",fontFamily:"var(--f-mono)",fontWeight:700,letterSpacing:"0.08em"}}>FEATURED</div>
+                <div style={{color:"#fff",fontSize:"0.78rem",fontWeight:700}}>منتجات مميزة</div>
               </div>
-            ))}
+              <ShopNowBtn onClick={()=>navigate("shop")} />
+            </div>
+          </div>
+
+          <div className="hv-thumbs">
+            {/* Slot 2 — Monthly Offer */}
+            <div className="hv-thumb" style={{aspectRatio:"1/1",overflow:"hidden",position:"relative"}}>
+              {editMode
+                ? <SiteImageSlot src={heroImgs.slot2} folder="hero"
+                    fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#0f3460,#533483)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)"}}><Icon name="tag" size={36} stroke={1}/></div>}
+                    onUpdate={url=>updateHeroImg("slot2",url)} showToast={showToast} style={{height:"100%"}} />
+                : heroImgs.slot2
+                  ? <img src={heroImgs.slot2} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                  : <div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#0f3460,#533483)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)"}}><Icon name="tag" size={36} stroke={1}/></div>
+              }
+              <div style={{position:"absolute",bottom:8,left:8,right:8,display:"flex",justifyContent:"space-between",alignItems:"flex-end",zIndex:3}}>
+                <SlotLabel mono="OFFERS" label="عرض الشهر" />
+                <ShopNowBtn onClick={()=>navigate("shop",{category:"offers"})} label="تسوق" small />
+              </div>
+            </div>
+
+            {/* Slot 3 — All Categories */}
+            <div className="hv-thumb" style={{aspectRatio:"1/1",overflow:"hidden",position:"relative"}}>
+              {editMode
+                ? <SiteImageSlot src={heroImgs.slot3} folder="hero"
+                    fallback={<div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#2d1b0e,#5c3317)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)"}}><Icon name="case" size={36} stroke={1}/></div>}
+                    onUpdate={url=>updateHeroImg("slot3",url)} showToast={showToast} style={{height:"100%"}} />
+                : heroImgs.slot3
+                  ? <img src={heroImgs.slot3} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                  : <div style={{width:"100%",height:"100%",background:"linear-gradient(135deg,#2d1b0e,#5c3317)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)"}}><Icon name="case" size={36} stroke={1}/></div>
+              }
+              <div style={{position:"absolute",bottom:8,left:8,right:8,display:"flex",justifyContent:"space-between",alignItems:"flex-end",zIndex:3}}>
+                <SlotLabel mono="CATEGORIES" label="كل الأقسام" />
+                <ShopNowBtn onClick={()=>navigate("shop")} label="تصفح" small />
+              </div>
+            </div>
           </div>
         </div>
+
         <div className="hero-cats">
-          <div className="hero-cats-head"><span className="num">02</span><h3>تسوق حسب القسم</h3><button className="muted-link" onClick={()=>navigate("shop")} style={{border:0,background:"none",cursor:"pointer"}}>عرض الكل <Icon name="chev" size={11}/></button></div>
+          <div className="hero-cats-head">
+            <span className="num">02</span>
+            <h3>تسوق حسب القسم</h3>
+            <button className="muted-link" onClick={()=>navigate("shop")} style={{border:0,background:"none",cursor:"pointer"}}>عرض الكل <Icon name="chev" size={11}/></button>
+          </div>
           <div className="hero-cats-grid">
             {CATS.map(c => (
               <button key={c.id} className="mini-cat" onClick={()=>navigate("shop",{category:c.id})} style={{border:"1px solid var(--line)",background:"var(--bg)",cursor:"pointer",width:"100%",textAlign:"right"}}>
-                <span className="mini-cat-icon"><Icon name={c.icon} size={20} /></span>
+                <span className="mini-cat-icon"><Icon name={c.icon} size={18} /></span>
                 <span className="mini-cat-text"><b>{c.ar}</b><small>{c.en}</small></span>
               </button>
             ))}
@@ -846,9 +892,9 @@ const Section = ({ id, num, eyebrow, title, children, cta }) => (
   </section>
 );
 
-const TopSellingSection = ({ products, onAdd, navigate }) => {
+const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
   const [filter, setFilter] = useState("all");
-  const tabs = [{ id:"all",label:"الكل" }, ...CATS.filter(c=>!["new","offers"].includes(c.id)).slice(0,4).map(c=>({ id:c.id, label:c.ar.replace("أدوات ","").replace("عدد ","") }))];
+  const tabs = [{ id:"all",label:"الكل" }, ...CATS.filter(c=>!["new","offers"].includes(c.id)).slice(0,5).map(c=>({ id:c.id, label:c.ar.replace("أدوات ","").replace("عدد ","").replace("اطقم ","طقم ") }))];
   const items = products.filter(p => filter==="all" || p.category===filter);
   return (
     <Section id="top" num="03" eyebrow="TOP SELLING" title="الأكثر مبيعاً هذا الشهر" cta={{ label:"عرض كل المنتجات", fn:()=>navigate("shop") }}>
@@ -859,25 +905,24 @@ const TopSellingSection = ({ products, onAdd, navigate }) => {
       </div>
       {items.length===0
         ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>لا توجد منتجات بعد.</div>
-        : <div className="cat-carousel">{items.slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}</div>
+        : <div className="cat-carousel">{items.slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
       }
     </Section>
   );
 };
 
-const OffersSection = ({ products, onAdd, navigate }) => {
+const OffersSection = ({ products, onAdd, navigate, onWish, isWished }) => {
   const offerProducts = products.filter(p => p.is_offer && p.offer_price);
   if (!offerProducts.length) return null;
   return (
     <Section id="offers" num="04" eyebrow="DAILY OFFERS" title="عروض اليوم" cta={{ label:"كل العروض", fn:()=>navigate("shop",{category:"offers"}) }}>
-     <div className="cat-carousel">
-  {offerProducts.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}
-</div>
+      <div className="cat-carousel">
+        {offerProducts.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}
+      </div>
     </Section>
   );
 };
 
-// Category background images stored in site_settings under key "cat_images"
 const CAT_BG_COLORS = {
   electric: "linear-gradient(135deg,#1a1a2e,#16213e)",
   battery:  "linear-gradient(135deg,#0f3460,#533483)",
@@ -886,6 +931,7 @@ const CAT_BG_COLORS = {
   safety:   "linear-gradient(135deg,#1a0a00,#7c2d00)",
   car:      "linear-gradient(135deg,#0a1628,#1e3a5f)",
   garden:   "linear-gradient(135deg,#0a2010,#1a4d2e)",
+  sets:     "linear-gradient(135deg,#1a1200,#4a3500)",
   new:      "linear-gradient(135deg,#1a0d2e,#3d1a6e)",
 };
 
@@ -934,7 +980,7 @@ const CategoriesSection = ({ products, navigate, settings, onUpdateSettings, sho
   );
 };
 
-const DealBanners = ({ settings, onUpdateSettings, showToast, editMode }) => {
+const DealBanners = ({ settings, onUpdateSettings, showToast, editMode, navigate }) => {
   const banners = settings.banners?.value || {};
   const updateBanner = async (key, url) => {
     const next = { ...banners, [key]: url };
@@ -942,20 +988,20 @@ const DealBanners = ({ settings, onUpdateSettings, showToast, editMode }) => {
     onUpdateSettings("banners", next);
   };
   const BNR_META = [
-    { key:"banner1", cls:"bnr-1", tag:"عروض الأسبوع", h3:"خصومات حتى ٢٥٪\nعلى أدوات توتال", p:"توفير كبير على مجموعة مختارة — لفترة محدودة", cta:"تسوق العروض" },
-    { key:"banner2", cls:"bnr-2", tag:"حزم جاهزة", h3:"طقم أدوات كامل\nبسعر موفر", p:"طقم نجار • طقم سباك • طقم كهربائي", cta:"شاهد الحزم" },
-    { key:"banner3", cls:"bnr-3", tag:"ماركات رسمية", h3:"Total و Wadfow\nمن الوكيل مباشرة", p:"منتجات أصلية ١٠٠٪ مع ضمان الوكيل", cta:"تصفح الماركات" },
+    { key:"banner1", cls:"bnr-1", tag:"اطقم أدوات وكومبو", h3:"طقم أدوات كامل\nبسعر موفر", p:"طقم نجار • طقم سباك • طقم كهربائي", cta:"شاهد الطقم", action:()=>navigate("shop",{category:"sets"}) },
+    { key:"banner2", cls:"bnr-2", tag:"بطاقة الولاء", h3:"مع كل طلب\nبطاقة خصم ١٠٠ ج.م", p:"أهدِ صاحبك بطاقة أو استخدمها في طلبك التاني", cta:"اعرف أكثر", action:()=>navigate("info","loyalty") },
+    { key:"banner3", cls:"bnr-3", tag:"ماركات رسمية", h3:"Total و Wadfow\nمن الوكيل مباشرة", p:"منتجات أصلية ١٠٠٪ مع ضمان الوكيل", cta:"تصفح كل المنتجات", action:()=>navigate("shop") },
   ];
   return (
-    <div className="banners-wrap" style={{ padding:"0 16px", marginBottom: 0 }}>
+    <div className="banners-wrap" style={{ padding:"0 16px", marginBottom:0 }}>
       <div className="banners">
         {BNR_META.map(b => (
-          <div key={b.key} className={`bnr ${b.cls}`} style={{ padding:0 }}>
+          <div key={b.key} className={`bnr ${b.cls}`} style={{padding:0}} onClick={b.action}>
             {banners[b.key] && <div className="bnr-bg" style={{backgroundImage:`url(${banners[b.key]})`}}/>}
             <div className="bnr-stripes"/>
             {editMode && (
               <button style={{position:"absolute",top:8,insetInlineEnd:8,zIndex:10,background:"var(--brand)",border:0,borderRadius:"var(--radius)",width:34,height:34,display:"grid",placeItems:"center",color:"#fff",cursor:"pointer"}}
-                onClick={() => { const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const url=await sbUpload("protech-media",`banners/${uid()}-${inp.files[0].name.replace(/\s/g,"_")}`,inp.files[0]); updateBanner(b.key,url); }catch{} }; inp.click(); }}>
+                onClick={e => { e.stopPropagation(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const url=await sbUpload("protech-media",`banners/${uid()}-${inp.files[0].name.replace(/\s/g,"_")}`,inp.files[0]); updateBanner(b.key,url); }catch{} }; inp.click(); }}>
                 <Icon name="image" size={15}/>
               </button>
             )}
@@ -972,7 +1018,7 @@ const DealBanners = ({ settings, onUpdateSettings, showToast, editMode }) => {
   );
 };
 
-const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navigate }) => {
+const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navigate, onWish, isWished }) => {
   const items = products.filter(p => p.category === catId);
   if (!items.length) return null;
   return (
@@ -994,7 +1040,7 @@ const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navig
           </div>
           <div style={{overflow:"hidden"}}>
             <div className="cat-carousel">
-              {items.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}
+              {items.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}
             </div>
           </div>
         </div>
@@ -1004,7 +1050,7 @@ const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navig
 };
 
 const BrandsSection = () => (
-  <section id="brands" className="section brands-section">
+  <section id="brands" className="section">
     <div className="wrap">
       <div className="sec-head">
         <div className="sec-eyebrow"><span className="num">06</span> <b>OFFICIAL BRANDS</b></div>
@@ -1068,8 +1114,8 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <ul>
           <li onClick={()=>navigate("shop")}>كل الأقسام</li>
           <li onClick={()=>navigate("shop",{category:"offers"})}>العروض</li>
+          <li onClick={()=>navigate("shop",{category:"sets"})}>اطقم وكومبو</li>
           <li onClick={()=>navigate("shop",{category:"new"})}>وصل حديثاً</li>
-          <li onClick={()=>navigate("shop")}>الماركات</li>
         </ul>
       </div>
       <div className="foot-col">
@@ -1082,6 +1128,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
       <div className="foot-col">
         <h5>الدعم</h5>
         <ul>
+          <li onClick={()=>navigate("info","loyalty")}>بطاقة الولاء 🎁</li>
           <li onClick={()=>navigate("info","shipping")}>الشحن والتوصيل</li>
           <li onClick={()=>navigate("info","returns")}>الاستبدال والاسترجاع</li>
           <li onClick={()=>navigate("info","warranty")}>ضمان الأدوات</li>
@@ -1166,8 +1213,63 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
   );
 };
 
+/* ─── Wishlist Drawer ────────────────────────────────────────────────────── */
+const WishlistDrawer = ({ open, items, onClose, onAddToCart, onRemove }) => (
+  <>
+    <div className={`drawer-scrim${open?" on":""}`} onClick={onClose}/>
+    <aside className={`drawer${open?" on":""}`}>
+      <div className="drawer-head">
+        <div><b>المفضلة</b><small>{items.length} منتج</small></div>
+        <button className="icon-btn" onClick={onClose}><Icon name="close" size={17}/></button>
+      </div>
+      {items.length===0 ? (
+        <div className="drawer-empty">
+          <div className="empty-icon"><Icon name="heart" size={36} stroke={1.2}/></div>
+          <b>قائمة المفضلة فاضية</b>
+          <p>اضغط على قلب أي منتج لإضافته للمفضلة.</p>
+          <button className="btn btn-primary" onClick={onClose} style={{border:0}}>تصفح المنتجات</button>
+        </div>
+      ) : (
+        <>
+          <div className="drawer-body">
+            {items.map(it => {
+              const thumb = Array.isArray(it.images) ? it.images[0] : null;
+              const price = it.is_offer && it.offer_price ? it.offer_price : it.price;
+              return (
+                <div key={it.id} className="drawer-item">
+                  <div className="drawer-media">{thumb?<img src={thumb} alt={it.name}/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
+                  <div className="drawer-meta">
+                    <div className="drawer-sku">{it.code}</div>
+                    <div className="drawer-name">{it.name}</div>
+                    <div className="drawer-price"><span className="amt">{fmtEGP(price)} ج.م</span></div>
+                    <div className="drawer-actions">
+                      <button className="add" style={{fontSize:"0.72rem",padding:"5px 9px"}} onClick={()=>onAddToCart(it)}>
+                        <Icon name="plus" size={11}/> للسلة
+                      </button>
+                      <button className="drawer-del" onClick={()=>onRemove(it)}><Icon name="trash" size={13}/> حذف</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="drawer-foot">
+            <button className="btn btn-primary btn-block" style={{border:0}}
+              onClick={()=>{ items.forEach(p => onAddToCart(p)); onClose(); }}>
+              إضافة الكل للسلة <Icon name="cart" size={14}/>
+            </button>
+            <button className="btn btn-ghost btn-block" style={{marginTop:6}} onClick={()=>{ items.forEach(p=>onRemove(p)); }}>
+              مسح القائمة
+            </button>
+          </div>
+        </>
+      )}
+    </aside>
+  </>
+);
+
 /* ─── Shop page ──────────────────────────────────────────────────────────── */
-const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch }) => {
+const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish, isWished }) => {
   const [cat, setCat] = useState(initialCat || "all");
   const [search, setSearch] = useState(initialSearch || "");
   const [sort, setSort] = useState("default");
@@ -1210,7 +1312,7 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch }) => {
           </div>
           {items.length===0
             ? <div style={{textAlign:"center",padding:"60px 0",color:"var(--ink-3)"}}><Icon name="search" size={40}/><p style={{marginTop:12}}>لا توجد نتائج.</p></div>
-            : <div className="rail rail-3">{items.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}</div>
+            : <div className="rail rail-3">{items.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
           }
         </div>
       </div>
@@ -1219,7 +1321,7 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch }) => {
 };
 
 /* ─── Product Detail ─────────────────────────────────────────────────────── */
-const ProductDetailPage = ({ product, onAdd, products, navigate }) => {
+const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWished }) => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const imgs = Array.isArray(product.images) ? product.images : [];
@@ -1227,6 +1329,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate }) => {
   const hasOffer = product.is_offer && product.offer_price && product.offer_price < product.price;
   const displayPrice = hasOffer ? product.offer_price : product.price;
   const discount = hasOffer ? Math.round((1-product.offer_price/product.price)*100) : (product.old_price>product.price ? Math.round((1-product.price/product.old_price)*100) : 0);
+  const wished = isWished?.(product.id);
   return (
     <div className="product-detail">
       <div style={{fontSize:"0.8rem",color:"var(--ink-3)",marginBottom:24,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
@@ -1253,7 +1356,6 @@ const ProductDetailPage = ({ product, onAdd, products, navigate }) => {
           <div style={{fontFamily:"var(--f-mono)",fontSize:"0.72rem",color:"var(--ink-3)"}}>{product.code}</div>
           <h1 style={{margin:0,fontSize:"1.6rem",fontWeight:900,lineHeight:1.3}}>{product.name}</h1>
           {product.brand && <div style={{fontSize:"0.78rem",fontFamily:"var(--f-mono)",color:"var(--brand)",fontWeight:700}}>{product.brand.toUpperCase()}</div>}
-
           {product.description && <p style={{color:"var(--ink-2)",lineHeight:1.7,fontSize:"0.92rem",margin:0}}>{product.description}</p>}
           <div style={{display:"flex",alignItems:"baseline",gap:12}}>
             <span style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"var(--f-mono)",color:hasOffer?"var(--red)":"var(--brand)"}}>{fmtEGP(displayPrice)}</span>
@@ -1277,6 +1379,10 @@ const ProductDetailPage = ({ product, onAdd, products, navigate }) => {
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 <button className="btn btn-primary lg" style={{flex:1,border:0}} onClick={()=>onAdd({...product,qty})}>+ أضف للسلة</button>
                 <button className="btn btn-dark lg" style={{flex:1,border:0}} onClick={()=>{onAdd({...product,qty});navigate("checkout");}}>اشترِ الآن</button>
+                <button onClick={()=>onWish?.(product)}
+                  style={{width:44,height:44,border:`1.5px solid ${wished?"#e53e3e":"var(--line)"}`,borderRadius:"var(--radius)",background:wished?"#fff0f0":"var(--bg)",color:wished?"#e53e3e":"var(--ink-3)",display:"grid",placeItems:"center",cursor:"pointer",flexShrink:0,transition:"all .15s"}}>
+                  <Icon name="heart" size={18}/>
+                </button>
               </div>
             </>
           )}
@@ -1290,7 +1396,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate }) => {
       {suggested.length>0 && (
         <div>
           <h2 style={{fontSize:"1.3rem",fontWeight:900,marginBottom:18}}>منتجات قد تعجبك</h2>
-          <div className="rail rail-4">{suggested.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}/>)}</div>
+          <div className="rail rail-4">{suggested.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
         </div>
       )}
     </div>
@@ -1318,12 +1424,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     return !Object.keys(e).length;
   };
 
-  const sendWhatsApp = (code) => {
-    const items = cart.map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
-    const msg = `✅ طلب جديد — بروتيك\n\nرقم الطلب: ${code}\nالاسم: ${form.name}\nالهاتف: ${form.phone}\nالعنوان: ${form.address}، ${form.city}\n\nالمنتجات:\n${items}\n\nالشحن: ${shipping===0?"مجاني":`${shipping} ج.م`}\nالإجمالي: ${fmtEGP(grand)} ج.م\nالدفع: عند الاستلام${form.notes ? `\nملاحظات: ${form.notes}` : ""}`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
-  };
-const submit = async () => {
+  const submit = async () => {
     if(!validate()||!cart.length) return;
     setLoading(true);
     try {
@@ -1346,8 +1447,11 @@ const submit = async () => {
         if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
       }
       setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
+      const items = cart.map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
+      const msg = `✅ طلب جديد — بروتيك\n\nرقم الطلب: ${code}\nالاسم: ${form.name}\nالهاتف: ${form.phone}\nالعنوان: ${form.address}، ${form.city}\n\nالمنتجات:\n${items}\n\nالشحن: ${shipping===0?"مجاني":`${shipping} ج.م`}\nالإجمالي: ${fmtEGP(grand)} ج.م\nالدفع: عند الاستلام${form.notes?`\nملاحظات: ${form.notes}`:""}`;
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
       setCart([]);
-      navigate("confirmation",{orderCode:code,orderId,customerName:form.name,phone:form.phone,total:grand,cart:[...cart]});
+      navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
     } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
     setLoading(false);
   };
@@ -1484,10 +1588,7 @@ const OrdersPage = ({ navigate }) => {
       </div>
       {searched && orders !== null && (
         orders.length===0
-          ? <div style={{textAlign:"center",padding:"40px 0",color:"var(--ink-3)"}}>
-              <Icon name="cart" size={40}/>
-              <p style={{marginTop:12}}>لا توجد طلبات لهذا الرقم.</p>
-            </div>
+          ? <div style={{textAlign:"center",padding:"40px 0",color:"var(--ink-3)"}}><Icon name="cart" size={40}/><p style={{marginTop:12}}>لا توجد طلبات لهذا الرقم.</p></div>
           : <div>
               {orders.map(order => {
                 const st = STATUS_MAP[order.status] || { ar:order.status, color:"#888" };
@@ -1535,6 +1636,38 @@ const OrdersPage = ({ navigate }) => {
 
 /* ─── Info pages ─────────────────────────────────────────────────────────── */
 const INFO_PAGES = {
+  loyalty: {
+    title: "بطاقة الولاء",
+    icon: "🎁",
+    content: (
+      <>
+        <div className="info-highlight">مع كل طلب من بروتيك، هتلاقي <b>بطاقتين خصم</b> جوه الطرد.</div>
+        <div className="info-section">
+          <h2>بطاقة لك — خصم ١٠٠ ج.م</h2>
+          <p>البطاقة الأولى ليك أنت — استخدمها في أي طلب تاني وتوفر ١٠٠ جنيه تلقائياً. كل اللي عليك تبعتها معانا على واتساب وقت الطلب.</p>
+        </div>
+        <div className="info-section">
+          <h2>بطاقة هدية لصاحبك — خصم ١٠٠ ج.م</h2>
+          <p>البطاقة التانية هدية لأي حد تانيه — صاحبك، أخوك، زميلك في الشغل. مش لنفسك. يقدر يستخدمها في أول طلب له ويوفر ١٠٠ جنيه.</p>
+        </div>
+        <div className="info-section">
+          <h2>إزاي تستخدم البطاقة؟</h2>
+          <ul>
+            <li>ابعت صورة البطاقة على واتساب وقت الطلب.</li>
+            <li>البطاقة صالحة لمرة واحدة بس.</li>
+            <li>الخصم مش بينضاف على عروض تانية.</li>
+            <li>البطاقة شخصية — مش ينفع تستخدمها أنت وصاحبك في نفس الطلب.</li>
+          </ul>
+        </div>
+        <div style={{background:"var(--brand-soft)",border:"1.5px solid var(--brand)",borderRadius:"var(--radius-md)",padding:"20px",marginTop:8}}>
+          <div style={{fontWeight:800,fontSize:"0.95rem",marginBottom:8}}>🎯 ليه بطاقة الولاء؟</div>
+          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)",lineHeight:1.7}}>
+            بروتيك مش بس متجر — ده مجتمع محترفين وصنايعية. البطاقة دي طريقتنا نكافي ثقتك فينا ونوصل لناس أكتر بمساعدتك.
+          </p>
+        </div>
+      </>
+    )
+  },
   shipping: {
     title: "الشحن والتوصيل",
     icon: "🚚",
@@ -1576,7 +1709,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>كيفية الإرجاع</h2>
-          <p>للتواصل بخصوص الإرجاع أو الاستبدال، راسلنا على واتساب: <a href={`https://wa.me/201091011380`} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٩١٠١١٣٨٠</a></p>
+          <p>للتواصل بخصوص الإرجاع أو الاستبدال، راسلنا على واتساب: <a href="https://wa.me/201091011380" target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٩١٠١١٣٨٠</a></p>
         </div>
       </>
     )
@@ -1604,7 +1737,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>تفعيل الضمان</h2>
-          <p>لتفعيل الضمان، احتفظ بالفاتورة وتواصل معنا عبر واتساب على <a href={`https://wa.me/201091011380`} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٩١٠١١٣٨٠</a></p>
+          <p>لتفعيل الضمان، احتفظ بالفاتورة وتواصل معنا عبر واتساب على <a href="https://wa.me/201091011380" target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٩١٠١١٣٨٠</a></p>
         </div>
       </>
     )
@@ -1614,26 +1747,10 @@ const INFO_PAGES = {
     icon: "🔒",
     content: (
       <>
-        <div className="info-section">
-          <h2>البيانات التي نجمعها</h2>
-          <p>نجمع فقط البيانات الضرورية لإتمام طلبك: الاسم، رقم الهاتف، والعنوان.</p>
-        </div>
-        <div className="info-section">
-          <h2>كيف نستخدم بياناتك</h2>
-          <ul>
-            <li>تأكيد الطلبات والتواصل معك بشأنها.</li>
-            <li>تنسيق عملية التوصيل مع شركة الشحن.</li>
-            <li>إرسال عروض وتخفيضات إذا وافقت على ذلك.</li>
-          </ul>
-        </div>
-        <div className="info-section">
-          <h2>مشاركة البيانات</h2>
-          <p>لا نشارك بياناتك مع أي طرف ثالث خارج نطاق خدمة التوصيل. بياناتك محمية ومحفوظة بشكل آمن.</p>
-        </div>
-        <div className="info-section">
-          <h2>موافقتك</h2>
-          <p>بإتمام طلبك على موقعنا، فأنت توافق على سياسة الخصوصية هذه.</p>
-        </div>
+        <div className="info-section"><h2>البيانات التي نجمعها</h2><p>نجمع فقط البيانات الضرورية لإتمام طلبك: الاسم، رقم الهاتف، والعنوان.</p></div>
+        <div className="info-section"><h2>كيف نستخدم بياناتك</h2><ul><li>تأكيد الطلبات والتواصل معك بشأنها.</li><li>تنسيق عملية التوصيل مع شركة الشحن.</li><li>إرسال عروض وتخفيضات إذا وافقت على ذلك.</li></ul></div>
+        <div className="info-section"><h2>مشاركة البيانات</h2><p>لا نشارك بياناتك مع أي طرف ثالث خارج نطاق خدمة التوصيل. بياناتك محمية ومحفوظة بشكل آمن.</p></div>
+        <div className="info-section"><h2>موافقتك</h2><p>بإتمام طلبك على موقعنا، فأنت توافق على سياسة الخصوصية هذه.</p></div>
       </>
     )
   },
@@ -1642,22 +1759,10 @@ const INFO_PAGES = {
     icon: "📄",
     content: (
       <>
-        <div className="info-section">
-          <h2>عن بروتيك</h2>
-          <p>بروتيك هي المتجر الإلكتروني الرسمي للوكيل المعتمد لماركات Total و Wadfow في مصر.</p>
-        </div>
-        <div className="info-section">
-          <h2>الأسعار</h2>
-          <p>الأسعار المعروضة بالجنيه المصري وقابلة للتغيير دون إشعار مسبق. السعر المعتمد هو السعر وقت تأكيد الطلب.</p>
-        </div>
-        <div className="info-section">
-          <h2>تأكيد الطلب</h2>
-          <p>يُعتبر الطلب مؤكداً بعد التواصل الهاتفي أو عبر الواتساب من فريق بروتيك.</p>
-        </div>
-        <div className="info-section">
-          <h2>استخدام الموقع</h2>
-          <p>باستخدامك لهذا الموقع فأنت توافق على هذه الشروط والأحكام. يحق لبروتيك تعديل هذه الشروط في أي وقت.</p>
-        </div>
+        <div className="info-section"><h2>عن بروتيك</h2><p>بروتيك هي المتجر الإلكتروني الرسمي للوكيل المعتمد لماركات Total و Wadfow في مصر.</p></div>
+        <div className="info-section"><h2>الأسعار</h2><p>الأسعار المعروضة بالجنيه المصري وقابلة للتغيير دون إشعار مسبق. السعر المعتمد هو السعر وقت تأكيد الطلب.</p></div>
+        <div className="info-section"><h2>تأكيد الطلب</h2><p>يُعتبر الطلب مؤكداً بعد التواصل الهاتفي أو عبر الواتساب من فريق بروتيك.</p></div>
+        <div className="info-section"><h2>استخدام الموقع</h2><p>باستخدامك لهذا الموقع فأنت توافق على هذه الشروط والأحكام. يحق لبروتيك تعديل هذه الشروط في أي وقت.</p></div>
       </>
     )
   },
@@ -1681,7 +1786,7 @@ const InfoPage = ({ pageKey, navigate }) => {
         <Icon name="chat" size={24}/>
         <div>
           <div style={{fontWeight:700,marginBottom:4}}>هل تحتاج مساعدة؟</div>
-          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)"}}>تواصل معنا عبر واتساب على <a href={`https://wa.me/201091011380`} target="_blank" rel="noreferrer" style={{color:"var(--brand)",fontWeight:700}}>٠١٠٩١٠١١٣٨٠</a> — متاحون ٢٤/٧</p>
+          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)"}}>تواصل معنا عبر واتساب على <a href="https://wa.me/201091011380" target="_blank" rel="noreferrer" style={{color:"var(--brand)",fontWeight:700}}>٠١٠٩١٠١١٣٨٠</a> — متاحون ٢٤/٧</p>
         </div>
       </div>
     </div>
@@ -1751,10 +1856,18 @@ export default function App() {
   const [dark, setDark] = useState(false);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
   const [page, setPage] = useState("home");
   const [pageData, setPageData] = useState(null);
   const [toast, setToast] = useState(null);
   const [editMode, setEditMode] = useState(false);
+
+  const toggleWish = (p) => {
+    setWishlist(w => w.find(i=>i.id===p.id) ? w.filter(i=>i.id!==p.id) : [...w, p]);
+  };
+  const wishCount = wishlist.length;
+  const isWished = (id) => wishlist.some(i => i.id === id);
 
   const ADMIN_PASSWORD = "protech2024";
   const [adminUnlocked, setAdminUnlocked] = useState(() => { try { return sessionStorage.getItem("protech_admin_unlocked")==="1"; } catch { return false; } });
@@ -1797,22 +1910,17 @@ export default function App() {
 
   const comingSoon = settings.coming_soon?.value?.enabled === true;
 
- const toggleComingSoon = async () => {
-  const current = settings.coming_soon?.value || {};
-  const next = { ...current, enabled: !current.enabled };
-  await fetch(`${SB_URL}/rest/v1/site_settings?key=eq.coming_soon`, {
-    method: "PATCH",
-    headers: {
-      apikey: SB_KEY,
-      Authorization: `Bearer ${SB_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify({ value: next }),
-  });
-  updateSettings("coming_soon", next);
-  showToast(next.enabled ? "الموقع الآن في وضع Coming Soon" : "الموقع منشور الآن 🚀");
-};
+  const toggleComingSoon = async () => {
+    const current = settings.coming_soon?.value || {};
+    const next = { ...current, enabled: !current.enabled };
+    await fetch(`${SB_URL}/rest/v1/site_settings?key=eq.coming_soon`, {
+      method: "PATCH",
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ value: next }),
+    });
+    updateSettings("coming_soon", next);
+    showToast(next.enabled ? "الموقع الآن في وضع Coming Soon" : "الموقع منشور الآن 🚀");
+  };
 
   const addToCart = (p) => {
     setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; });
@@ -1825,9 +1933,11 @@ export default function App() {
   const cartCount = cart.reduce((s,i)=>s+i.qty,0);
   const cartTotal = cart.reduce((s,i)=>s+(i.is_offer&&i.offer_price?i.offer_price:i.price)*i.qty,0);
 
-  const sharedProps = { products, onAdd: addToCart, navigate, showToast };
+  const sharedProps = {
+    products, onAdd: addToCart, navigate, showToast,
+    onWish: toggleWish, isWished,
+  };
 
-  // Coming soon gate
   if(comingSoon && !isAdmin) return (
     <>
       <style>{CSS}</style>
@@ -1845,7 +1955,11 @@ export default function App() {
   return (
     <>
       <style>{CSS}</style>
-      <SiteHeader cartCount={cartCount} cartTotal={cartTotal} onCart={()=>setCartOpen(true)} dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}/>
+      <SiteHeader
+        cartCount={cartCount} cartTotal={cartTotal} onCart={()=>setCartOpen(true)}
+        dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
+        wishCount={wishCount} onWishlist={()=>setWishlistOpen(true)}
+      />
 
       {page==="home" && (
         <>
@@ -1853,17 +1967,18 @@ export default function App() {
           <OffersSection {...sharedProps}/>
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
-          <DealBanners {...sharedProps} settings={settings} onUpdateSettings={updateSettings} editMode={editMode}/>
+          <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." {...sharedProps}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." {...sharedProps}/>
+          <CategoryRail catId="sets" num="04c" eyebrow="TOOL SETS" title="اطقم أدوات وكومبو" desc="طقم نجار، طقم سباك، طقم كهربائي — كل حاجة محتاجها في علبة واحدة بسعر موفر." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
-            <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate}/>)}</div>
+            <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate} onWish={toggleWish} isWished={isWished(p.id)}/>)}</div>
           </Section>
           <ReviewsSection/>
         </>
       )}
       {page==="shop" && <ShopPage {...sharedProps} initialCat={pageData?.category} initialSearch={pageData?.search}/>}
-      {page==="product" && pageData?.product && <ProductDetailPage product={pageData.product} onAdd={addToCart} products={products} navigate={navigate}/>}
+      {page==="product" && pageData?.product && <ProductDetailPage product={pageData.product} onAdd={addToCart} products={products} navigate={navigate} onWish={toggleWish} isWished={isWished}/>}
       {page==="checkout" && <CheckoutPage cart={cart} navigate={navigate} setCart={setCart} products={products} setProducts={setProducts} showToast={showToast}/>}
       {page==="confirmation" && <ConfirmationPage pageData={pageData} navigate={navigate}/>}
       {page==="orders" && <OrdersPage navigate={navigate}/>}
@@ -1872,6 +1987,13 @@ export default function App() {
       <SiteFooter logoSrc={logoSrc} navigate={navigate}/>
 
       <CartDrawer open={cartOpen} items={cart} onClose={()=>setCartOpen(false)} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate}/>
+      <WishlistDrawer
+        open={wishlistOpen}
+        items={wishlist}
+        onClose={()=>setWishlistOpen(false)}
+        onAddToCart={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓"); }}
+        onRemove={toggleWish}
+      />
 
       {isAdmin && <EditBar editMode={editMode} setEditMode={setEditMode} comingSoon={comingSoon} toggleComingSoon={toggleComingSoon}/>}
       {isAdmin && <div style={{height:52}}/>}
