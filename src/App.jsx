@@ -147,7 +147,7 @@ input,select,textarea{font-family:inherit;}
 /* HERO */
 .hero{position:relative;background:var(--bg);}
 .hero-a{padding:24px 0 0;border-bottom:1px solid var(--line);}
-.hero-grid{display:grid;grid-template-columns:1.1fr 1fr;grid-template-rows:auto auto;gap:20px 28px;padding-bottom:32px;}
+.hero-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:20px 28px;padding-bottom:32px;}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:16px;}}
 .hero-lead{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:center;padding:16px 0;}
 @media(max-width:900px){.hero-lead{grid-column:1;grid-row:1;}}
@@ -158,12 +158,7 @@ input,select,textarea{font-family:inherit;}
 .hv-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
 .hv-thumb{border:none;border-radius:var(--radius-md);overflow:hidden;background:var(--bg-2);width:100%;aspect-ratio:1/1;}
 @media(max-width:600px){.hv-thumb{aspect-ratio:16/9;max-height:120px;}}
-.hero-cats{grid-column:1/-1;grid-row:2;padding:16px;border:1px solid var(--line);background:var(--bg-2);border-radius:var(--radius-md);overflow:hidden;width:100%;box-sizing:border-box;}
-@media(max-width:900px){.hero-cats{grid-column:1;grid-row:3;}}
-.hero-cats-grid{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;width:100%;scrollbar-width:none;}
-.hero-cats-grid::-webkit-scrollbar{display:none;}
-.mini-cat{min-width:110px;flex-shrink:0;}
-@media(max-width:600px){.mini-cat{min-width:95px;}}
+
 
 /* TICKER */
 .ticker{border-top:1px solid var(--line);background:var(--bg-2);overflow:hidden;font-family:var(--f-mono);font-size:0.76rem;letter-spacing:0.04em;}
@@ -781,12 +776,12 @@ const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToas
       <div className="wrap hero-grid">
         <div className="hero-lead">
           <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
-          <h1>الشغل عليك<br /><span className="hl">والعدة علينا.</span></h1>
+          <h1>الشغل عليك <span className="hl">والعدة علينا.</span></h1>
           <p className="hero-sub">متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.</p>
-          <div className="hero-ctas">
-            <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
-            <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
-          </div>
+          <div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:8}}>
+  <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
+  <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
+</div>
           <div className="hero-trust">
             <div><b>١٠٠٪</b><small>منتجات أصلية</small></div>
             <div><b>٣-٤ أيام</b><small>توصيل لكل المحافظات</small></div>
@@ -846,22 +841,6 @@ const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToas
                 <ShopNowBtn onClick={()=>navigate("shop")} label="تصفح" small />
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="hero-cats">
-          <div className="hero-cats-head">
-            <span className="num">02</span>
-            <h3>تسوق حسب القسم</h3>
-            <button className="muted-link" onClick={()=>navigate("shop")} style={{border:0,background:"none",cursor:"pointer"}}>عرض الكل <Icon name="chev" size={11}/></button>
-          </div>
-          <div className="hero-cats-grid">
-            {CATS.map(c => (
-              <button key={c.id} className="mini-cat" onClick={()=>navigate("shop",{category:c.id})} style={{border:"1px solid var(--line)",background:"var(--bg)",cursor:"pointer",width:"100%",textAlign:"right"}}>
-                <span className="mini-cat-icon"><Icon name={c.icon} size={18} /></span>
-                <span className="mini-cat-text"><b>{c.ar}</b><small>{c.en}</small></span>
-              </button>
-            ))}
           </div>
         </div>
       </div>
