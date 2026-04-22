@@ -736,47 +736,19 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
     <section className="hero hero-a">
       <div className="wrap">
         <div style={{maxWidth:680, padding:"48px 0 32px"}}>
-
-          <div className="eyebrow">
-            <span className="num">01</span> <b>مرحباً بك في بروتيك</b>
-          </div>
-
-          <h1 style={{
-            fontSize:"clamp(2.8rem,7vw,5rem)",
-            fontWeight:900,
-            lineHeight:1.05,
-            letterSpacing:"-0.02em",
-            margin:"16px 0 20px",
-          }}>
+          <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
+          <h1 style={{fontSize:"clamp(2.8rem,7vw,5rem)",fontWeight:900,lineHeight:1.05,letterSpacing:"-0.02em",margin:"16px 0 20px"}}>
             الشغل عليك<br />
             <span style={{color:"var(--brand)"}}>والعدة علينا.</span>
           </h1>
-
-          <p style={{
-            fontSize:"1rem",
-            color:"var(--ink-2)",
-            margin:"0 0 28px",
-            lineHeight:1.7,
-          }}>
+          <p style={{fontSize:"1rem",color:"var(--ink-2)",margin:"0 0 28px",lineHeight:1.7}}>
             متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.
           </p>
-
-          <div style={{display:"flex", gap:12, flexWrap:"wrap", marginBottom:32}}>
-            <button className="btn btn-primary" onClick={() => navigate("shop")}>
-              ابدأ التسوق <Icon name="arrow" size={15} />
-            </button>
-            <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}>
-              <Icon name="chat" size={13} /> تواصل واتساب
-            </a>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:32}}>
+            <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
+            <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
           </div>
-
-          <div style={{
-            display:"grid",
-            gridTemplateColumns:"repeat(3,1fr)",
-            borderTop:"1px solid var(--line)",
-            paddingTop:20,
-            textAlign:"center",
-          }}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",borderTop:"1px solid var(--line)",paddingTop:20,textAlign:"center"}}>
             <div style={{padding:"8px 0"}}>
               <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>١٠٠٪</b>
               <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>منتجات أصلية</small>
@@ -790,7 +762,6 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
               <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>دعم على واتساب</small>
             </div>
           </div>
-
         </div>
       </div>
       <HeroTicker />
