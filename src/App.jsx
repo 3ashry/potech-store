@@ -737,17 +737,37 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
       <div className="wrap">
         <div className="hero-lead" style={{maxWidth:680, padding:"48px 0 40px"}}>
           <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
-          <h1>الشغل عليك<br /><span className="hl">والعدة علينا.</span></h1>
+          <h1 style={{fontSize:"clamp(2.8rem,7vw,5rem)",fontWeight:900,lineHeight:1.05,letterSpacing:"-0.02em",margin:"12px 0"}}>
+  الشغل عليك<br />
+  <span style={{color:"var(--brand)"}}>والعدة علينا.</span>
+</h1>
           <p className="hero-sub">متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
             <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
           </div>
-          <div className="hero-trust">
-            <div><b>١٠٠٪</b><small>منتجات أصلية</small></div>
-            <div><b>٣-٤ أيام</b><small>توصيل لكل المحافظات</small></div>
-            <div><b>٢٤/٧</b><small>دعم على واتساب</small></div>
-          </div>
+         <div style={{
+  display:"grid",
+  gridTemplateColumns:"repeat(3,1fr)",
+  gap:0,
+  marginTop:28,
+  paddingTop:20,
+  borderTop:"1px solid var(--line)",
+  textAlign:"center",
+}}>
+  <div style={{padding:"8px 0"}}>
+    <b style={{display:"block",fontSize:"1.4rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>١٠٠٪</b>
+    <small style={{fontSize:"0.8rem",color:"var(--ink-3)"}}>منتجات أصلية</small>
+  </div>
+  <div style={{padding:"8px 0",borderRight:"1px solid var(--line)",borderLeft:"1px solid var(--line)"}}>
+    <b style={{display:"block",fontSize:"1.4rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٣-٤ أيام</b>
+    <small style={{fontSize:"0.8rem",color:"var(--ink-3)"}}>توصيل لكل المحافظات</small>
+  </div>
+  <div style={{padding:"8px 0"}}>
+    <b style={{display:"block",fontSize:"1.4rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٢٤/٧</b>
+    <small style={{fontSize:"0.8rem",color:"var(--ink-3)"}}>دعم على واتساب</small>
+  </div>
+</div>
         </div>
       </div>
       <HeroTicker />
