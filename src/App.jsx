@@ -109,7 +109,7 @@ input,select,textarea{font-family:inherit;}
 .hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:10px 16px;}
 @media(max-width:767px){.hdr{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px;}}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
-.brand-mark{width:52px;height:52px;border-radius:8px;overflow:hidden;background:#fff;display:grid;place-items:center;box-shadow:0 2px 12px rgba(242,106,33,0.25);border:2px solid var(--brand);flex-shrink:0;}
+.brand-mark{width:68px;height:68px;border-radius:8px;overflow:hidden;background:#fff;display:grid;place-items:center;box-shadow:0 2px 12px rgba(242,106,33,0.25);border:2px solid var(--brand);flex-shrink:0;}
 .brand-mark img{width:100%;height:100%;object-fit:contain;}
 .brand-text b{display:block;font-size:1rem;line-height:1;}
 .brand-text small{display:block;font-family:var(--f-mono);font-size:0.62rem;color:var(--ink-3);letter-spacing:0.06em;margin-top:3px;}
@@ -157,9 +157,10 @@ input,select,textarea{font-family:inherit;}
 .hv-thumb{border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-2);}
 .hero-cats{grid-column:1 / -1;grid-row:2;padding:16px;border:1px solid var(--line);background:var(--bg-2);border-radius:var(--radius-md);}
 @media(max-width:900px){.hero-cats{grid-column:1;grid-row:3;}}
-.hero-cats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
-@media(max-width:900px){.hero-cats-grid{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:600px){.hero-cats-grid{grid-template-columns:repeat(2,1fr);}}
+.hero-cats-grid{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;}
+.hero-cats-grid::-webkit-scrollbar{height:4px;}
+.hero-cats-grid::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
+@media(max-width:900px){.hero-cats-grid{flex-wrap:nowrap;}}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;margin-bottom:14px;color:var(--ink-2);}
 .eyebrow b{font-weight:700;}
 .hero h1{margin:0;font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.05;letter-spacing:-0.01em;}
@@ -480,6 +481,11 @@ input,select,textarea{font-family:inherit;}
 .cat-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
 .cat-carousel .card{min-width:220px;max-width:220px;scroll-snap-align:start;flex-shrink:0;}
 @media(min-width:768px){.cat-carousel .card{min-width:260px;max-width:260px;}}
+@media(max-width:768px){
+  .mega{position:fixed;top:auto;left:0;right:0;width:100vw;max-height:80vh;overflow-y:auto;border-radius:0 0 16px 16px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:9999;}
+  .mega-inner{grid-template-columns:1fr;}
+  .mega-cats{border-inline-end:none;border-bottom:1px solid var(--line);}
+}
 `;
 
 /* ─── Icons ──────────────────────────────────────────────────────────────── */
@@ -1140,7 +1146,6 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <h5>اشترك للعروض</h5>
         <div className="news-row"><input placeholder="بريدك الإلكتروني"/><button><Icon name="arrow" size={13}/></button></div>
         <small>عروض حصرية وتخفيضات موسمية مباشرة على بريدك.</small>
-        <div className="pay"><span>فيزا</span><span>ماستركارد</span><span>ميزة</span><span>دفع عند الاستلام</span><span>فوري</span></div>
       </div>
     </div>
     <div className="foot-bot"><div className="wrap foot-bot-inner">
@@ -1448,8 +1453,6 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
       }
       setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
       const items = cart.map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
-      const msg = `✅ طلب جديد — بروتيك\n\nرقم الطلب: ${code}\nالاسم: ${form.name}\nالهاتف: ${form.phone}\nالعنوان: ${form.address}، ${form.city}\n\nالمنتجات:\n${items}\n\nالشحن: ${shipping===0?"مجاني":`${shipping} ج.م`}\nالإجمالي: ${fmtEGP(grand)} ج.م\nالدفع: عند الاستلام${form.notes?`\nملاحظات: ${form.notes}`:""}`;
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
       setCart([]);
       navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
     } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
