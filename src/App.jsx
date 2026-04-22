@@ -147,17 +147,7 @@ input,select,textarea{font-family:inherit;}
 /* HERO */
 .hero{position:relative;background:var(--bg);}
 .hero-a{padding:24px 0 0;border-bottom:1px solid var(--line);}
-.hero-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:20px 28px;padding-bottom:32px;}
-@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:16px;}}
-.hero-lead{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:center;padding:16px 0;}
-@media(max-width:900px){.hero-lead{grid-column:1;grid-row:1;}}
-.hero-visuals{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:10px;min-width:0;width:100%;overflow:hidden;}
-@media(max-width:900px){.hero-visuals{grid-column:1;grid-row:2;width:100%;}}
-.hv-main{position:relative;border:none;border-radius:var(--radius-md);overflow:hidden;background:var(--bg-2);width:100%;aspect-ratio:16/10;}
-@media(max-width:600px){.hv-main{aspect-ratio:16/9;max-height:220px;}}
-.hv-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
-.hv-thumb{border:none;border-radius:var(--radius-md);overflow:hidden;background:var(--bg-2);width:100%;aspect-ratio:1/1;}
-@media(max-width:600px){.hv-thumb{aspect-ratio:16/9;max-height:120px;}}
+.hero-lead{display:flex;flex-direction:column;justify-content:center;padding:16px 0;}
 
 
 /* TICKER */
@@ -741,13 +731,29 @@ const HeroTicker = () => (
 );
 
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
-const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToast, editMode, onWish, isWished }) => {
-  const heroImgs = settings.hero_images?.value || {};
-  const updateHeroImg = async (slot, url) => {
-    const next = { ...heroImgs, [slot]: url };
-    await sb(`site_settings?key=eq.hero_images`, { method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ value: next }) });
-    onUpdateSettings("hero_images", next);
-  };
+const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) => {
+  return (
+    <section className="hero hero-a">
+      <div className="wrap">
+        <div className="hero-lead" style={{maxWidth:680, padding:"48px 0 40px"}}>
+          <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
+          <h1>الشغل عليك<br /><span className="hl">والعدة علينا.</span></h1>
+          <p className="hero-sub">متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.</p>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+            <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
+            <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
+          </div>
+          <div className="hero-trust">
+            <div><b>١٠٠٪</b><small>منتجات أصلية</small></div>
+            <div><b>٣-٤ أيام</b><small>توصيل لكل المحافظات</small></div>
+            <div><b>٢٤/٧</b><small>دعم على واتساب</small></div>
+          </div>
+        </div>
+      </div>
+      <HeroTicker />
+    </section>
+  );
+};
 
   const ShopNowBtn = ({ onClick, label = "تسوق الآن", small = false }) => (
     <button onClick={onClick} style={{
@@ -1932,7 +1938,7 @@ export default function App() {
 
       {page==="home" && (
         <>
-          <HeroA {...sharedProps} settings={settings} onUpdateSettings={updateSettings} editMode={editMode}/>
+          <HeroA settings={settings} navigate={navigate} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <OffersSection {...sharedProps}/>
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
