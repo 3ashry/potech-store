@@ -776,7 +776,7 @@ const HeroA = ({ products, settings, onAdd, navigate, onUpdateSettings, showToas
       <div className="wrap hero-grid">
         <div className="hero-lead">
           <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
-          <h1>الشغل عليك <span className="hl">والعدة علينا.</span></h1>
+          <h1>الشغل عليك<br /><span className="hl">والعدة علينا.</span></h1>
           <p className="hero-sub">متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.</p>
           <div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:8}}>
   <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
