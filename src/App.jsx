@@ -147,7 +147,8 @@ input,select,textarea{font-family:inherit;}
 /* HERO */
 .hero{position:relative;background:var(--bg);}
 .hero-a{padding:24px 0 0;border-bottom:1px solid var(--line);}
-.hero-lead{display:flex;flex-direction:column;justify-content:center;padding:16px 0;}
+.hero-lead{display:flex;flex-direction:column;justify-content:center;}
+@media(max-width:768px){.hero-two-col{grid-template-columns:1fr!important;}.hero-imgs{display:none;}}
 
 
 /* TICKER */
@@ -732,36 +733,126 @@ const HeroTicker = () => (
 
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) => {
+  const heroImgs = settings.hero_images?.value || {};
+  const updateHeroImg = async (slot, url) => {
+    const next = { ...heroImgs, [slot]: url };
+    await sb(`site_settings?key=eq.hero_images`, { method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ value: next }) });
+    onUpdateSettings("hero_images", next);
+  };
+
   return (
     <section className="hero hero-a">
       <div className="wrap">
-        <div style={{maxWidth:680, padding:"48px 0 32px"}}>
-          <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
-          <h1 style={{fontSize:"clamp(2.8rem,7vw,5rem)",fontWeight:900,lineHeight:1.05,letterSpacing:"-0.02em",margin:"16px 0 20px"}}>
-            الشغل عليك<br />
-            <span style={{color:"var(--brand)"}}>والعدة علينا.</span>
-          </h1>
-          <p style={{fontSize:"1rem",color:"var(--ink-2)",margin:"0 0 28px",lineHeight:1.7}}>
-            متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.
-          </p>
-          <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:32}}>
-            <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
-            <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center",padding:"48px 0 32px"}}>
+
+          {/* LEFT — Text */}
+          <div>
+            <div className="eyebrow"><span className="num">01</span> <b>مرحباً بك في بروتيك</b></div>
+            <h1 style={{fontSize:"clamp(2.8rem,5vw,4.5rem)",fontWeight:900,lineHeight:1.05,letterSpacing:"-0.02em",margin:"16px 0 20px"}}>
+              الشغل عليك<br />
+              <span style={{color:"var(--brand)"}}>والعدة علينا.</span>
+            </h1>
+            <p style={{fontSize:"1rem",color:"var(--ink-2)",margin:"0 0 28px",lineHeight:1.7}}>
+              متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.
+            </p>
+            <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:32}}>
+              <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
+              <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",borderTop:"1px solid var(--line)",paddingTop:20,textAlign:"center"}}>
+              <div style={{padding:"8px 0"}}>
+                <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>١٠٠٪</b>
+                <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>منتجات أصلية</small>
+              </div>
+              <div style={{padding:"8px 0",borderRight:"1px solid var(--line)",borderLeft:"1px solid var(--line)"}}>
+                <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٣-٤ أيام</b>
+                <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>توصيل لكل المحافظات</small>
+              </div>
+              <div style={{padding:"8px 0"}}>
+                <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٢٤/٧</b>
+                <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>دعم على واتساب</small>
+              </div>
+            </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",borderTop:"1px solid var(--line)",paddingTop:20,textAlign:"center"}}>
-            <div style={{padding:"8px 0"}}>
-              <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>١٠٠٪</b>
-              <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>منتجات أصلية</small>
+
+          {/* RIGHT — Images */}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+
+            {/* Slot 1 — main large */}
+            <div style={{position:"relative",borderRadius:"var(--radius-md)",overflow:"hidden",aspectRatio:"16/10",background:"linear-gradient(135deg,#1a1a2e,#16213e)"}}>
+              {heroImgs.slot1
+                ? <img src={heroImgs.slot1} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+                : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.15)"}}><Icon name="bolt" size={64} stroke={1}/></div>
+              }
+              <div style={{position:"absolute",bottom:10,insetInlineStart:10,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"5px 10px",borderRadius:"var(--radius)"}}>
+                <div style={{color:"var(--brand)",fontSize:"0.58rem",fontFamily:"var(--f-mono)",fontWeight:700,letterSpacing:"0.08em"}}>FEATURED</div>
+                <div style={{color:"#fff",fontSize:"0.72rem",fontWeight:700}}>منتجات مميزة</div>
+              </div>
+              <button onClick={()=>navigate("shop")} style={{position:"absolute",bottom:10,insetInlineEnd:10,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"6px 12px",fontFamily:"var(--f-ar)",fontWeight:700,fontSize:"0.72rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4}}>
+                تسوق الآن <Icon name="arrow" size={11}/>
+              </button>
+              {editMode && (
+                <SiteImageSlot src={null} folder="hero"
+                  fallback={null}
+                  onUpdate={url=>updateHeroImg("slot1",url)}
+                  showToast={showToast}
+                  style={{position:"absolute",inset:0,zIndex:5}}
+                />
+              )}
             </div>
-            <div style={{padding:"8px 0",borderRight:"1px solid var(--line)",borderLeft:"1px solid var(--line)"}}>
-              <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٣-٤ أيام</b>
-              <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>توصيل لكل المحافظات</small>
-            </div>
-            <div style={{padding:"8px 0"}}>
-              <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٢٤/٧</b>
-              <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>دعم على واتساب</small>
+
+            {/* Slots 2 & 3 — side by side */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+
+              {/* Slot 2 */}
+              <div style={{position:"relative",borderRadius:"var(--radius-md)",overflow:"hidden",aspectRatio:"1/1",background:"linear-gradient(135deg,#0f3460,#533483)"}}>
+                {heroImgs.slot2
+                  ? <img src={heroImgs.slot2} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+                  : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.15)"}}><Icon name="tag" size={36} stroke={1}/></div>
+                }
+                <div style={{position:"absolute",bottom:8,insetInlineStart:8,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"4px 8px",borderRadius:"var(--radius)"}}>
+                  <div style={{color:"var(--brand)",fontSize:"0.55rem",fontFamily:"var(--f-mono)",fontWeight:700,letterSpacing:"0.08em"}}>OFFERS</div>
+                  <div style={{color:"#fff",fontSize:"0.65rem",fontWeight:700}}>عرض الشهر</div>
+                </div>
+                <button onClick={()=>navigate("shop",{category:"offers"})} style={{position:"absolute",bottom:8,insetInlineEnd:8,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"4px 9px",fontFamily:"var(--f-ar)",fontWeight:700,fontSize:"0.65rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:3}}>
+                  تسوق <Icon name="arrow" size={9}/>
+                </button>
+                {editMode && (
+                  <SiteImageSlot src={null} folder="hero"
+                    fallback={null}
+                    onUpdate={url=>updateHeroImg("slot2",url)}
+                    showToast={showToast}
+                    style={{position:"absolute",inset:0,zIndex:5}}
+                  />
+                )}
+              </div>
+
+              {/* Slot 3 */}
+              <div style={{position:"relative",borderRadius:"var(--radius-md)",overflow:"hidden",aspectRatio:"1/1",background:"linear-gradient(135deg,#2d1b0e,#5c3317)"}}>
+                {heroImgs.slot3
+                  ? <img src={heroImgs.slot3} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+                  : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.15)"}}><Icon name="case" size={36} stroke={1}/></div>
+                }
+                <div style={{position:"absolute",bottom:8,insetInlineStart:8,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"4px 8px",borderRadius:"var(--radius)"}}>
+                  <div style={{color:"var(--brand)",fontSize:"0.55rem",fontFamily:"var(--f-mono)",fontWeight:700,letterSpacing:"0.08em"}}>CATEGORIES</div>
+                  <div style={{color:"#fff",fontSize:"0.65rem",fontWeight:700}}>كل الأقسام</div>
+                </div>
+                <button onClick={()=>navigate("shop")} style={{position:"absolute",bottom:8,insetInlineEnd:8,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"4px 9px",fontFamily:"var(--f-ar)",fontWeight:700,fontSize:"0.65rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:3}}>
+                  تصفح <Icon name="arrow" size={9}/>
+                </button>
+                {editMode && (
+                  <SiteImageSlot src={null} folder="hero"
+                    fallback={null}
+                    onUpdate={url=>updateHeroImg("slot3",url)}
+                    showToast={showToast}
+                    style={{position:"absolute",inset:0,zIndex:5}}
+                  />
+                )}
+              </div>
+
             </div>
           </div>
+
         </div>
       </div>
       <HeroTicker />
