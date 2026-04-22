@@ -148,6 +148,12 @@ input,select,textarea{font-family:inherit;}
 .hero{position:relative;background:var(--bg);}
 .hero-a{padding:24px 0 0;border-bottom:1px solid var(--line);}
 .hero-lead{display:flex;flex-direction:column;justify-content:center;}
+.hero-two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;padding:48px 0 32px;}
+@media(max-width:768px){
+  .hero-two-col{grid-template-columns:1fr!important;gap:16px;padding:28px 0 0;}
+  .hero-imgs{order:2;}
+  .hero-lead{order:1;}
+}
 @media(max-width:768px){.hero-two-col{grid-template-columns:1fr!important;}.hero-imgs{display:none;}}
 
 
@@ -681,7 +687,7 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
               <div style={{padding:"28px 32px",display:"flex",flexDirection:"column",justifyContent:"center",gap:16,maxWidth:400}}>
                 <div style={{fontFamily:"var(--f-mono)",fontSize:"0.7rem",color:"var(--brand)",letterSpacing:"0.1em",textTransform:"uppercase",fontWeight:700}}>بطاقة الولاء — LOYALTY CARD</div>
                 <h3 style={{margin:0,fontSize:"1.1rem",fontWeight:900,lineHeight:1.4}}>بطاقة ولاء مجانية مع كل طلب 🎁</h3>
-                <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                <div className="hero-imgs" style={{display:"flex",flexDirection:"column",gap:10}}>
                   <div style={{display:"flex",alignItems:"flex-start",gap:10,padding:"12px 14px",background:"var(--brand-soft)",borderRadius:"var(--radius)",border:"1px solid var(--brand)"}}>
                     <span style={{fontSize:20,flexShrink:0}}>🏷️</span>
                     <div>
@@ -743,7 +749,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
   return (
     <section className="hero hero-a">
       <div className="wrap">
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center",padding:"48px 0 32px"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,alignItems:"center",padding:"48px 0 32px"}} className="hero-two-col">
 
           {/* LEFT — Text */}
           <div>
