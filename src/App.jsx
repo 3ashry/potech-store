@@ -1432,37 +1432,10 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
           est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
         }),
       });
-      // ─────────────────────────────────────────────────────────────────────────────
-// PROTECH STORE — App.jsx  (BOSTA INTEGRATION PATCH)
-// Add the block marked ← ADD THIS after the existing order insert in submit()
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// Find this section in your current App.jsx submit() function:
-//
-//   await sb("orders", {
-//     method: "POST", prefer: "return=minimal",
-//     body: JSON.stringify({
-//       id: orderId,
-//       code,
-//       customer_name: form.name,
-//       phone: form.phone,
-//       ship_code: "",
-//       products: cart.map(i => ({ id:i.id, code:i.code, name:i.name, qty:i.qty, price:getPrice(i) })),
-//       total: grand,
-//       status: "Processing",
-//       date: new Date().toISOString().split("T")[0],
-//       est_shipping: shipping,
-//       actual_shipping: 0,
-//       warehouse_confirmed: false,
-//     }),
-//   });
-//
-// ↓ Immediately AFTER that block, add the following code:
-// ─────────────────────────────────────────────────────────────────────────────
+     });
 
-// ← ADD THIS — Fire Bosta shipment creation (non-blocking, won't affect order save)
-try {
-  fetch('https://protech-stores.vercel.app/api/bosta', {
+      // Fire Bosta shipment (non-blocking)
+      fetch('https://protech-stores.vercel.app/api/bosta', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
