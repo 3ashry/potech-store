@@ -4,7 +4,53 @@ const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201091011380";
 const FREE_SHIPPING_THRESHOLD = 5000;
-const SHIPPING_COST = 80;
+const BOSTA_SHIPPING_RATES = {
+  'القاهرة':        134.5,
+  'القاهره':        134.5,
+  'الجيزة':         134.5,
+  'الجيزه':         134.5,
+  'الإسكندرية':    141.4,
+  'الاسكندريه':    141.4,
+  'الإسكندريه':    141.4,
+  'البحيرة':        141.4,
+  'البحيره':        141.4,
+  'الدقهلية':       149.3,
+  'الدقهليه':       149.3,
+  'القليوبية':      149.3,
+  'القليوبيه':      149.3,
+  'الغربية':        149.3,
+  'الغربيه':        149.3,
+  'كفر الشيخ':      149.3,
+  'المنوفية':       149.3,
+  'المنوفيه':       149.3,
+  'الشرقية':        149.3,
+  'الشرقيه':        149.3,
+  'الإسماعيلية':    149.3,
+  'الاسماعيليه':    149.3,
+  'السويس':         149.3,
+  'بورسعيد':        149.3,
+  'بور سعيد':       149.3,
+  'دمياط':          149.3,
+  'الفيوم':         166.4,
+  'بني سويف':       166.4,
+  'المنيا':         166.4,
+  'أسيوط':          166.4,
+  'اسيوط':          166.4,
+  'سوهاج':          166.4,
+  'قنا':            184.7,
+  'الأقصر':         184.7,
+  'الاقصر':         184.7,
+  'أسوان':          184.7,
+  'اسوان':          184.7,
+  'البحر الأحمر':   184.7,
+  'الساحل الشمالي': 189.2,
+  'شمال سيناء':     207.5,
+  'جنوب سيناء':     207.5,
+  'الوادي الجديد':  207.5,
+  'مرسي مطروح':     184.7,
+};
+
+const FREE_SHIPPING_THRESHOLD = 5000;
 
 const sb = async (path, opts = {}) => {
   const { prefer, ...fetchOpts } = opts;
@@ -1401,14 +1447,20 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
 
   const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
   const total = cart.reduce((s,it)=>s+getPrice(it)*it.qty,0);
-  const shipping = total>=FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const grand = total+shipping;
+
+  // Calculate shipping based on selected city
+  const getShipping = (city) => {
+    if (total >= FREE_SHIPPING_THRESHOLD) return 0;
+    return BOSTA_SHIPPING_RATES[city] || 149.3;
+  };
+  const shipping = getShipping(form.city);
+  const grand = total + shipping;
 
   const validate = () => {
     const e={};
     if(!form.name.trim()) e.name="الاسم مطلوب";
     if(!/^01[0-9]{9}$/.test(form.phone)) e.phone="رقم الهاتف غير صحيح (01XXXXXXXXX)";
-    if(!form.address.trim()) e.address="العنوان مطلوب";
+    if(!form.address.trim() || form.address.trim().length < 10) e.address="العنوان مطلوب (١٠ أحرف على الأقل)";
     if(!form.city) e.city="المحافظة مطلوبة";
     setErrors(e);
     return !Object.keys(e).length;
@@ -1432,57 +1484,120 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
           est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
         }),
       });
-     });
 
       // Fire Bosta shipment (non-blocking)
       fetch('https://protech-stores.vercel.app/api/bosta', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      orderId,
-      customerName: form.name,
-      phone:        form.phone,
-      city:         form.city,
-      address:      form.address,
-      notes:        form.notes || '',
-      total:        grand,
-    }),
-  })
-  .then(r => r.json())
-  .then(data => {
-    // Optional: log success for debugging
-    if (data.success) {
-      console.log('✅ Bosta shipment created:', data.trackingNumber);
-    } else {
-      console.warn('⚠️ Bosta returned error:', data);
-    }
-  })
-  .catch(err => {
-    // Bosta failure is silent — order is already saved safely
-    console.warn('⚠️ Bosta fetch failed (order still saved):', err);
-  });
-} catch (e) {
-  // Catch any synchronous errors (shouldn't happen with fetch)
-  console.warn('⚠️ Bosta call exception (order still saved):', e);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// NOTE: We intentionally do NOT await the fetch above.
-// This means:
-//   - The customer sees the success screen immediately after order insert
-//   - Bosta runs in the background
-//   - If Bosta fails, the order is still saved — admin can retry manually
-// ─────────────────────────────────────────────────────────────────────────────
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          customerName: form.name,
+          phone:        form.phone,
+          city:         form.city,
+          address:      form.address,
+          notes:        form.notes || '',
+          total:        grand,
+        }),
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          console.log('✅ Bosta shipment created:', data.trackingNumber);
+        } else {
+          console.warn('⚠️ Bosta returned error:', data);
+        }
+      })
+      .catch(err => {
+        console.warn('⚠️ Bosta fetch failed (order still saved):', err);
+      });
 
       for(const item of cart){
         const dbP=products.find(p=>p.id===item.id);
         if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
       }
       setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
-      const items = cart.map(it=>`• ${it.name} × ${it.qty} = ${fmtEGP(getPrice(it)*it.qty)} ج.م`).join("\n");
       setCart([]);
       navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
     } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
+    setLoading(false);
+  };
+
+  const inp = (f) => ({ className:`form-input${errors[f]?" err":""}`, value:form[f], onChange:e=>setForm(x=>({...x,[f]:e.target.value})) });
+
+  if(!cart.length) return <div style={{textAlign:"center",padding:"80px 16px"}}><h2>سلتك فارغة</h2><button className="btn btn-primary" style={{marginTop:20,border:0}} onClick={()=>navigate("shop")}>العودة للتسوق</button></div>;
+
+  return (
+    <div className="checkout-wrap">
+      <h1 style={{margin:"0 0 6px",fontWeight:900}}>إتمام الطلب</h1>
+      <p style={{color:"var(--ink-3)",marginBottom:28}}>أدخل بياناتك لإتمام عملية الشراء</p>
+      <div className="checkout-grid">
+        <div>
+          <div className="checkout-section">
+            <h3><span className="step-num">١</span> بيانات التواصل</h3>
+            <div className="form-row">
+              <div className="form-group"><label>الاسم الكامل *</label><input {...inp("name")} placeholder="محمد أحمد"/>{errors.name&&<span className="form-err">{errors.name}</span>}</div>
+              <div className="form-group"><label>رقم الهاتف *</label><input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr"/>{errors.phone&&<span className="form-err">{errors.phone}</span>}</div>
+            </div>
+          </div>
+          <div className="checkout-section">
+            <h3><span className="step-num">٢</span> عنوان التوصيل</h3>
+            <div className="form-group"><label>المحافظة *</label>
+              <select className={`form-input${errors.city?" err":""}`} value={form.city} onChange={e=>setForm(x=>({...x,city:e.target.value}))}>
+                <option value="">اختر المحافظة</option>
+                {["القاهرة","الجيزة","الإسكندرية","الشرقية","الدقهلية","القليوبية","المنوفية","الغربية","كفر الشيخ","البحيرة","الإسماعيلية","السويس","بورسعيد","دمياط","سوهاج","أسيوط","المنيا","الفيوم","بني سويف","قنا","الأقصر","أسوان"].map(g=><option key={g}>{g}</option>)}
+              </select>
+              {errors.city&&<span className="form-err">{errors.city}</span>}
+              {form.city && total < FREE_SHIPPING_THRESHOLD && (
+                <div style={{fontSize:"0.78rem",color:"var(--brand)",marginTop:4,fontWeight:600}}>
+                  تكلفة الشحن إلى {form.city}: {fmtEGP(shipping)} ج.م
+                </div>
+              )}
+            </div>
+            <div className="form-group"><label>العنوان بالتفصيل *</label><input {...inp("address")} placeholder="الشارع، الحي، المدينة"/>{errors.address&&<span className="form-err">{errors.address}</span>}</div>
+            <div className="form-group"><label>ملاحظات (اختياري)</label><textarea className="form-input" style={{height:72,resize:"none"}} value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))} placeholder="أي تعليمات خاصة بالتوصيل…"/></div>
+          </div>
+          <div className="checkout-section" style={{borderColor:"var(--brand)",borderWidth:2}}>
+            <h3><span className="step-num">٣</span> طريقة الدفع</h3>
+            <div className="payment-option"><div style={{fontSize:26}}>💰</div><div><b>الدفع عند الاستلام</b><br/><small style={{color:"var(--ink-3)"}}>ادفع نقداً عند وصول طلبك</small></div><span className="badge" style={{position:"static",marginInlineStart:"auto"}}>✓ المتاح</span></div>
+          </div>
+        </div>
+        <div className="order-summary">
+          <h3>ملخص طلبك</h3>
+          <div className="summary-items">
+            {cart.map(it=>{
+              const thumb=Array.isArray(it.images)?it.images[0]:null;
+              return (
+                <div key={it.id} className="summary-item">
+                  <div className="summary-item-img">{thumb?<img src={thumb} alt=""/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
+                  <div style={{flex:1}}><div className="summary-item-name">{it.name}</div><div className="summary-item-qty">× {it.qty}</div></div>
+                  <div className="summary-item-price">{fmtEGP(getPrice(it)*it.qty)}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="summary-divider"/>
+          <div className="summary-row"><span style={{color:"var(--ink-3)"}}>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
+          <div className="summary-row">
+            <span style={{color:"var(--ink-3)"}}>الشحن {form.city ? `(${form.city})` : ""}</span>
+            <b style={{color:shipping===0?"var(--green)":undefined}}>
+              {!form.city ? "اختر المحافظة" : shipping===0 ? "مجاني 🎉" : `${fmtEGP(shipping)} ج.م`}
+            </b>
+          </div>
+          {total < FREE_SHIPPING_THRESHOLD && (
+            <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)",marginBottom:6}}>
+              أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني
+            </div>
+          )}
+          <div className="summary-total"><span>الإجمالي</span><span className="amt">{fmtEGP(grand)} ج.م</span></div>
+          <button className="btn btn-primary btn-block" style={{marginTop:18,padding:14,fontSize:"0.95rem",border:0}} onClick={submit} disabled={loading}>
+            {loading?"جاري إتمام الطلب…":"اشترِ الآن 🛒"}
+          </button>
+          <p style={{textAlign:"center",fontSize:"0.72rem",color:"var(--ink-3)",marginTop:8}}>بالضغط توافق على شروط الخدمة.</p>
+        </div>
+      </div>
+    </div>
+  );
+}; catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
     setLoading(false);
   };
 
