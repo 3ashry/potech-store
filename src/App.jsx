@@ -50,8 +50,6 @@ const BOSTA_SHIPPING_RATES = {
   'مرسي مطروح':     184.7,
 };
 
-const FREE_SHIPPING_THRESHOLD = 5000;
-
 const sb = async (path, opts = {}) => {
   const { prefer, ...fetchOpts } = opts;
   const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
@@ -1193,7 +1191,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
 /* ─── Cart Drawer ────────────────────────────────────────────────────────── */
 const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) => {
   const total = items.reduce((s,it) => s + (it.is_offer && it.offer_price ? it.offer_price : it.price) * it.qty, 0);
-  const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+  const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : 149.3;
   return (
     <>
       <div className={`drawer-scrim${open?" on":""}`} onClick={onClose}/>
@@ -1597,71 +1595,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
       </div>
     </div>
   );
-}; catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
-    setLoading(false);
-  };
-
-  const inp = (f) => ({ className:`form-input${errors[f]?" err":""}`, value:form[f], onChange:e=>setForm(x=>({...x,[f]:e.target.value})) });
-
-  if(!cart.length) return <div style={{textAlign:"center",padding:"80px 16px"}}><h2>سلتك فارغة</h2><button className="btn btn-primary" style={{marginTop:20,border:0}} onClick={()=>navigate("shop")}>العودة للتسوق</button></div>;
-
-  return (
-    <div className="checkout-wrap">
-      <h1 style={{margin:"0 0 6px",fontWeight:900}}>إتمام الطلب</h1>
-      <p style={{color:"var(--ink-3)",marginBottom:28}}>أدخل بياناتك لإتمام عملية الشراء</p>
-      <div className="checkout-grid">
-        <div>
-          <div className="checkout-section">
-            <h3><span className="step-num">١</span> بيانات التواصل</h3>
-            <div className="form-row">
-              <div className="form-group"><label>الاسم الكامل *</label><input {...inp("name")} placeholder="محمد أحمد"/>{errors.name&&<span className="form-err">{errors.name}</span>}</div>
-              <div className="form-group"><label>رقم الهاتف *</label><input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr"/>{errors.phone&&<span className="form-err">{errors.phone}</span>}</div>
-            </div>
-          </div>
-          <div className="checkout-section">
-            <h3><span className="step-num">٢</span> عنوان التوصيل</h3>
-            <div className="form-group"><label>المحافظة *</label>
-              <select className={`form-input${errors.city?" err":""}`} value={form.city} onChange={e=>setForm(x=>({...x,city:e.target.value}))}>
-                <option value="">اختر المحافظة</option>
-                {["القاهرة","الجيزة","الإسكندرية","الشرقية","الدقهلية","القليوبية","المنوفية","الغربية","كفر الشيخ","البحيرة","الإسماعيلية","السويس","بورسعيد","دمياط","سوهاج","أسيوط","المنيا","الفيوم","بني سويف","قنا","الأقصر","أسوان"].map(g=><option key={g}>{g}</option>)}
-              </select>
-              {errors.city&&<span className="form-err">{errors.city}</span>}
-            </div>
-            <div className="form-group"><label>العنوان بالتفصيل *</label><input {...inp("address")} placeholder="الشارع، الحي، المدينة"/>{errors.address&&<span className="form-err">{errors.address}</span>}</div>
-            <div className="form-group"><label>ملاحظات (اختياري)</label><textarea className="form-input" style={{height:72,resize:"none"}} value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))} placeholder="أي تعليمات خاصة بالتوصيل…"/></div>
-          </div>
-          <div className="checkout-section" style={{borderColor:"var(--brand)",borderWidth:2}}>
-            <h3><span className="step-num">٣</span> طريقة الدفع</h3>
-            <div className="payment-option"><div style={{fontSize:26}}>💰</div><div><b>الدفع عند الاستلام</b><br/><small style={{color:"var(--ink-3)"}}>ادفع نقداً عند وصول طلبك</small></div><span className="badge" style={{position:"static",marginInlineStart:"auto"}}>✓ المتاح</span></div>
-          </div>
-        </div>
-        <div className="order-summary">
-          <h3>ملخص طلبك</h3>
-          <div className="summary-items">
-            {cart.map(it=>{
-              const thumb=Array.isArray(it.images)?it.images[0]:null;
-              return (
-                <div key={it.id} className="summary-item">
-                  <div className="summary-item-img">{thumb?<img src={thumb} alt=""/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
-                  <div style={{flex:1}}><div className="summary-item-name">{it.name}</div><div className="summary-item-qty">× {it.qty}</div></div>
-                  <div className="summary-item-price">{fmtEGP(getPrice(it)*it.qty)}</div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="summary-divider"/>
-          <div className="summary-row"><span style={{color:"var(--ink-3)"}}>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
-          <div className="summary-row"><span style={{color:"var(--ink-3)"}}>الشحن</span><b style={{color:shipping===0?"var(--green)":undefined}}>{shipping===0?"مجاني 🎉":`${shipping} ج.م`}</b></div>
-          <div className="summary-total"><span>الإجمالي</span><span className="amt">{fmtEGP(grand)} ج.م</span></div>
-          <button className="btn btn-primary btn-block" style={{marginTop:18,padding:14,fontSize:"0.95rem",border:0}} onClick={submit} disabled={loading}>
-            {loading?"جاري إتمام الطلب…":"اشترِ الآن 🛒"}
-          </button>
-          <p style={{textAlign:"center",fontSize:"0.72rem",color:"var(--ink-3)",marginTop:8}}>بالضغط توافق على شروط الخدمة.</p>
-        </div>
-      </div>
-    </div>
-  );
-};
+}; 
 
 /* ─── Confirmation ───────────────────────────────────────────────────────── */
 const ConfirmationPage = ({ pageData, navigate }) => {
