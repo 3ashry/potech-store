@@ -1451,8 +1451,8 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     if (total >= FREE_SHIPPING_THRESHOLD) return 0;
     return BOSTA_SHIPPING_RATES[city] || 149.3;
   };
-  const shipping = getShipping(form.city);
-  const grand = total + shipping;
+  const shipping = form.city ? getShipping(form.city) : 0;
+const grand = total + shipping;
 
   const validate = () => {
     const e={};
