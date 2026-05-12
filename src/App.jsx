@@ -1191,7 +1191,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
 /* ─── Cart Drawer ────────────────────────────────────────────────────────── */
 const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) => {
   const total = items.reduce((s,it) => s + (it.is_offer && it.offer_price ? it.offer_price : it.price) * it.qty, 0);
-  const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : 149.3;
+  const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : null;
   return (
     <>
       <div className={`drawer-scrim${open?" on":""}`} onClick={onClose}/>
@@ -1234,9 +1234,9 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
             </div>
             <div className="drawer-foot">
               <div className="drawer-row"><span>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
-              <div className="drawer-row"><span>الشحن</span><b style={{color:shipping===0?"var(--green)":undefined}}>{shipping===0?`مجاني 🎉 (فوق ${FREE_SHIPPING_THRESHOLD.toLocaleString()} ج.م)`:`${shipping} ج.م`}</b></div>
+              <div className="drawer-row"><span>الشحن</span><b style={{color:shipping===0?"var(--green)":"var(--ink-3)"}}>{shipping===0?`مجاني 🎉 (فوق ${FREE_SHIPPING_THRESHOLD.toLocaleString()} ج.م)`:"يُحسب حسب المحافظة"}</b></div>
               {total < FREE_SHIPPING_THRESHOLD && <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)"}}> أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني</div>}
-              <div className="drawer-row total"><span>الإجمالي</span><b>{fmtEGP(total+shipping)} ج.م</b></div>
+              <div className="drawer-row total"><span>الإجمالي</span><b>{fmtEGP(total)} ج.م +شحن</b></div>
               <button className="btn btn-primary btn-block" style={{border:0}} onClick={()=>{onClose();navigate("checkout");}}>إتمام الشراء <Icon name="arrow" size={13}/></button>
               <small className="drawer-note"><Icon name="shield" size={11}/> دفع آمن • إرجاع خلال ٧ أيام</small>
             </div>
