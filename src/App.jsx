@@ -1473,14 +1473,17 @@ const grand = total + shipping;
       await sb("orders", {
         method:"POST", prefer:"return=minimal",
         body: JSON.stringify({
-          id: orderId,
-          code, customer_name:form.name, phone:form.phone,
-          ship_code:"",
-          products: cart.map(i=>({id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i)})),
-          total:grand, status:"Processing",
-          date: new Date().toISOString().split("T")[0],
-          est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
-        }),
+  id: orderId,
+  code, customer_name:form.name, phone:form.phone,
+  ship_code:"",
+  address: `${form.city} - ${form.address}`,
+  city: form.city,
+  notes: form.notes || "",
+  products: cart.map(i=>({id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i)})),
+  total:grand, status:"Processing",
+  date: new Date().toISOString().split("T")[0],
+  est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
+}),
       });
 
       // Fire Bosta shipment (non-blocking)
@@ -1542,7 +1545,7 @@ const grand = total + shipping;
             <div className="form-group"><label>المحافظة *</label>
               <select className={`form-input${errors.city?" err":""}`} value={form.city} onChange={e=>setForm(x=>({...x,city:e.target.value}))}>
                 <option value="">اختر المحافظة</option>
-                {["القاهرة","الجيزة","الإسكندرية","الشرقية","الدقهلية","القليوبية","المنوفية","الغربية","كفر الشيخ","البحيرة","الإسماعيلية","السويس","بورسعيد","دمياط","سوهاج","أسيوط","المنيا","الفيوم","بني سويف","قنا","الأقصر","أسوان"].map(g=><option key={g}>{g}</option>)}
+              {["القاهرة","الجيزة","الإسكندرية","الشرقية","الدقهلية","القليوبية","المنوفية","الغربية","كفر الشيخ","البحيرة","الإسماعيلية","السويس","بورسعيد","دمياط","سوهاج","أسيوط","المنيا","الفيوم","بني سويف","قنا","الأقصر","أسوان","مرسي مطروح","الساحل الشمالي","البحر الأحمر","الوادي الجديد","شمال سيناء","جنوب سيناء"].map(g=><option key={g}>{g}</option>)}
               </select>
               {errors.city&&<span className="form-err">{errors.city}</span>}
               {form.city && total < FREE_SHIPPING_THRESHOLD && (
