@@ -1449,9 +1449,8 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   // Calculate shipping based on selected city
   const getShipping = (city) => {
   if (!city || total >= FREE_SHIPPING_THRESHOLD) return 0;
-  const baseRate = BOSTA_SHIPPING_RATES[city] || 149.3;
-  const codFee = total * 0.01;
-  return Math.ceil((baseRate + codFee) * 1.14);
+  const baseRate = BOSTA_SHIPPING_RATES[city] || 131;
+  return Math.ceil(baseRate * 1.16);
 };
   const shipping = form.city ? getShipping(form.city) : 0;
 const grand = total + shipping;
