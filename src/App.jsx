@@ -37,17 +37,18 @@ const BOSTA_SHIPPING_RATES = {
   'أسيوط':          146,
   'اسيوط':          146,
   'سوهاج':          146,
-  'قنا':            163,
-  'الأقصر':         163,
-  'الاقصر':         163,
-  'أسوان':          163,
-  'اسوان':          163,
-  'البحر الأحمر':   163,
-  'الساحل الشمالي': 167,
-  'شمال سيناء':     184,
-  'جنوب سيناء':     184,
-  'الوادي الجديد':  184,
-  'مرسي مطروح':     163,
+  'قنا':            162,
+  'الأقصر':         162,
+  'الاقصر':         162,
+  'أسوان':          162,
+  'اسوان':          162,
+  'البحر الأحمر':   162,
+  'مرسي مطروح':     162,
+  'مطروح':          162,
+  'الساحل الشمالي': 166,
+  'شمال سيناء':     182,
+  'جنوب سيناء':     182,
+  'الوادي الجديد':  182,
 };
 const sb = async (path, opts = {}) => {
   const { prefer, ...fetchOpts } = opts;
@@ -1446,11 +1447,19 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const total = cart.reduce((s,it)=>s+getPrice(it)*it.qty,0);
 
   // Calculate shipping based on selected city
+  // Real Bosta formula — matches dashboard breakdown within ~0.3 EGP:
+  //   COD = subtotal + base_rate
+  //   cod_fee = max(0, COD - 2000) × 0.01
+  //   vat = (base_rate + cod_fee) × 0.14
+  //   shipping = base_rate + cod_fee + vat
   const getShipping = (city) => {
-  if (!city || total >= FREE_SHIPPING_THRESHOLD) return 0;
-  const baseRate = BOSTA_SHIPPING_RATES[city] || 131;
-  return Math.ceil(baseRate * 1.16);
-};
+    if (!city || total >= FREE_SHIPPING_THRESHOLD) return 0;
+    const baseRate = BOSTA_SHIPPING_RATES[city] || 131;
+    const COD = total + baseRate;
+    const codFee = Math.max(0, COD - 2000) * 0.01;
+    const vat = (baseRate + codFee) * 0.14;
+    return Math.ceil(baseRate + codFee + vat);
+  };
   const shipping = form.city ? getShipping(form.city) : 0;
 const grand = total + shipping;
 
