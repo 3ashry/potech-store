@@ -652,6 +652,10 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
 const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, logoSrc, wishCount, onWishlist }) => {
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState("");
+  const submitSearch = () => {
+    if (q.trim()) window.fbq?.('track', 'Search', { search_string: q });
+    navigate("shop", { search: q });
+  };
   return (
     <header className="site-header">
       <div className="topbar">
@@ -677,8 +681,8 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
         </button>
         <div className="search">
           <input className="search-input" placeholder="ابحث عن منتج، ماركة، كود…" value={q} onChange={e => setQ(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && navigate("shop", { search: q })} />
-          <button className="search-btn" onClick={() => navigate("shop", { search: q })}><Icon name="search" size={17} /></button>
+            onKeyDown={e => e.key === "Enter" && submitSearch()} />
+          <button className="search-btn" onClick={submitSearch}><Icon name="search" size={17} /></button>
         </div>
         <div className="hdr-right">
           <button className="hdr-pill" onClick={() => navigate("orders")}>
@@ -1237,7 +1241,15 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
               <div className="drawer-row"><span>الشحن</span><b style={{color:shipping===0?"var(--green)":"var(--ink-3)"}}>{shipping===0?`مجاني 🎉 (فوق ${FREE_SHIPPING_THRESHOLD.toLocaleString()} ج.م)`:"يُحسب حسب المحافظة"}</b></div>
               {total < FREE_SHIPPING_THRESHOLD && <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)"}}> أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني</div>}
               <div className="drawer-row total"><span>الإجمالي</span><b>{fmtEGP(total)} ج.م +شحن</b></div>
-              <button className="btn btn-primary btn-block" style={{border:0}} onClick={()=>{onClose();navigate("checkout");}}>إتمام الشراء <Icon name="arrow" size={13}/></button>
+              <button className="btn btn-primary btn-block" style={{border:0}} onClick={()=>{
+                window.fbq?.('track', 'InitiateCheckout', {
+                  num_items: items.reduce((s, it) => s + it.qty, 0),
+                  value: total,
+                  currency: 'EGP',
+                });
+                onClose();
+                navigate("checkout");
+              }}>إتمام الشراء <Icon name="arrow" size={13}/></button>
               <small className="drawer-note"><Icon name="shield" size={11}/> دفع آمن • إرجاع خلال ٧ أيام</small>
             </div>
           </>
@@ -1358,6 +1370,15 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
 const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWished }) => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  useEffect(() => {
+    window.fbq?.('track', 'ViewContent', {
+      content_ids: [product.id],
+      content_name: product.name,
+      content_type: 'product',
+      value: product.is_offer && product.offer_price ? product.offer_price : product.price,
+      currency: 'EGP',
+    });
+  }, [product.id]);
   const imgs = Array.isArray(product.images) ? product.images : [];
   const suggested = products.filter(p=>p.id!==product.id && p.category===product.category).slice(0,4);
   const hasOffer = product.is_offer && product.offer_price && product.offer_price < product.price;
@@ -1526,6 +1547,13 @@ const grand = total + shipping;
         if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
       }
       setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
+      window.fbq?.('track', 'Purchase', {
+        value: grand,
+        currency: 'EGP',
+        content_ids: cart.map(i => i.id),
+        content_type: 'product',
+        num_items: cart.reduce((s, i) => s + i.qty, 0),
+      });
       setCart([]);
       navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
     } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
@@ -2016,6 +2044,13 @@ export default function App() {
   const addToCart = (p) => {
     setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; });
     setCartOpen(true);
+    window.fbq?.('track', 'AddToCart', {
+      content_ids: [p.id],
+      content_name: p.name,
+      content_type: 'product',
+      value: (p.is_offer && p.offer_price ? p.offer_price : p.price) * (p.qty || 1),
+      currency: 'EGP',
+    });
     showToast("تمت الإضافة للسلة ✓");
   };
   const inc = id => setCart(c=>c.map(i=>i.id===id?{...i,qty:i.qty+1}:i));
