@@ -1324,7 +1324,8 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
   useEffect(() => { if (initialSearch) setSearch(initialSearch); }, [initialSearch]);
 
   let items = products.filter(p => {
-    const matchCat = cat==="all" || (cat==="offers" ? (p.is_offer && p.offer_price) : cat==="new" ? true : p.category===cat);
+    const cats = Array.isArray(p.categories) ? p.categories : [];
+    const matchCat = cat==="all" || (cat==="offers" ? (p.is_offer && p.offer_price) : cat==="new" ? true : (cats.includes(cat) || p.category===cat));
     const matchSearch = !search || p.name?.includes(search) || p.code?.includes(search);
     return matchCat && matchSearch;
   });
