@@ -934,7 +934,11 @@ const Section = ({ id, num, eyebrow, title, children, cta }) => (
 const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
   const [filter, setFilter] = useState("all");
   const tabs = [{ id:"all",label:"الكل" }, ...CATS.filter(c=>!["new","offers"].includes(c.id)).slice(0,5).map(c=>({ id:c.id, label:c.ar.replace("أدوات ","").replace("عدد ","").replace("اطقم ","طقم ") }))];
-  const items = products.filter(p => filter==="all" || p.category===filter);
+  const items = products.filter(p => {
+    if (filter==="all") return true;
+    const cats = Array.isArray(p.categories) ? p.categories : [];
+    return cats.includes(filter) || p.category===filter;
+});
   return (
     <Section id="top" num="03" eyebrow="TOP SELLING" title="الأكثر مبيعاً هذا الشهر" cta={{ label:"عرض كل المنتجات", fn:()=>navigate("shop") }}>
       <div className="tabs">
@@ -1058,7 +1062,10 @@ const DealBanners = ({ settings, onUpdateSettings, showToast, editMode, navigate
 };
 
 const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navigate, onWish, isWished }) => {
-  const items = products.filter(p => p.category === catId);
+  const items = products.filter(p => {
+    const cats = Array.isArray(p.categories) ? p.categories : [];
+    return cats.includes(catId) || p.category === catId;
+});
   if (!items.length) return null;
   return (
     <section id={catId} className="section cat-rail">
