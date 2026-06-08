@@ -1353,7 +1353,8 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
   let items = products.filter(p => {
     const cats = Array.isArray(p.categories) ? p.categories : [];
     const matchCat = cat==="all" || (cat==="offers" ? (p.is_offer && p.offer_price) : cat==="new" ? true : (cats.includes(cat) || p.category===cat));
-    const matchSearch = !search || p.name?.includes(search) || p.code?.includes(search);
+    const s = search.toLowerCase();
+    const matchSearch = !search || p.name?.toLowerCase().includes(s) || p.code?.toLowerCase().includes(s);
     return matchCat && matchSearch;
   });
   if (sort==="price_asc") items=[...items].sort((a,b)=>a.price-b.price);
@@ -2122,29 +2123,34 @@ export default function App() {
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
+          {/* Garden Tools Banner */}
+          <section className="section" style={{paddingTop:0,paddingBottom:0}}>
+            <div className="wrap">
+              <div style={{position:"relative",cursor:"pointer",overflow:"hidden",borderRadius:"var(--radius-md)"}} onClick={()=>navigate("shop",{category:"garden"})}>
+                {settings.garden_banner?.value
+                  ? <img src={settings.garden_banner.value} alt="أدوات الحدائق" style={{width:"100%",display:"block"}}/>
+                  : <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#0a2010,#1a4d2e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)",fontSize:"1.2rem",fontWeight:700}}>صورة أدوات الحدائق</div>
+                }
+                <button style={{position:"absolute",bottom:16,insetInlineEnd:16,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"10px 24px",fontFamily:"var(--f-ar)",fontWeight:800,fontSize:"0.95rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:8,zIndex:2}} onClick={e=>{e.stopPropagation();navigate("shop",{category:"garden"})}}>
+                  تسوق الكل <Icon name="arrow" size={14}/>
+                </button>
+                {editMode && (
+                  <SiteImageSlot src={null} folder="banners/garden"
+                    fallback={null}
+                    onUpdate={async url=>{
+                      await sb('site_settings?key=eq.garden_banner',{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({value:url})});
+                      updateSettings("garden_banner",url);
+                    }}
+                    showToast={showToast}
+                    style={{position:"absolute",inset:0,zIndex:3}}
+                  />
+                )}
+              </div>
+            </div>
+          </section>
+          <CategoryRail catId="battery" ...
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
-          {/* Garden Tools Banner */}
-          <div style={{width:"100%",position:"relative",cursor:"pointer",overflow:"hidden"}} onClick={()=>navigate("shop",{category:"garden"})}>
-            {settings.garden_banner?.value
-              ? <img src={settings.garden_banner.value} alt="أدوات الحدائق" style={{width:"100%",display:"block"}}/>
-              : <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#0a2010,#1a4d2e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)",fontSize:"1.2rem",fontWeight:700}}>صورة أدوات الحدائق</div>
-            }
-            <button style={{position:"absolute",bottom:16,insetInlineEnd:16,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"10px 24px",fontFamily:"var(--f-ar)",fontWeight:800,fontSize:"0.95rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:8,zIndex:2}} onClick={e=>{e.stopPropagation();navigate("shop",{category:"garden"})}}>
-              تسوق الكل <Icon name="arrow" size={14}/>
-            </button>
-            {editMode && (
-              <SiteImageSlot src={null} folder="banners/garden"
-                fallback={null}
-                onUpdate={async url=>{
-                  await sb('site_settings?key=eq.garden_banner',{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({value:url})});
-                  onUpdateSettings("garden_banner",url);
-                }}
-                showToast={showToast}
-                style={{position:"absolute",inset:0,zIndex:3}}
-              />
-            )}
-          </div>
           <CategoryRail catId="sets" num="04c" eyebrow="TOOL SETS" title="اطقم أدوات وكومبو" desc="طقم نجار، طقم سباك، طقم كهربائي — كل حاجة محتاجها في علبة واحدة بسعر موفر." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
             <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate} onWish={toggleWish} isWished={isWished(p.id)}/>)}</div>
