@@ -1332,6 +1332,7 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
 
   let items = products.filter(p => {
     const cats = Array.isArray(p.categories) ? p.categories : [];
+    const cats = Array.isArray(p.categories) ? p.categories : [];
     const matchCat = cat==="all" || (cat==="offers" ? (p.is_offer && p.offer_price) : cat==="new" ? true : (cats.includes(cat) || p.category===cat));
     const matchSearch = !search || p.name?.includes(search) || p.code?.includes(search);
     return matchCat && matchSearch;
@@ -1484,10 +1485,10 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const getShipping = (city) => {
     if (!city || total >= FREE_SHIPPING_THRESHOLD) return 0;
     const baseRate = BOSTA_SHIPPING_RATES[city] || 131;
-    const COD = total + baseRate;
-    const codFee = Math.max(0, COD - 2000) * 0.01;
-    const vat = (baseRate + codFee) * 0.14;
-    return Math.ceil(baseRate + codFee + vat);
+    if (total + 1.14 * baseRate >= 2000) {
+      return Math.ceil((1.14 * baseRate + 0.0114 * total - 22.8) / 0.9886);
+    }
+    return Math.ceil(1.14 * baseRate);
   };
   const shipping = form.city ? getShipping(form.city) : 0;
 const grand = total + shipping;
