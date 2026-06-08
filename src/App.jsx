@@ -891,26 +891,13 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
                   تسوق <Icon name="arrow" size={9}/>
                 </button>
                 {editMode && (
-                  <button style={{position:"absolute",top:8,insetInlineEnd:8,zIndex:10,background:"var(--brand)",border:0,borderRadius:"var(--radius)",width:34,height:34,display:"grid",placeItems:"center",color:"#fff",cursor:"pointer"}}
-                    onClick={e => {
-                      e.stopPropagation();
-                      const inp = document.createElement("input");
-                      inp.type = "file";
-                      inp.accept = "image/*";
-                      inp.onchange = async () => {
-                        try {
-                          const url = await sbUpload("protech-media", "banners/" + uid() + "-garden-" + inp.files[0].name.replace(/\s/g,"_"), inp.files[0]);
-                          updateSettings("garden_banner", url);
-                          showToast("تم تحديث الصورة ✓");
-                        } catch(err) {
-                          showToast("فشل: " + err.message, "error");
-                        }
-                      };
-                      inp.click();
-                    }}>
-                    <Icon name="image" size={15}/>
-                  </button>
-                )}
+  <SiteImageSlot src={null} folder="hero"
+    fallback={null}
+    onUpdate={url=>updateHeroImg("slot2",url)}
+    showToast={showToast}
+    style={{position:"absolute",inset:0,zIndex:5}}
+  />
+)}
               </div>
 
               {/* Slot 3 */}
@@ -1036,13 +1023,28 @@ const CategoriesSection = ({ products, navigate, settings, onUpdateSettings, sho
               <div className="cat-tile-stripes" style={{zIndex:1}} />
               <div className="cat-tile-icon" style={{zIndex:2}}><Icon name={c.icon} size={32} stroke={1.4}/></div>
               {editMode && (
-                <SiteImageSlot src={null} folder={`categories/${c.id}`}
-                  fallback={null}
-                  onUpdate={url => updateCatImage(c.id, url)}
-                  showToast={showToast}
-                  style={{position:"absolute",inset:0,zIndex:3,opacity:0,transition:"opacity .2s"}}
-                />
-              )}
+  <button style={{position:"absolute",top:8,insetInlineEnd:8,zIndex:10,background:"var(--brand)",border:0,borderRadius:"var(--radius)",width:34,height:34,display:"grid",placeItems:"center",color:"#fff",cursor:"pointer"}}
+    onClick={e => {
+      e.stopPropagation();
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.accept = "image/*";
+      inp.onchange = async () => {
+        try {
+          const file = inp.files[0];
+          const url = await sbUpload("protech-media", "banners/" + uid() + "-garden-" + file.name.replace(/\s/g,"_"), file);
+          await sb('site_settings?key=eq.garden_banner', {method:"PATCH", prefer:"return=minimal", body:JSON.stringify({value:url})});
+          updateSettings("garden_banner", url);
+          showToast("تم تحديث الصورة ✓");
+        } catch(err) {
+          showToast("فشل: " + err.message, "error");
+        }
+      };
+      inp.click();
+    }}>
+    <Icon name="image" size={15}/>
+  </button>
+)}
             </div>
             <div className="cat-tile-body">
               <div className="cat-tile-title"><b>{c.ar}</b><small>{c.en}</small></div>
