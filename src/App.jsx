@@ -2138,9 +2138,9 @@ export default function App() {
                   <SiteImageSlot src={null} folder="banners/garden"
                     fallback={null}
                     onUpdate={async url=>{
-                      await sb('site_settings?key=eq.garden_banner',{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({value:url})});
-                      updateSettings("garden_banner",url);
-                    }}
+  await sb('site_settings',{method:"POST",prefer:"return=minimal",headers:{"Prefer":"return=minimal,resolution=merge-duplicates"},body:JSON.stringify({key:"garden_banner",value:url})});
+  updateSettings("garden_banner",url);
+}}
                     showToast={showToast}
                     style={{position:"absolute",inset:0,zIndex:3}}
                   />
