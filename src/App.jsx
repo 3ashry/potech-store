@@ -2142,7 +2142,7 @@ export default function App() {
           {/* Garden Tools Banner */}
           <section className="section" style={{paddingTop:24,paddingBottom:0}}>
             <div className="wrap">
-              <div style={{position:"relative",cursor:"pointer",overflow:"hidden",borderRadius:"var(--radius-md)"}} onClick={()=>navigate("shop",{category:"garden"})}>
+              <div style={{position:"relative",cursor:editMode?"default":"pointer",overflow:"hidden",borderRadius:"var(--radius-md)"}} onClick={()=>{if(!editMode) navigate("shop",{category:"garden"});}}>
                 {settings.garden_banner?.value
                   ? <img src={settings.garden_banner.value} alt="أدوات الحدائق" style={{width:"100%",display:"block"}}/>
                   : <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#0a2010,#1a4d2e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)",fontSize:"1.2rem",fontWeight:700}}>صورة أدوات الحدائق</div>
