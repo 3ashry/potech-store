@@ -5,50 +5,50 @@ const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201091011380";
 const FREE_SHIPPING_THRESHOLD = 5000;
 const BOSTA_SHIPPING_RATES = {
-  'القاهرة':        118,
-  'القاهره':        118,
-  'الجيزة':         118,
-  'الجيزه':         118,
-  'الإسكندرية':    124,
-  'الاسكندريه':    124,
-  'الإسكندريه':    124,
-  'البحيرة':        124,
-  'البحيره':        124,
-  'الدقهلية':       131,
-  'الدقهليه':       131,
-  'القليوبية':      131,
-  'القليوبيه':      131,
-  'الغربية':        131,
-  'الغربيه':        131,
-  'كفر الشيخ':      131,
-  'المنوفية':       131,
-  'المنوفيه':       131,
-  'الشرقية':        131,
-  'الشرقيه':        131,
-  'الإسماعيلية':    131,
-  'الاسماعيليه':    131,
-  'السويس':         131,
-  'بورسعيد':        131,
-  'بور سعيد':       131,
-  'دمياط':          131,
-  'الفيوم':         146,
-  'بني سويف':       146,
-  'المنيا':         146,
-  'أسيوط':          146,
-  'اسيوط':          146,
-  'سوهاج':          146,
-  'قنا':            162,
-  'الأقصر':         162,
-  'الاقصر':         162,
-  'أسوان':          162,
-  'اسوان':          162,
-  'البحر الأحمر':   162,
-  'مرسي مطروح':     162,
-  'مطروح':          162,
-  'الساحل الشمالي': 166,
-  'شمال سيناء':     182,
-  'جنوب سيناء':     182,
-  'الوادي الجديد':  182,
+  'القاهرة':        98,
+  'القاهره':        98,
+  'الجيزة':         98,
+  'الجيزه':         98,
+  'الإسكندرية':    104,
+  'الاسكندريه':    104,
+  'الإسكندريه':    104,
+  'البحيرة':        104,
+  'البحيره':        104,
+  'الدقهلية':       111,
+  'الدقهليه':       111,
+  'القليوبية':      111,
+  'القليوبيه':      111,
+  'الغربية':        111,
+  'الغربيه':        111,
+  'كفر الشيخ':      111,
+  'المنوفية':       111,
+  'المنوفيه':       111,
+  'الشرقية':        111,
+  'الشرقيه':        111,
+  'الإسماعيلية':    111,
+  'الاسماعيليه':    111,
+  'السويس':         111,
+  'بورسعيد':        111,
+  'بور سعيد':       111,
+  'دمياط':          111,
+  'الفيوم':         126,
+  'بني سويف':       126,
+  'المنيا':         126,
+  'أسيوط':          126,
+  'اسيوط':          126,
+  'سوهاج':          126,
+  'قنا':            142,
+  'الأقصر':         142,
+  'الاقصر':         142,
+  'أسوان':          142,
+  'اسوان':          142,
+  'البحر الأحمر':   142,
+  'مرسي مطروح':     142,
+  'مطروح':          142,
+  'الساحل الشمالي': 146,
+  'شمال سيناء':     162,
+  'جنوب سيناء':     162,
+  'الوادي الجديد':  162,
 };
 const sb = async (path, opts = {}) => {
   const { prefer, ...fetchOpts } = opts;
@@ -87,7 +87,7 @@ const CATS = [
   { id: "measuring", ar: "أدوات قياس",        en: "Measuring Tools",     icon: "ruler" },
   { id: "safety",    ar: "أدوات السلامة",     en: "Safety Tools",        icon: "helmet" },
   { id: "car",       ar: "أدوات السيارات",    en: "Car Tools",           icon: "car" },
-  { id: "garden",    ar: "أدوات الحدائق",     en: "Gardening Tools",     icon: "leaf" },
+  { id: "",    ar: "أدوات الحدائق",     en: "Gardening Tools",     icon: "leaf" },
   { id: "sets",      ar: "اطقم أدوات وكومبو", en: "Tool Sets & Combos",  icon: "case" },
   { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
   { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
@@ -2139,30 +2139,7 @@ export default function App() {
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           {/* Garden Tools Banner */}
-          <section className="section" style={{paddingTop:24,paddingBottom:0}}>
-            <div className="wrap">
-              <div style={{position:"relative",cursor:editMode?"default":"pointer",overflow:"hidden",borderRadius:"var(--radius-md)"}} onClick={()=>{if(!editMode) navigate("shop",{category:"garden"});}}>
-                {settings.garden_banner?.value
-                  ? <img src={settings.garden_banner.value} alt="أدوات الحدائق" style={{width:"100%",display:"block"}}/>
-                  : <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#0a2010,#1a4d2e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)",fontSize:"1.2rem",fontWeight:700}}>صورة أدوات الحدائق</div>
-                }
-                <button style={{position:"absolute",bottom:16,insetInlineEnd:16,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"10px 24px",fontFamily:"var(--f-ar)",fontWeight:800,fontSize:"0.95rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:8,zIndex:2}} onClick={e=>{e.stopPropagation();navigate("shop",{category:"garden"})}}>
-                  تسوق الكل <Icon name="arrow" size={14}/>
-                </button>
-                {editMode && (
-                  <SiteImageSlot src={null} folder="banners"
-                    fallback={null}
-                    onUpdate={async url=>{
-  updateSettings("garden_banner",url);
-  showToast("URL: " + url);
-}}
-                    showToast={showToast}
-                    style={{position:"absolute",inset:0,zIndex:3}}
-                  />
-                )}
-              </div>
-            </div>
-          </section>
+          
           
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
