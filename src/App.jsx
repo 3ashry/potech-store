@@ -891,12 +891,25 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
                   تسوق <Icon name="arrow" size={9}/>
                 </button>
                 {editMode && (
-                  <SiteImageSlot src={null} folder="hero"
-                    fallback={null}
-                    onUpdate={url=>updateHeroImg("slot2",url)}
-                    showToast={showToast}
-                    style={{position:"absolute",inset:0,zIndex:5}}
-                  />
+                  <button style={{position:"absolute",top:8,insetInlineEnd:8,zIndex:10,background:"var(--brand)",border:0,borderRadius:"var(--radius)",width:34,height:34,display:"grid",placeItems:"center",color:"#fff",cursor:"pointer"}}
+                    onClick={e => {
+                      e.stopPropagation();
+                      const inp = document.createElement("input");
+                      inp.type = "file";
+                      inp.accept = "image/*";
+                      inp.onchange = async () => {
+                        try {
+                          const url = await sbUpload("protech-media", "banners/" + uid() + "-garden-" + inp.files[0].name.replace(/\s/g,"_"), inp.files[0]);
+                          updateSettings("garden_banner", url);
+                          showToast("تم تحديث الصورة ✓");
+                        } catch(err) {
+                          showToast("فشل: " + err.message, "error");
+                        }
+                      };
+                      inp.click();
+                    }}>
+                    <Icon name="image" size={15}/>
+                  </button>
                 )}
               </div>
 
