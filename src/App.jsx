@@ -865,13 +865,28 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
                 تسوق الآن <Icon name="arrow" size={11}/>
               </button>
               {editMode && (
-                <SiteImageSlot src={null} folder="hero"
-                  fallback={null}
-                  onUpdate={url=>updateHeroImg("slot1",url)}
-                  showToast={showToast}
-                  style={{position:"absolute",inset:0,zIndex:5}}
-                />
-              )}
+                  <div style={{position:"absolute",inset:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.4)",cursor:"pointer"}}
+                    onClick={()=>{
+                      const inp = document.createElement("input");
+                      inp.type = "file";
+                      inp.accept = "image/*";
+                      inp.onchange = async () => {
+                        const file = inp.files[0];
+                        if (!file) return;
+                        alert("بدأ الرفع: " + file.name);
+                        try {
+                          const url = await sbUpload("protech-media", `banners/garden/${uid()}-${file.name.replace(/\s/g,"_")}`, file);
+                          alert("نجح الرفع: " + url);
+                          updateSettings("garden_banner", url);
+                        } catch (err) {
+                          alert("فشل الرفع: " + err.message);
+                        }
+                      };
+                      inp.click();
+                    }}>
+                    <span style={{color:"#fff",fontWeight:700,fontSize:"1rem",background:"var(--brand)",padding:"10px 20px",borderRadius:8}}>📷 ارفع صورة الحدائق</span>
+                  </div>
+                )}
             </div>
 
             {/* Slots 2 & 3 — side by side */}
