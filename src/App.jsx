@@ -866,7 +866,8 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
               </button>
               {editMode && (
                   <div style={{position:"absolute",inset:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.4)",cursor:"pointer"}}
-                    onClick={()=>{
+                    onClick={(e)=>{
+                      e.stopPropagation();
                       const inp = document.createElement("input");
                       inp.type = "file";
                       inp.accept = "image/*";
