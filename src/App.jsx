@@ -865,10 +865,13 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
                 تسوق الآن <Icon name="arrow" size={11}/>
               </button>
               {editMode && (
-                  <div style={{position:"absolute",inset:0,zIndex:10,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.4)",cursor:"pointer"}}
-                    onClick={(e)=>{
-                      e.stopPropagation();
-                      const inp = document.createElement("input");
+                <SiteImageSlot src={null} folder="hero"
+                  fallback={null}
+                  onUpdate={url=>updateHeroImg("slot1",url)}
+                  showToast={showToast}
+                  style={{position:"absolute",inset:0,zIndex:5}}
+                />
+              )}
                       inp.type = "file";
                       inp.accept = "image/*";
                       inp.onchange = async () => {
@@ -2151,7 +2154,7 @@ export default function App() {
                   تسوق الكل <Icon name="arrow" size={14}/>
                 </button>
                 {editMode && (
-                  <SiteImageSlot src={null} folder="banners/garden"
+                  <SiteImageSlot src={null} folder="banners"
                     fallback={null}
                     onUpdate={async url=>{
   updateSettings("garden_banner",url);
