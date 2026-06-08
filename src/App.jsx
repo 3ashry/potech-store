@@ -92,6 +92,25 @@ const CATS = [
   { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
   { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
 ];
+const PINNED_TOP_SELLING = ['thkthp41487','thkthp90076','thkthp41667','tws10501','tpwli20362','web1520','tidli426981','th118366'];
+const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
+const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
+
+const sortPinned = (items, pinnedCodes) => {
+  const lower = pinnedCodes.map(c => c.toLowerCase());
+  const pinned = [];
+  const rest = [];
+  // First pass: collect pinned in order
+  for (const code of lower) {
+    const found = items.find(p => (p.code || '').toLowerCase() === code);
+    if (found) pinned.push(found);
+  }
+  // Second pass: collect the rest
+  for (const p of items) {
+    if (!lower.includes((p.code || '').toLowerCase())) rest.push(p);
+  }
+  return [...pinned, ...rest];
+};
 
 const STATUS_MAP = {
   Processing: { ar: "قيد المعالجة", color: "#E8A83A" },
@@ -344,7 +363,7 @@ input,select,textarea{font-family:inherit;}
 @media(min-width:768px){.reviews-strip .vr{display:block;}}
 
 /* FOOTER */
-.site-footer{background:var(--ink);color:rgba(255,255,255,.6);margin-top:40px;}
+.site-footer{background:#1a1714;color:rgba(255,255,255,.6);margin-top:40px;}
 .foot-top{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:40px 16px;}
 @media(min-width:768px){.foot-top{grid-template-columns:1.5fr 1fr 1fr 1fr 1.4fr;gap:28px;padding:48px 24px;}}
 .foot-brand p{font-size:0.88rem;line-height:1.7;margin:12px 0;}
@@ -948,7 +967,7 @@ const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
       </div>
       {items.length===0
         ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>لا توجد منتجات بعد.</div>
-        : <div className="cat-carousel">{items.slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
+        : <div className="cat-carousel">{sortPinned(items, PINNED_TOP_SELLING).slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
       }
     </Section>
   );
@@ -1061,11 +1080,12 @@ const DealBanners = ({ settings, onUpdateSettings, showToast, editMode, navigate
   );
 };
 
-const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navigate, onWish, isWished }) => {
+const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navigate, onWish, isWished, pinnedCodes }) => {
   const items = products.filter(p => {
     const cats = Array.isArray(p.categories) ? p.categories : [];
     return cats.includes(catId) || p.category === catId;
 });
+  const sorted = pinnedCodes ? sortPinned(items, pinnedCodes) : items;
   if (!items.length) return null;
   return (
     <section id={catId} className="section cat-rail">
@@ -1086,7 +1106,7 @@ const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navig
           </div>
           <div style={{overflow:"hidden"}}>
             <div className="cat-carousel">
-              {items.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}
+              {sorted.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}
             </div>
           </div>
         </div>
@@ -2102,8 +2122,29 @@ export default function App() {
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
-          <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." {...sharedProps}/>
-          <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." {...sharedProps}/>
+          <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
+          <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
+          {/* Garden Tools Banner */}
+          <div style={{width:"100%",position:"relative",cursor:"pointer",overflow:"hidden"}} onClick={()=>navigate("shop",{category:"garden"})}>
+            {settings.garden_banner?.value
+              ? <img src={settings.garden_banner.value} alt="أدوات الحدائق" style={{width:"100%",display:"block"}}/>
+              : <div style={{width:"100%",height:200,background:"linear-gradient(135deg,#0a2010,#1a4d2e)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.2)",fontSize:"1.2rem",fontWeight:700}}>صورة أدوات الحدائق</div>
+            }
+            <button style={{position:"absolute",bottom:16,insetInlineEnd:16,background:"var(--brand)",color:"#fff",border:0,borderRadius:"var(--radius)",padding:"10px 24px",fontFamily:"var(--f-ar)",fontWeight:800,fontSize:"0.95rem",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:8,zIndex:2}} onClick={e=>{e.stopPropagation();navigate("shop",{category:"garden"})}}>
+              تسوق الكل <Icon name="arrow" size={14}/>
+            </button>
+            {editMode && (
+              <SiteImageSlot src={null} folder="banners/garden"
+                fallback={null}
+                onUpdate={async url=>{
+                  await sb('site_settings?key=eq.garden_banner',{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({value:url})});
+                  onUpdateSettings("garden_banner",url);
+                }}
+                showToast={showToast}
+                style={{position:"absolute",inset:0,zIndex:3}}
+              />
+            )}
+          </div>
           <CategoryRail catId="sets" num="04c" eyebrow="TOOL SETS" title="اطقم أدوات وكومبو" desc="طقم نجار، طقم سباك، طقم كهربائي — كل حاجة محتاجها في علبة واحدة بسعر موفر." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
             <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate} onWish={toggleWish} isWished={isWished(p.id)}/>)}</div>
