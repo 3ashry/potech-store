@@ -2138,14 +2138,8 @@ export default function App() {
                   <SiteImageSlot src={null} folder="banners/garden"
                     fallback={null}
                     onUpdate={async url=>{
-  try {
-    await sb('site_settings?key=eq.garden_banner',{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({value:url})});
-  } catch {
-    try {
-      await sb('site_settings',{method:"POST",prefer:"return=minimal",body:JSON.stringify({key:"garden_banner",value:url})});
-    } catch {}
-  }
   updateSettings("garden_banner",url);
+  showToast("URL: " + url);
 }}
                     showToast={showToast}
                     style={{position:"absolute",inset:0,zIndex:3}}
