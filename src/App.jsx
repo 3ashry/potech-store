@@ -2022,11 +2022,11 @@ export default function App() {
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
 
-  const isAdmin = typeof window !== "undefined" && (
+ const adminRequested = typeof window !== "undefined" && (
     new URLSearchParams(window.location.search).get("admin")==="1" ||
-    localStorage.getItem("protech_admin")==="1" ||
-    adminUnlocked
+    localStorage.getItem("protech_admin")==="1"
   );
+  const isAdmin = adminUnlocked;
 
   const handlePasswordSubmit = () => {
     if(passwordInput===ADMIN_PASSWORD) {
@@ -2124,7 +2124,7 @@ export default function App() {
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           {/* Garden Tools Banner */}
-          <section className="section" style={{paddingTop:0,paddingBottom:0}}>
+          <section className="section" style={{paddingTop:24,paddingBottom:0}}>
             <div className="wrap">
               <div style={{position:"relative",cursor:"pointer",overflow:"hidden",borderRadius:"var(--radius-md)"}} onClick={()=>navigate("shop",{category:"garden"})}>
                 {settings.garden_banner?.value
@@ -2178,6 +2178,15 @@ export default function App() {
 
       {isAdmin && <EditBar editMode={editMode} setEditMode={setEditMode} comingSoon={comingSoon} toggleComingSoon={toggleComingSoon}/>}
       {isAdmin && <div style={{height:52}}/>}
+      {adminRequested && !adminUnlocked && (
+        <div style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#1a1614",border:"1px solid #333",borderRadius:12,padding:"14px 18px",display:"flex",gap:10,alignItems:"center",zIndex:999,boxShadow:"0 8px 32px rgba(0,0,0,.4)",direction:"rtl"}}>
+          <input type="password" placeholder="كلمة المرور" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&handlePasswordSubmit()}
+            style={{background:"#2a2420",border:`1px solid ${passwordError?"#D4352A":"#444"}`,borderRadius:6,padding:"7px 12px",color:"#fff",fontFamily:"Cairo,sans-serif",fontSize:"0.88rem",outline:"none",width:170,transition:"border-color .2s",direction:"rtl"}}/>
+          <button onClick={handlePasswordSubmit} style={{background:"#F26A21",color:"#fff",border:0,borderRadius:6,padding:"7px 14px",fontFamily:"Cairo,sans-serif",fontWeight:700,fontSize:"0.85rem",cursor:"pointer"}}>دخول</button>
+          {passwordError && <span style={{color:"#D4352A",fontSize:"0.78rem",fontFamily:"Cairo,sans-serif"}}>خاطئة</span>}
+        </div>
+      )}
 
       {toast && <Toast msg={toast.msg} type={toast.type}/>}
     </>
