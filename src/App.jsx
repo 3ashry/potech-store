@@ -876,7 +876,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
                         if (!file) return;
                         alert("بدأ الرفع: " + file.name);
                         try {
-                          const url = await sbUpload("protech-media", `banners/garden/${uid()}-${file.name.replace(/\s/g,"_")}`, file);
+                         const url = await sbUpload("protech-media", `banners/${uid()}-garden-${file.name.replace(/\s/g,"_")}`, file);
                           alert("نجح الرفع: " + url);
                           updateSettings("garden_banner", url);
                         } catch (err) {
