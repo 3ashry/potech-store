@@ -2148,7 +2148,7 @@ export default function App() {
               </div>
             </div>
           </section>
-          <CategoryRail catId="battery" ...
+          
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
           <CategoryRail catId="sets" num="04c" eyebrow="TOOL SETS" title="اطقم أدوات وكومبو" desc="طقم نجار، طقم سباك، طقم كهربائي — كل حاجة محتاجها في علبة واحدة بسعر موفر." {...sharedProps}/>
