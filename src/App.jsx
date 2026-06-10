@@ -92,7 +92,7 @@ const CATS = [
   { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
   { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
 ];
-const PINNED_TOP_SELLING = ['thkthp41487','thkthp90076','thkthp41667','tws10501','tpwli20362','web1520','tidli426981','th118366'];
+const PINNED_TOP_SELLING = ['tidli426981','thkthp41487','thkthp90076','thkthp41667','tws10501','tpwli20362','web1520','th118366'];
 const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
 const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
 
