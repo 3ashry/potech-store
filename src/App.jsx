@@ -2010,7 +2010,47 @@ const EditBar = ({ editMode, setEditMode, comingSoon, toggleComingSoon }) => (
     <span style={{color:"rgba(255,255,255,.4)",fontSize:"0.7rem",marginInlineStart:"auto"}}>protech-stores.vercel.app → إدارة المنتجات والطلبات</span>
   </div>
 );
+/* ─── URL Routing ────────────────────────────────────────────────────────── */
+const buildUrl = (p, data) => {
+  switch (p) {
+    case "home": return "/";
+    case "shop": {
+      const params = new URLSearchParams();
+      if (data?.category) params.set("category", data.category);
+      if (data?.search) params.set("search", data.search);
+      const qs = params.toString();
+      return "/shop" + (qs ? "?" + qs : "");
+    }
+    case "product": return `/products/${(data?.product?.code || "").toLowerCase()}`;
+    case "checkout": return "/checkout";
+    case "confirmation": return "/confirmation";
+    case "orders": return "/orders";
+    case "info": return `/info/${data || ""}`;
+    default: return "/";
+  }
+};
 
+const parseUrl = (pathname, search, products) => {
+  if (pathname === "/" || pathname === "") return { page: "home", data: null };
+  if (pathname === "/shop") {
+    const params = new URLSearchParams(search);
+    return { page: "shop", data: { category: params.get("category"), search: params.get("search") } };
+  }
+  if (pathname.startsWith("/products/")) {
+    const code = decodeURIComponent(pathname.split("/products/")[1]);
+    const product = products.find(p => (p.code || "").toLowerCase() === code.toLowerCase());
+    if (product) return { page: "product", data: { product } };
+    return { page: "home", data: null };
+  }
+  if (pathname === "/checkout") return { page: "checkout", data: null };
+  if (pathname === "/confirmation") return { page: "confirmation", data: null };
+  if (pathname === "/orders") return { page: "orders", data: null };
+  if (pathname.startsWith("/info/")) {
+    const key = pathname.split("/info/")[1];
+    return { page: "info", data: key };
+  }
+  return { page: "home", data: null };
+};
 /* ─── App ────────────────────────────────────────────────────────────────── */
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -2056,6 +2096,26 @@ export default function App() {
     const logo=`${SB_URL}/storage/v1/object/public/protech-media/brand/logo.jpg`;
     fetch(logo,{method:"HEAD"}).then(r=>{ if(r.ok) setLogoSrc(logo); }).catch(()=>{});
   }, []);
+  // Parse URL once products are loaded
+  useEffect(() => {
+    if (!products.length) return;
+    const { page: p, data } = parseUrl(window.location.pathname, window.location.search, products);
+    setPage(p);
+    setPageData(data);
+  }, [products]);
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const onPop = () => {
+      if (!products.length) return;
+      const { page: p, data } = parseUrl(window.location.pathname, window.location.search, products);
+      setPage(p);
+      setPageData(data);
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [products]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark?"dark":"light");
@@ -2065,8 +2125,11 @@ export default function App() {
 
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
 
-  const navigate = (p, data=null) => {
-    setPage(p); setPageData(data); window.scrollTo(0,0);
+ const navigate = (p, data=null) => {
+    setPage(p); setPageData(data);
+    const url = buildUrl(p, data);
+    window.history.pushState({ page: p }, "", url);
+    window.scrollTo(0,0);
   };
 
   const updateSettings = (key, value) => setSettings(s=>({...s,[key]:{...(s[key]||{}),value}}));
