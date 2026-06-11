@@ -2192,7 +2192,7 @@ export default function App() {
     <>
       <style>{CSS}</style>
       <SiteHeader
-        cartCount={cartCount} cartTotal={cartTotal} onCart={()=>setCartOpen(true)}
+        cartCount={cartCount} cartTotal={cartTotal} onCart={()=>{setCartOpen(true);window.fbq?.('track','CustomEvent',{event_name:'ViewCart',num_items:cartCount,value:cartTotal,currency:'EGP'});}}
         dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
         wishCount={wishCount} onWishlist={()=>setWishlistOpen(true)}
       />
