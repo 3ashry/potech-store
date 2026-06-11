@@ -79,6 +79,10 @@ const sbUpload = async (bucket, path, file) => {
 const mkCode = () => "ORD-" + Math.random().toString(36).substring(2, 7).toUpperCase();
 const fmtEGP = (n) => new Intl.NumberFormat("ar-EG").format(Math.round(n));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const optimizeImg = (url, width = 600) => {
+  if (!url || !url.includes('supabase.co')) return url;
+  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
+};
 
 const CATS = [
   { id: "electric",  ar: "أدوات كهربائية",    en: "Electric Tools",      icon: "bolt" },
@@ -634,7 +638,7 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
   return (
     <article className="card" onClick={() => onNavigate?.("product", { product: p })}>
       <div className="card-media">
-        {thumb ? <img src={thumb} alt={p.name} loading="lazy" /> : <PP stripe={(p.id||0) % 6} label={p.name} sku={p.code} />}
+        {thumb ? <img src={optimizeImg(thumb, 400)} alt={p.name} loading="lazy" /> : <PP stripe={(p.id||0) % 6} label={p.name} sku={p.code} />}
         {displayBadge && <span className={`badge ${hasOffer ? "badge-offer" : ""}`}>{displayBadge}</span>}
         <button
           className={`wish${isWished ? " wished" : ""}`}
@@ -1439,13 +1443,13 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
       <div className="product-grid">
         <div>
           <div className="gallery-main">
-            {imgs[activeImg] ? <img src={imgs[activeImg]} alt={product.name}/> : <PP stripe={(product.id||0)%6} label={product.name} sku={product.code}/>}
+            {imgs[activeImg] ? <img src={optimizeImg(imgs[activeImg], 800)} alt={product.name}/>: <PP stripe={(product.id||0)%6} label={product.name} sku={product.code}/>}
           </div>
           {imgs.length>1 && (
             <div className="gallery-thumbs">
               {imgs.map((img,i)=>(
                 <div key={i} className={`gallery-thumb${activeImg===i?" on":""}`} onClick={()=>setActiveImg(i)}>
-                  <img src={img} alt=""/>
+                  <img src={optimizeImg(img, 120)} alt=""/>
                 </div>
               ))}
             </div>
