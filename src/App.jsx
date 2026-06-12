@@ -1293,7 +1293,6 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
                   value: total,
                   currency: 'EGP',
                 });
-                onClose();
                 navigate("checkout");
               }}>إتمام الشراء <Icon name="arrow" size={13}/></button>
               <small className="drawer-note"><Icon name="shield" size={11}/> دفع آمن • إرجاع خلال ٧ أيام</small>
@@ -2136,7 +2135,8 @@ export default function App() {
 
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
 
- const navigate = (p, data=null) => {
+const navigate = (p, data=null) => {
+    setCartOpen(false);
     setPage(p); setPageData(data);
     const url = buildUrl(p, data);
     window.history.pushState({ page: p }, "", url);
