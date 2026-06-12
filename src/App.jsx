@@ -1606,7 +1606,8 @@ const grand = total + shipping;
         num_items: cart.reduce((s, i) => s + i.qty, 0),
       });
       setCart([]);
-      navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
+      sessionStorage.setItem("protech_order", JSON.stringify({orderCode:code,customerName:form.name,phone:form.phone,total:grand}));
+navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
     } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
     setLoading(false);
   };
@@ -1690,7 +1691,8 @@ const grand = total + shipping;
 
 /* ─── Confirmation ───────────────────────────────────────────────────────── */
 const ConfirmationPage = ({ pageData, navigate }) => {
-  const { orderCode, customerName, phone, total } = pageData || {};
+  const saved = (() => { try { return JSON.parse(sessionStorage.getItem("protech_order")); } catch { return null; } })();
+  const { orderCode, customerName, phone, total } = pageData || saved || {};
   return (
     <div className="confirm-wrap">
       <div className="confirm-card">
@@ -2114,12 +2116,14 @@ export default function App() {
   // Handle browser back/forward
   useEffect(() => {
     const onPop = () => {
-      if (!products.length) return;
-      const { page: p, data } = parseUrl(window.location.pathname, window.location.search, products);
-      setPage(p);
-      setPageData(data);
-      window.scrollTo(0, 0);
-    };
+  if (!products.length) return;
+  if (window.location.pathname === "/cart") { setCartOpen(true); return; }
+  setCartOpen(false);
+  const { page: p, data } = parseUrl(window.location.pathname, window.location.search, products);
+  setPage(p);
+  setPageData(data);
+  window.scrollTo(0, 0);
+};
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, [products]);
@@ -2158,6 +2162,7 @@ export default function App() {
   const addToCart = (p) => {
     setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; });
     setCartOpen(true);
+window.history.pushState({ page: "cart" }, "", "/cart");
     window.fbq?.('track', 'AddToCart', {
       content_ids: [p.id],
       content_name: p.name,
@@ -2196,7 +2201,7 @@ export default function App() {
     <>
       <style>{CSS}</style>
       <SiteHeader
-        cartCount={cartCount} cartTotal={cartTotal} onCart={()=>{setCartOpen(true);window.fbq?.('track','CustomEvent',{event_name:'ViewCart',num_items:cartCount,value:cartTotal,currency:'EGP'});}}
+        cartCount={cartCount} cartTotal={cartTotal} onCart={()=>{setCartOpen(true);window.history.pushState({page:"cart"},"","/cart");window.fbq?.('track','CustomEvent',{event_name:'ViewCart',num_items:cartCount,value:cartTotal,currency:'EGP'});}}
         dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
         wishCount={wishCount} onWishlist={()=>setWishlistOpen(true)}
       />
@@ -2229,7 +2234,7 @@ export default function App() {
 
       <SiteFooter logoSrc={logoSrc} navigate={navigate}/>
 
-      <CartDrawer open={cartOpen} items={cart} onClose={()=>setCartOpen(false)} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate}/>
+      <CartDrawer open={cartOpen} items={cart} onClose={()=>{setCartOpen(false);if(window.location.pathname==="/cart")window.history.back();}} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate}/>
       <WishlistDrawer
         open={wishlistOpen}
         items={wishlist}
