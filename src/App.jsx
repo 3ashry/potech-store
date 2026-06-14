@@ -91,7 +91,7 @@ const CATS = [
   { id: "measuring", ar: "أدوات قياس",        en: "Measuring Tools",     icon: "ruler" },
   { id: "safety",    ar: "أدوات السلامة",     en: "Safety Tools",        icon: "helmet" },
   { id: "car",       ar: "أدوات السيارات",    en: "Car Tools",           icon: "car" },
-  { id: "",    ar: "أدوات الحدائق",     en: "Gardening Tools",     icon: "leaf" },
+  { id: "garden",    ar: "أدوات الحدائق",     en: "Gardening Tools",     icon: "leaf" },
   { id: "sets",      ar: "اطقم أدوات وكومبو", en: "Tool Sets & Combos",  icon: "case" },
   { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
   { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
@@ -1328,7 +1328,7 @@ const WishlistDrawer = ({ open, items, onClose, onAddToCart, onRemove }) => (
               const price = it.is_offer && it.offer_price ? it.offer_price : it.price;
               return (
                 <div key={it.id} className="drawer-item">
-                  <div className="drawer-media">{thumb?<img src={thumb} alt={it.name}/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
+                  <div className="drawer-media">{thumb?<img src={optimizeImg(thumb, 150)} alt={it.name}/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
                   <div className="drawer-meta">
                     <div className="drawer-sku">{it.code}</div>
                     <div className="drawer-name">{it.name}</div>
@@ -1657,7 +1657,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
               const thumb=Array.isArray(it.images)?it.images[0]:null;
               return (
                 <div key={it.id} className="summary-item">
-                  <div className="summary-item-img">{thumb?<img src={thumb} alt=""/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
+                  <div className="summary-item-img">{thumb?<img src={optimizeImg(thumb, 100)} alt=""/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
                   <div style={{flex:1}}><div className="summary-item-name">{it.name}</div><div className="summary-item-qty">× {it.qty}</div></div>
                   <div className="summary-item-price">{fmtEGP(getPrice(it)*it.qty)}</div>
                 </div>
