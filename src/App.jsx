@@ -858,7 +858,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
             {/* Slot 1 — main large */}
             <div style={{position:"relative",borderRadius:"var(--radius-md)",overflow:"hidden",aspectRatio:"16/10",background:"linear-gradient(135deg,#1a1a2e,#16213e)"}}>
               {heroImgs.slot1
-                ? <img src={heroImgs.slot1} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+                ? <img src={optimizeImg(heroImgs.slot1, 800)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
                 : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.15)"}}><Icon name="bolt" size={64} stroke={1}/></div>
               }
               <div style={{position:"absolute",bottom:10,insetInlineStart:10,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"5px 10px",borderRadius:"var(--radius)"}}>
@@ -884,7 +884,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
               {/* Slot 2 */}
               <div style={{position:"relative",borderRadius:"var(--radius-md)",overflow:"hidden",aspectRatio:"1/1",background:"linear-gradient(135deg,#0f3460,#533483)"}}>
                 {heroImgs.slot2
-                  ? <img src={heroImgs.slot2} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+                  ? <img src={optimizeImg(heroImgs.slot2, 400)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
                   : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.15)"}}><Icon name="tag" size={36} stroke={1}/></div>
                 }
                 <div style={{position:"absolute",bottom:8,insetInlineStart:8,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"4px 8px",borderRadius:"var(--radius)"}}>
@@ -907,7 +907,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
               {/* Slot 3 */}
               <div style={{position:"relative",borderRadius:"var(--radius-md)",overflow:"hidden",aspectRatio:"1/1",background:"linear-gradient(135deg,#2d1b0e,#5c3317)"}}>
                 {heroImgs.slot3
-                  ? <img src={heroImgs.slot3} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+                  ? <img src={optimizeImg(heroImgs.slot3, 400)} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
                   : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.15)"}}><Icon name="case" size={36} stroke={1}/></div>
                 }
                 <div style={{position:"absolute",bottom:8,insetInlineStart:8,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(6px)",padding:"4px 8px",borderRadius:"var(--radius)"}}>
@@ -1021,7 +1021,7 @@ const CategoriesSection = ({ products, navigate, settings, onUpdateSettings, sho
           <button key={c.id} className="cat-tile" onClick={()=>navigate("shop",{category:c.id})} style={{border:"1px solid var(--line)",background:"var(--bg-2)",cursor:"pointer","--i":i}}>
             <div className="cat-tile-media" style={{position:"relative"}}>
               {catImages[c.id]
-                ? <img src={catImages[c.id]} alt={c.ar} style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}} />
+                ? <img src={optimizeImg(catImages[c.id], 400)} alt={c.ar} style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}} />
                 : <div style={{position:"absolute",inset:0,background:CAT_BG_COLORS[c.id]||"var(--bg-3)"}} />
               }
               <div className="cat-tile-stripes" style={{zIndex:1}} />
@@ -1078,7 +1078,7 @@ const DealBanners = ({ settings, onUpdateSettings, showToast, editMode, navigate
       <div className="banners">
         {BNR_META.map(b => (
           <div key={b.key} className={`bnr ${b.cls}`} style={{padding:0}} onClick={b.action}>
-            {banners[b.key] && <div className="bnr-bg" style={{backgroundImage:`url(${banners[b.key]})`}}/>}
+            {banners[b.key] && <div className="bnr-bg" style={{backgroundImage:`url(${optimizeImg(banners[b.key], 500)})`}}/>}
             <div className="bnr-stripes"/>
             {editMode && (
               <button style={{position:"absolute",top:8,insetInlineEnd:8,zIndex:10,background:"var(--brand)",border:0,borderRadius:"var(--radius)",width:34,height:34,display:"grid",placeItems:"center",color:"#fff",cursor:"pointer"}}
@@ -1264,7 +1264,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
                 const thumb = Array.isArray(it.images) ? it.images[0] : null;
                 return (
                   <div key={it.id} className="drawer-item">
-                    <div className="drawer-media">{thumb?<img src={thumb} alt={it.name}/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
+                    <div className="drawer-media">{thumb?<img src={optimizeImg(thumb, 150)} alt={it.name}/>:<PP stripe={(it.id||0)%6} label={it.name} sku={it.code}/>}</div>
                     <div className="drawer-meta">
                       <div className="drawer-sku">{it.code}</div>
                       <div className="drawer-name">{it.name}</div>
