@@ -1529,7 +1529,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     } else {
       shipping = Math.ceil(1.14 * baseRate);
     }
-    return 0;
+    return Math.max(0, shipping - 40);
   };
   const shipping = form.city ? getShipping(form.city) : 0;
 const grand = total + shipping;
