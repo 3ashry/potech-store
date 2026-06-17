@@ -84,6 +84,24 @@ const optimizeImg = (url, width = 600) => {
   return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
 };
 
+const getSessionId = () => {
+  let sid = sessionStorage.getItem('protech_session');
+  if (!sid) {
+    sid = crypto.randomUUID?.() || (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    sessionStorage.setItem('protech_session', sid);
+  }
+  return sid;
+};
+const logAnalytics = (eventType, extra = {}) => {
+  try {
+    fetch(`${SB_URL}/rest/v1/analytics_events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, Prefer: 'return=minimal' },
+      body: JSON.stringify({ event_type: eventType, session_id: getSessionId(), ...extra })
+    }).catch(() => {});
+  } catch (e) {}
+};
+
 const CATS = [
   { id: "electric",  ar: "أدوات كهربائية",    en: "Electric Tools",      icon: "bolt" },
   { id: "battery",   ar: "أدوات بطارية",      en: "Battery Tools",       icon: "battery" },
@@ -1293,6 +1311,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
                   value: total,
                   currency: 'EGP',
                 });
+                logAnalytics('checkout_view');
                 navigate("checkout");
               }}>إتمام الشراء <Icon name="arrow" size={13}/></button>
               <small className="drawer-note"><Icon name="shield" size={11}/> دفع آمن • إرجاع خلال ٧ أيام</small>
@@ -1425,6 +1444,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
       value: product.is_offer && product.offer_price ? product.offer_price : product.price,
       currency: 'EGP',
     });
+    logAnalytics('product_view', { product_id: product.id, product_code: product.code, product_name: product.name });
   }, [product.id]);
   const imgs = Array.isArray(product.images) ? product.images : [];
   const suggested = products.filter(p=>p.id!==product.id && p.category===product.category).slice(0,4);
@@ -1604,6 +1624,7 @@ const grand = total + shipping;
         content_type: 'product',
         num_items: cart.reduce((s, i) => s + i.qty, 0),
       });
+      logAnalytics('order_confirmed');
       setCart([]);
       sessionStorage.setItem("protech_order", JSON.stringify({orderCode:code,customerName:form.name,phone:form.phone,total:grand}));
 navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
