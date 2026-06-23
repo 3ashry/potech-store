@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201091011380";
-const FREE_SHIPPING_THRESHOLD = 5000;
+const FREE_SHIPPING_THRESHOLD = 2500;
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        118,
   'القاهره':        118,
