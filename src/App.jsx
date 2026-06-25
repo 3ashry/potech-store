@@ -2282,30 +2282,29 @@ window.history.pushState({ page: "cart" }, "", "/cart");
 
       {!comingSoon && (
         
-          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحباً، عندي استفسار")}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="تواصل معنا على واتساب"
-          style={{
-            position: "fixed",
-            bottom: isAdmin ? 72 : 20,
-            insetInlineStart: 20,
-            zIndex: 70,
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            background: "#25D366",
-            color: "#fff",
-            display: "grid",
-            placeItems: "center",
-            boxShadow: "0 4px 16px rgba(37,211,102,0.45)",
-            cursor: "pointer",
-            animation: "wa-pulse 2.5s infinite",
-          }}
-        >
-          <Icon name="whatsapp" size={30} />
-        </a>
-      )}
+          href="https://wa.me/201091011380"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="WhatsApp"
+        style={{
+          position: "fixed",
+          bottom: 20,
+          left: 20,
+          zIndex: 2147483647,
+          width: 60,
+          height: 60,
+          borderRadius: "50%",
+          background: "#25D366",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+          textDecoration: "none",
+          color: "#fff",
+        }}
+      >
+        <Icon name="whatsapp" size={32} />
+      </a>
     </>
   );
 }
