@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
-const WHATSAPP_NUMBER = "201091011380";
+const WHATSAPP_NUMBER = "201034482071";
 const FREE_SHIPPING_THRESHOLD = 2500;
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        118,
@@ -713,7 +713,7 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
           <div className="tb-right">
             <button className="tb-btn" onClick={() => setDark(!dark)}><Icon name={dark?"sun":"moon"} size={13} /></button>
             <span className="tb-sep" />
-            <a className="tb-link" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="phone" size={13} /> ٠١٠٩١٠١١٣٨٠</a>
+            <a className="tb-link" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="phone" size={13} /> ٠١٠٣٤٤٨٢٠٧١</a>
           </div>
         </div>
       </div>
@@ -818,7 +818,7 @@ const HeroTicker = () => (
             ["shield","وكيل رسمي Total و Wadfow"],
             ["tag","بطاقة ولاء مجانية مع كل طلب — خصم ١٠٠ ج.م على طلبك التاني"],
             ["chat","استشارة فنية مجانية"],
-            ["phone","واتساب ٠١٠٩١٠١١٣٨٠"],
+            ["phone","واتساب ٠١٠٣٤٤٨٢٠٧١"],
           ].map(([ic,txt],j)=>(
             <><span key={j}><Icon name={ic} size={13}/> {txt}</span><span className="dot">•</span></>
           ))}
@@ -1210,7 +1210,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <div className="foot-logo">{logoSrc && <img src={logoSrc} alt="Protech"/>}</div>
         <p>بروتيك — متجر إلكتروني للأدوات والمعدات في مصر. الوكيل الرسمي لـ Total و Wadfow. توصيل لكل المحافظات خلال ٣-٤ أيام.</p>
         <div className="foot-contact">
-          <span><Icon name="phone" size={13}/> ٠١٠٩١٠١١٣٨٠</span>
+          <span><Icon name="phone" size={13}/> ٠١٠٣٤٤٨٢٠٧١</span>
           <span><Icon name="chat" size={13}/> واتساب ٢٤/٧</span>
         </div>
       </div>
@@ -1903,7 +1903,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>كيفية الإرجاع</h2>
-          <p>للتواصل بخصوص الإرجاع أو الاستبدال، راسلنا على واتساب: <a href="https://wa.me/201091011380" target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٩١٠١١٣٨٠</a></p>
+          <p>للتواصل بخصوص الإرجاع أو الاستبدال، راسلنا على واتساب: <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٣٤٤٨٢٠٧١</a></p>
         </div>
       </>
     )
@@ -1931,7 +1931,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>تفعيل الضمان</h2>
-          <p>لتفعيل الضمان، احتفظ بالفاتورة وتواصل معنا عبر واتساب على <a href="https://wa.me/201091011380" target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٩١٠١١٣٨٠</a></p>
+          <p>لتفعيل الضمان، احتفظ بالفاتورة وتواصل معنا عبر واتساب على <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٣٤٤٨٢٠٧١</a></p>
         </div>
       </>
     )
@@ -1980,7 +1980,7 @@ const InfoPage = ({ pageKey, navigate }) => {
         <Icon name="chat" size={24}/>
         <div>
           <div style={{fontWeight:700,marginBottom:4}}>هل تحتاج مساعدة؟</div>
-          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)"}}>تواصل معنا عبر واتساب على <a href="https://wa.me/201091011380" target="_blank" rel="noreferrer" style={{color:"var(--brand)",fontWeight:700}}>٠١٠٩١٠١١٣٨٠</a> — متاحون ٢٤/٧</p>
+          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)"}}>تواصل معنا عبر واتساب على <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{color:"var(--brand)",fontWeight:700}}>٠١٠٣٤٤٨٢٠٧١</a> — متاحون ٢٤/٧</p>
         </div>
       </div>
     </div>
@@ -2015,7 +2015,7 @@ const ComingSoon = ({ settings, logoSrc }) => {
           ))}
         </div>
         <div style={{marginTop:28,color:"rgba(255,255,255,.4)",fontSize:"0.8rem"}}>
-          للتواصل: <a href={`https://wa.me/${WHATSAPP_NUMBER}`} style={{color:"var(--brand)"}}>واتساب ٠١٠٩١٠١١٣٨٠</a>
+          للتواصل: <a href={`https://wa.me/${WHATSAPP_NUMBER}`} style={{color:"var(--brand)"}}>واتساب ٠١٠٣٤٤٨٢٠٧١</a>
         </div>
       </div>
     </div>
@@ -2282,7 +2282,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
 
       {!comingSoon && (
         <a
-          href="https://wa.me/201091011380"
+          href={`https://wa.me/${WHATSAPP_NUMBER}`}
         target="_blank"
         rel="noreferrer"
         aria-label="WhatsApp"
