@@ -1760,7 +1760,7 @@ const OrdersPage = ({ navigate }) => {
     if(!/^01[0-9]{9}$/.test(phone)) return;
     setLoading(true);
     try {
-      const data = await sb(`orders?phone=eq.${phone}&order=date.desc`);
+      const data = await sb(`orders?phone=eq.${encodeURIComponent(phone)}&order=date.desc`);
       setOrders(data || []);
     } catch { setOrders([]); }
     setSearched(true);
