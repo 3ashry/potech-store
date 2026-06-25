@@ -1058,7 +1058,7 @@ const CategoriesSection = ({ products, navigate, settings, onUpdateSettings, sho
           const file = inp.files[0];
           const url = await sbUpload("protech-media", "banners/" + uid() + "-garden-" + file.name.replace(/\s/g,"_"), file);
           await sb('site_settings?key=eq.garden_banner', {method:"PATCH", prefer:"return=minimal", body:JSON.stringify({value:url})});
-          updateSettings("garden_banner", url);
+          onUpdateSettings("garden_banner", url);
           showToast("تم تحديث الصورة ✓");
         } catch(err) {
           showToast("فشل: " + err.message, "error");
@@ -2281,7 +2281,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       {toast && <Toast msg={toast.msg} type={toast.type}/>}
 
       {!comingSoon && (
-        
+        <a
           href="https://wa.me/201091011380"
         target="_blank"
         rel="noreferrer"
@@ -2305,6 +2305,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       >
         <Icon name="whatsapp" size={32} />
       </a>
+      )}
     </>
   );
 }
