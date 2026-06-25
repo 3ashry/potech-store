@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201034482071";
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
 const FREE_SHIPPING_THRESHOLD = 2500;
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        118,
@@ -713,7 +714,7 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
           <div className="tb-right">
             <button className="tb-btn" onClick={() => setDark(!dark)}><Icon name={dark?"sun":"moon"} size={13} /></button>
             <span className="tb-sep" />
-            <a className="tb-link" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="phone" size={13} /> ٠١٠٣٤٤٨٢٠٧١</a>
+            <a className="tb-link" href={WHATSAPP_LINK}><Icon name="phone" size={13} /> ٠١٠٣٤٤٨٢٠٧١</a>
           </div>
         </div>
       </div>
@@ -761,7 +762,7 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
             🎁 بطاقة الولاء
           </button>
           <div className="nav-spacer" />
-          <a className="nav-link muted" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> واتساب</a>
+          <a className="nav-link muted" href={WHATSAPP_LINK}><Icon name="chat" size={13} /> واتساب</a>
         </div>
         {menu && (
           <div className="mega" onMouseLeave={() => setMenu(false)}>
@@ -854,7 +855,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
             </p>
             <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:32}}>
               <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
-              <a className="btn btn-ghost" href={`https://wa.me/${WHATSAPP_NUMBER}`}><Icon name="chat" size={13} /> تواصل واتساب</a>
+              <a className="btn btn-ghost" href={WHATSAPP_LINK}><Icon name="chat" size={13} /> تواصل واتساب</a>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",borderTop:"1px solid var(--line)",paddingTop:20,textAlign:"center"}}>
               <div style={{padding:"8px 0"}}>
@@ -1734,7 +1735,7 @@ const ConfirmationPage = ({ pageData, navigate }) => {
           <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)",lineHeight:1.7}}>
             بعد تجهيز طلبك، سنرسل لك رقم تتبع الشحنة عبر واتساب على رقم <b style={{fontFamily:"var(--f-mono)"}}>{phone}</b> — عادةً خلال ٢٤ ساعة من تأكيد الطلب.
           </p>
-          <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer"
+          <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer"
             style={{display:"inline-flex",alignItems:"center",gap:6,marginTop:12,background:"#25D366",color:"#fff",padding:"8px 16px",borderRadius:"var(--radius)",fontWeight:700,fontSize:"0.85rem",textDecoration:"none"}}>
             <Icon name="whatsapp" size={14}/> تواصل معنا على واتساب
           </a>
@@ -1903,7 +1904,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>كيفية الإرجاع</h2>
-          <p>للتواصل بخصوص الإرجاع أو الاستبدال، راسلنا على واتساب: <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٣٤٤٨٢٠٧١</a></p>
+          <p>للتواصل بخصوص الإرجاع أو الاستبدال، راسلنا على واتساب: <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٣٤٤٨٢٠٧١</a></p>
         </div>
       </>
     )
@@ -1931,7 +1932,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>تفعيل الضمان</h2>
-          <p>لتفعيل الضمان، احتفظ بالفاتورة وتواصل معنا عبر واتساب على <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٣٤٤٨٢٠٧١</a></p>
+          <p>لتفعيل الضمان، احتفظ بالفاتورة وتواصل معنا عبر واتساب على <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>٠١٠٣٤٤٨٢٠٧١</a></p>
         </div>
       </>
     )
@@ -1980,7 +1981,7 @@ const InfoPage = ({ pageKey, navigate }) => {
         <Icon name="chat" size={24}/>
         <div>
           <div style={{fontWeight:700,marginBottom:4}}>هل تحتاج مساعدة؟</div>
-          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)"}}>تواصل معنا عبر واتساب على <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noreferrer" style={{color:"var(--brand)",fontWeight:700}}>٠١٠٣٤٤٨٢٠٧١</a> — متاحون ٢٤/٧</p>
+          <p style={{margin:0,fontSize:"0.88rem",color:"var(--ink-2)"}}>تواصل معنا عبر واتساب على <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" style={{color:"var(--brand)",fontWeight:700}}>٠١٠٣٤٤٨٢٠٧١</a> — متاحون ٢٤/٧</p>
         </div>
       </div>
     </div>
@@ -2015,7 +2016,7 @@ const ComingSoon = ({ settings, logoSrc }) => {
           ))}
         </div>
         <div style={{marginTop:28,color:"rgba(255,255,255,.4)",fontSize:"0.8rem"}}>
-          للتواصل: <a href={`https://wa.me/${WHATSAPP_NUMBER}`} style={{color:"var(--brand)"}}>واتساب ٠١٠٣٤٤٨٢٠٧١</a>
+          للتواصل: <a href={WHATSAPP_LINK} style={{color:"var(--brand)"}}>واتساب ٠١٠٣٤٤٨٢٠٧١</a>
         </div>
       </div>
     </div>
@@ -2282,7 +2283,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
 
       {!comingSoon && (
         <a
-          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`}
+          href={WHATSAPP_LINK}
         target="_blank"
         rel="noreferrer"
         aria-label="WhatsApp"
