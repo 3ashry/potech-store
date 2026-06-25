@@ -158,6 +158,8 @@ const CSS = `
   --f-ar:'Cairo',system-ui,sans-serif;--f-mono:'JetBrains Mono','Cairo',monospace;
   --wrap:1400px;
 }
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:11px 24px;border-radius:10px;font-weight:600;font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);direction:rtl;white-space:nowrap;pointer-events:none;}
+@keyframes wa-pulse{0%{box-shadow:0 4px 16px rgba(37,211,102,0.45),0 0 0 0 rgba(37,211,102,0.5);}70%{box-shadow:0 4px 16px rgba(37,211,102,0.45),0 0 0 12px rgba(37,211,102,0);}100%{box-shadow:0 4px 16px rgba(37,211,102,0.45),0 0 0 0 rgba(37,211,102,0);}}
 [data-theme="dark"]{
   --ink:oklch(0.96 0.005 70);--ink-2:oklch(0.85 0.005 70);--ink-3:oklch(0.68 0.005 70);
   --bg:oklch(0.16 0.008 50);--bg-2:oklch(0.21 0.008 50);--bg-3:oklch(0.26 0.01 50);
@@ -2277,6 +2279,33 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       )}
 
       {toast && <Toast msg={toast.msg} type={toast.type}/>}
+
+      {!comingSoon && (
+        
+          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحباً، عندي استفسار")}`}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="تواصل معنا على واتساب"
+          style={{
+            position: "fixed",
+            bottom: isAdmin ? 72 : 20,
+            insetInlineStart: 20,
+            zIndex: 70,
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: "#25D366",
+            color: "#fff",
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 4px 16px rgba(37,211,102,0.45)",
+            cursor: "pointer",
+            animation: "wa-pulse 2.5s infinite",
+          }}
+        >
+          <Icon name="whatsapp" size={30} />
+        </a>
+      )}
     </>
   );
 }
