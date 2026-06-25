@@ -2282,7 +2282,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
 
       {!comingSoon && (
         <a
-          href={`https://wa.me/${WHATSAPP_NUMBER}`}
+          href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`}
         target="_blank"
         rel="noreferrer"
         aria-label="WhatsApp"
