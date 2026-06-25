@@ -51,12 +51,54 @@ const BOSTA_SHIPPING_RATES = {
   'جنوب سيناء':     182,
   'الوادي الجديد':  182,
 };
+// Admin's Supabase Auth access token (set after login). Public reads/inserts use the
+// publishable key; admin writes use this JWT so RLS can require an authenticated user.
+let adminToken = null;
+
+const adminSignIn = async (email, password) => {
+  const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok || !d.access_token) throw new Error("bad credentials");
+  adminToken = d.access_token;
+  try { localStorage.setItem("protech_admin_refresh", d.refresh_token); sessionStorage.setItem("protech_admin_unlocked", "1"); } catch {}
+  return true;
+};
+
+const adminRefresh = async () => {
+  let rt = null;
+  try { rt = localStorage.getItem("protech_admin_refresh"); } catch {}
+  if (!rt) return false;
+  const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: "POST",
+    headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: rt }),
+  });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok || !d.access_token) {
+    adminToken = null;
+    try { localStorage.removeItem("protech_admin_refresh"); sessionStorage.removeItem("protech_admin_unlocked"); } catch {}
+    return false;
+  }
+  adminToken = d.access_token;
+  try { localStorage.setItem("protech_admin_refresh", d.refresh_token); } catch {}
+  return true;
+};
+
+const adminSignOut = () => {
+  adminToken = null;
+  try { localStorage.removeItem("protech_admin_refresh"); sessionStorage.removeItem("protech_admin_unlocked"); } catch {}
+};
+
 const sb = async (path, opts = {}) => {
   const { prefer, ...fetchOpts } = opts;
   const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
     headers: {
       apikey: SB_KEY,
-      Authorization: `Bearer ${SB_KEY}`,
+      Authorization: `Bearer ${adminToken || SB_KEY}`,
       "Content-Type": "application/json",
       Prefer: prefer || "return=representation",
       ...opts.headers,
@@ -70,7 +112,7 @@ const sb = async (path, opts = {}) => {
 const sbUpload = async (bucket, path, file) => {
   const res = await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`, {
     method: "POST",
-    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${adminToken || SB_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
     body: file,
   });
   if (!res.ok) throw new Error(await res.text());
@@ -2104,10 +2146,12 @@ export default function App() {
   const wishCount = wishlist.length;
   const isWished = (id) => wishlist.some(i => i.id === id);
 
-  const ADMIN_PASSWORD = "protech2024";
   const [adminUnlocked, setAdminUnlocked] = useState(() => { try { return sessionStorage.getItem("protech_admin_unlocked")==="1"; } catch { return false; } });
+  const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
+  // Restore/verify an existing admin session from the stored refresh token.
+  useEffect(() => { (async () => { const ok = await adminRefresh(); setAdminUnlocked(ok); })(); }, []);
 
  const adminRequested = typeof window !== "undefined" && (
     new URLSearchParams(window.location.search).get("admin")==="1" ||
@@ -2115,11 +2159,11 @@ export default function App() {
   );
   const isAdmin = adminUnlocked;
 
-  const handlePasswordSubmit = () => {
-    if(passwordInput===ADMIN_PASSWORD) {
-      try { sessionStorage.setItem("protech_admin_unlocked","1"); } catch {}
+  const handlePasswordSubmit = async () => {
+    try {
+      await adminSignIn(emailInput.trim(), passwordInput);
       setAdminUnlocked(true); setPasswordInput("");
-    } else { setPasswordError(true); setTimeout(()=>setPasswordError(false),2000); }
+    } catch { setPasswordError(true); setTimeout(()=>setPasswordError(false),2000); }
   };
 
   useEffect(() => {
@@ -2212,6 +2256,8 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       <style>{CSS}</style>
       <ComingSoon settings={settings} logoSrc={logoSrc}/>
       <div style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#1a1614",border:"1px solid #333",borderRadius:12,padding:"14px 18px",display:"flex",gap:10,alignItems:"center",zIndex:999,boxShadow:"0 8px 32px rgba(0,0,0,.4)",direction:"rtl"}}>
+        <input type="email" placeholder="البريد الإلكتروني" value={emailInput} onChange={e=>setEmailInput(e.target.value)}
+          style={{background:"#2a2420",border:`1px solid ${passwordError?"#D4352A":"#444"}`,borderRadius:6,padding:"7px 12px",color:"#fff",fontFamily:"Cairo,sans-serif",fontSize:"0.88rem",outline:"none",width:170,transition:"border-color .2s",direction:"rtl"}}/>
         <input type="password" placeholder="كلمة المرور" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)}
           onKeyDown={e=>e.key==="Enter"&&handlePasswordSubmit()}
           style={{background:"#2a2420",border:`1px solid ${passwordError?"#D4352A":"#444"}`,borderRadius:6,padding:"7px 12px",color:"#fff",fontFamily:"Cairo,sans-serif",fontSize:"0.88rem",outline:"none",width:170,transition:"border-color .2s",direction:"rtl"}}/>
@@ -2271,6 +2317,8 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       {isAdmin && <div style={{height:52}}/>}
       {adminRequested && !adminUnlocked && (
         <div style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#1a1614",border:"1px solid #333",borderRadius:12,padding:"14px 18px",display:"flex",gap:10,alignItems:"center",zIndex:999,boxShadow:"0 8px 32px rgba(0,0,0,.4)",direction:"rtl"}}>
+          <input type="email" placeholder="البريد الإلكتروني" value={emailInput} onChange={e=>setEmailInput(e.target.value)}
+            style={{background:"#2a2420",border:`1px solid ${passwordError?"#D4352A":"#444"}`,borderRadius:6,padding:"7px 12px",color:"#fff",fontFamily:"Cairo,sans-serif",fontSize:"0.88rem",outline:"none",width:170,transition:"border-color .2s",direction:"rtl"}}/>
           <input type="password" placeholder="كلمة المرور" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)}
             onKeyDown={e=>e.key==="Enter"&&handlePasswordSubmit()}
             style={{background:"#2a2420",border:`1px solid ${passwordError?"#D4352A":"#444"}`,borderRadius:6,padding:"7px 12px",color:"#fff",fontFamily:"Cairo,sans-serif",fontSize:"0.88rem",outline:"none",width:170,transition:"border-color .2s",direction:"rtl"}}/>
