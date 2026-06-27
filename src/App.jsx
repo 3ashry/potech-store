@@ -747,7 +747,7 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
       <div className="topbar">
         <div className="wrap topbar-inner">
           <div className="tb-left">
-            <span className="tb-item"><Icon name="truck" size={13} /> شحن مجاني فوق 2500 ج.م</span>
+            <span className="tb-item"><Icon name="truck" size={13} /> شحن مجاني فوق 3500 ج.م</span>
             <span className="tb-sep" />
             <span className="tb-item"><Icon name="pin" size={13} /> التوصيل ٣-٤ أيام لكل المحافظات</span>
             <span className="tb-sep" />
@@ -857,7 +857,7 @@ const HeroTicker = () => (
       {[0,1].map(i => (
         <div className="ticker-group" key={i}>
           {[
-            ["truck","شحن مجاني فوق 2500 ج.م"],
+            ["truck","شحن مجاني فوق 3500 ج.م"],
             ["shield","وكيل رسمي Total و Wadfow"],
             ["tag","بطاقة ولاء مجانية مع كل طلب — خصم ١٠٠ ج.م على طلبك التاني"],
             ["chat","استشارة فنية مجانية"],
@@ -1928,7 +1928,7 @@ const INFO_PAGES = {
         <div className="info-highlight">نوصّل لجميع محافظات مصر خلال <b>٣ إلى ٤ أيام عمل</b> من تأكيد الطلب.</div>
         <div className="info-section">
           <h2>تكلفة الشحن</h2>
-          <p>الشحن مجاني على الطلبات التي تتجاوز <b>2500 ج.م</b>. وللطلبات الأقل يُحسب سعر الشحن حسب المحافظة عند إتمام الطلب.</p>
+          <p>الشحن مجاني على الطلبات التي تتجاوز <b>3500 ج.م</b>. وللطلبات الأقل يُحسب سعر الشحن حسب المحافظة عند إتمام الطلب.</p>
         </div>
         <div className="info-section">
           <h2>شريك التوصيل</h2>
