@@ -4,7 +4,7 @@ const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201034482071";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
-const FREE_SHIPPING_THRESHOLD = 2500;
+const FREE_SHIPPING_THRESHOLD = 3500;
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        118,
   'القاهره':        118,
