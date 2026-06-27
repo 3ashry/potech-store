@@ -1657,6 +1657,21 @@ const grand = total + shipping;
         console.warn('⚠️ Bosta fetch failed (order still saved):', err);
       });
 
+      // Send the WhatsApp confirm/cancel message to the customer (non-blocking).
+      fetch('https://protech-stores.vercel.app/api/wa-confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          phone:        form.phone,
+          customerName: form.name,
+          code,
+          total:        grand,
+        }),
+      }).catch(err => {
+        console.warn('⚠️ WhatsApp confirm failed (order still saved):', err);
+      });
+
       for(const item of cart){
         const dbP=products.find(p=>p.id===item.id);
         if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
