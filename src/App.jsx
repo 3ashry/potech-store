@@ -1624,7 +1624,7 @@ const grand = total + shipping;
   address: `${form.city} - ${form.address}`,
   city: form.city,
   notes: form.notes || "",
-  products: cart.map(i=>({id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i)})),
+  products: cart.map(i=>{ const dbP=products.find(p=>p.id===i.id); return {id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i),buy_price:parseFloat(dbP?.buy_price||0)}; }),
   total:grand, status:"Processing",
   date: new Date().toISOString().split("T")[0],
   est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
