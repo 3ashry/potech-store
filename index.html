@@ -11,6 +11,11 @@
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
+    // Disable Meta's automatic event detection BEFORE init. Otherwise the pixel
+    // scrapes pages (e.g. the order-confirmation page with its total + code) and
+    // auto-fires a second Purchase on top of the one we send in code, doubling
+    // every order. We only want the events we explicitly track.
+    fbq('set', 'autoConfig', false, '1876792236325466');
     fbq('init', '1876792236325466');
     fbq('track', 'PageView');
     </script>
