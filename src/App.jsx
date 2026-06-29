@@ -1572,7 +1572,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
 
 /* ─── Checkout ───────────────────────────────────────────────────────────── */
 const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToast }) => {
-  const [form, setForm] = useState({ name:"", phone:"", address:"", city:"", notes:"" });
+  const [form, setForm] = useState({ name:"", phone:"", address:"", city:"", notes:"", allowOpen:false });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -1596,7 +1596,8 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     }
     return Math.max(0, shipping - 40);
   };
-  const shipping = form.city ? getShipping(form.city) : 0;
+  const OPEN_PACKAGE_FEE = 7;
+  const shipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
 const grand = total + shipping;
 
   const validate = () => {
@@ -1624,6 +1625,7 @@ const grand = total + shipping;
   address: `${form.city} - ${form.address}`,
   city: form.city,
   notes: form.notes || "",
+  allow_open: form.allowOpen,
   products: cart.map(i=>{ const dbP=products.find(p=>p.id===i.id); return {id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i),buy_price:parseFloat(dbP?.buy_price||0)}; }),
   total:grand, status:"Processing",
   date: new Date().toISOString().split("T")[0],
@@ -1643,6 +1645,7 @@ const grand = total + shipping;
           address:      form.address,
           notes:        form.notes || '',
           total:        grand,
+          allowOpen:    form.allowOpen,
         }),
       })
       .then(r => r.json())
@@ -1710,6 +1713,12 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             </div>
             <div className="form-group"><label>العنوان بالتفصيل *</label><input {...inp("address")} placeholder="الشارع، الحي، المدينة"/>{errors.address&&<span className="form-err">{errors.address}</span>}</div>
             <div className="form-group"><label>ملاحظات (اختياري)</label><textarea className="form-input" style={{height:72,resize:"none"}} value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))} placeholder="أي تعليمات خاصة بالتوصيل…"/></div>
+            <label className="form-group" htmlFor="allow-open" style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",background:"var(--bg-2)",border:"1px solid var(--line)",borderRadius:"var(--radius)",padding:"12px 14px",margin:0}}>
+              <input type="checkbox" id="allow-open" checked={form.allowOpen} onChange={e=>setForm(x=>({...x,allowOpen:e.target.checked}))} style={{marginTop:2,width:18,height:18,accentColor:"var(--brand)",flexShrink:0}}/>
+              <span style={{fontSize:"0.9rem",fontWeight:600}}>أريد فتح الشحنة قبل الاستلام
+                <span style={{display:"block",fontSize:"0.75rem",color:"var(--ink-3)",fontWeight:400,marginTop:2}}>عند تفعيل هذا الخيار تزيد رسوم الشحن ٧ ج.م</span>
+              </span>
+            </label>
           </div>
           <div className="checkout-section" style={{borderColor:"var(--brand)",borderWidth:2}}>
             <h3><span className="step-num">٣</span> طريقة الدفع</h3>
