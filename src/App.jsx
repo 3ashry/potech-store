@@ -1575,6 +1575,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const [form, setForm] = useState({ name:"", phone:"", address:"", city:"", notes:"", allowOpen:false });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
   const total = cart.reduce((s,it)=>s+getPrice(it)*it.qty,0);
@@ -1612,6 +1613,10 @@ const grand = total + shipping;
 
   const submit = async () => {
     if(!validate()||!cart.length) return;
+    // Synchronous guard: a fast double-click / re-submit can fire before the
+    // disabled state re-renders, which double-counts the order (incl. on Meta Pixel).
+    if(submittingRef.current) return;
+    submittingRef.current = true;
     setLoading(true);
     try {
       const code = mkCode();
@@ -1681,18 +1686,19 @@ const grand = total + shipping;
         if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
       }
       setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
+      // eventID = order code lets Meta deduplicate if this ever fires twice for one order.
       window.fbq?.('track', 'Purchase', {
         value: grand,
         currency: 'EGP',
         content_ids: cart.map(i => i.id),
         content_type: 'product',
         num_items: cart.reduce((s, i) => s + i.qty, 0),
-      });
+      }, { eventID: code });
       logAnalytics('order_confirmed');
       setCart([]);
       sessionStorage.setItem("protech_order", JSON.stringify({orderCode:code,customerName:form.name,phone:form.phone,total:grand}));
 navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
-    } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); }
+    } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); submittingRef.current = false; }
     setLoading(false);
   };
 
