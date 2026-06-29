@@ -1681,11 +1681,15 @@ const grand = total + shipping;
         console.warn('⚠️ WhatsApp confirm failed (order still saved):', err);
       });
 
-      for(const item of cart){
-        const dbP=products.find(p=>p.id===item.id);
-        if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
-      }
-      setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
+      // Stock decrement is best-effort: the order is already saved, so a failure
+      // here (e.g. RLS blocking anonymous product updates) must NOT error the customer.
+      try {
+        for(const item of cart){
+          const dbP=products.find(p=>p.id===item.id);
+          if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
+        }
+        setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
+      } catch(stockErr){ console.warn('⚠️ Stock update failed (order still saved):', stockErr); }
       // eventID = order code lets Meta deduplicate if this ever fires twice for one order.
       window.fbq?.('track', 'Purchase', {
         value: grand,
@@ -1698,7 +1702,12 @@ const grand = total + shipping;
       setCart([]);
       sessionStorage.setItem("protech_order", JSON.stringify({orderCode:code,customerName:form.name,phone:form.phone,total:grand}));
 navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
-    } catch(e) { showToast("حدث خطأ. حاول مرة أخرى.","error"); submittingRef.current = false; }
+    } catch(e) {
+      console.error('order submit failed:', e);
+      const detail = e?.message ? String(e.message).replace(/\s+/g,' ').slice(0,200) : '';
+      showToast(detail ? `حدث خطأ: ${detail}` : "حدث خطأ. حاول مرة أخرى.","error");
+      submittingRef.current = false;
+    }
     setLoading(false);
   };
 
