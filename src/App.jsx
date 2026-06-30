@@ -1619,7 +1619,13 @@ const grand = total + shipping;
           status: 'open',
           updated_at: new Date().toISOString(),
         }),
-      }).catch(()=>{});
+      }).then(() => {
+        console.log('✓ abandoned cart saved');
+      }).catch(err => {
+        // Temporary diagnostic: surface why the save failed so we can fix it.
+        console.warn('abandoned cart save failed:', err);
+        try { showToast('cart save: ' + String(err?.message || err).slice(0, 160), 'error'); } catch {}
+      });
     }, 1500);
     return () => clearTimeout(t);
   }, [form.phone, form.name, form.city, form.allowOpen, cart, grand]);
