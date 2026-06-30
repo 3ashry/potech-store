@@ -1601,6 +1601,29 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const shipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
 const grand = total + shipping;
 
+  // Abandoned-cart capture: once a visitor has typed a valid phone and has items in
+  // the cart, save it (debounced) so the dashboard can follow up if they don't finish.
+  // Keyed by phone (upsert), best-effort — never blocks checkout.
+  useEffect(() => {
+    if (!/^01[0-9]{9}$/.test(form.phone) || !cart.length) return;
+    const t = setTimeout(() => {
+      sb('abandoned_carts?on_conflict=id', {
+        method: 'POST',
+        prefer: 'resolution=merge-duplicates,return=minimal',
+        body: JSON.stringify({
+          id: form.phone,
+          phone: form.phone,
+          name: form.name || '',
+          items: cart.map(i => ({ id:i.id, code:i.code, name:i.name, qty:i.qty, price:getPrice(i) })),
+          total: grand,
+          status: 'open',
+          updated_at: new Date().toISOString(),
+        }),
+      }).catch(()=>{});
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [form.phone, form.name, form.city, form.allowOpen, cart, grand]);
+
   const validate = () => {
     const e={};
     if(!form.name.trim()) e.name="الاسم مطلوب";
@@ -1680,6 +1703,12 @@ const grand = total + shipping;
       }).catch(err => {
         console.warn('⚠️ WhatsApp confirm failed (order still saved):', err);
       });
+
+      // This phone's cart converted — clear it from abandoned-cart follow-ups.
+      sb(`abandoned_carts?id=eq.${encodeURIComponent(form.phone)}`, {
+        method: 'PATCH', prefer: 'return=minimal',
+        body: JSON.stringify({ status: 'converted', updated_at: new Date().toISOString() }),
+      }).catch(()=>{});
 
       // Stock decrement is best-effort: the order is already saved, so a failure
       // here (e.g. RLS blocking anonymous product updates) must NOT error the customer.
