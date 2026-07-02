@@ -1,0 +1,16 @@
+{
+  "name": "veed-captions",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone CLI that burns styled captions into a video using VEED's Subtitle API (via fal.ai).",
+  "bin": {
+    "veed-captions": "caption.mjs"
+  },
+  "scripts": {
+    "caption": "node caption.mjs"
+  },
+  "dependencies": {
+    "@fal-ai/client": "^1.6.2"
+  }
+}
