@@ -2,3 +2,12 @@ node_modules/
 output/
 *.log
 .env
+__pycache__/
+# local media / work files (don't commit sample videos)
+*.mov
+*.mp4
+*.webm
+*.wav
+*.jpg
+*.png
+*.ass
