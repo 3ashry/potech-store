@@ -1162,6 +1162,41 @@ const DealBanners = ({ settings, onUpdateSettings, showToast, editMode, navigate
   );
 };
 
+// Full-width clickable banner → Gardening Tools. Image is editable in admin edit mode
+// (uploaded like the other banners, stored under settings.banners.value.garden).
+const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigate }) => {
+  const banners = settings.banners?.value || {};
+  const img = banners.garden;
+  const updateBanner = async (url) => {
+    const next = { ...banners, garden: url };
+    await sb(`site_settings?key=eq.banners`, { method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ value: next }) });
+    onUpdateSettings("banners", next);
+  };
+  return (
+    <div style={{ padding:"0 16px", margin:"6px 0 26px" }}>
+      <button onClick={()=>navigate("shop",{ category:"garden" })}
+        style={{ position:"relative", display:"block", width:"100%", border:0, padding:0, cursor:"pointer",
+          borderRadius:"var(--radius-lg,16px)", overflow:"hidden", aspectRatio:"1500 / 420",
+          background: img ? "#0b1a10" : "linear-gradient(120deg,#14532d,#22c55e)" }}>
+        {img && <img src={optimizeImg(img, 1600)} alt="أدوات الحدائق" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12))" }}/>
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"flex-end", justifyContent:"center", textAlign:"right", padding:"0 6%", color:"#fff" }}>
+          <div style={{ fontSize:"clamp(1.2rem,3.2vw,2.1rem)", fontWeight:900, fontFamily:"var(--f-ar)", lineHeight:1.2 }}>أدوات الحدائق</div>
+          <div style={{ fontSize:"clamp(.72rem,1.7vw,1.05rem)", opacity:.92, fontFamily:"var(--f-ar)", marginTop:6 }}>مناشير • جزازات • أدوات العناية بالحديقة</div>
+          <span style={{ marginTop:14, background:"var(--brand)", color:"#fff", padding:"9px 20px", borderRadius:"var(--radius)", fontWeight:800, fontFamily:"var(--f-ar)", fontSize:"clamp(.75rem,1.7vw,.95rem)", display:"inline-flex", alignItems:"center", gap:6 }}>تسوّق أدوات الحدائق <Icon name="arrow" size={14}/></span>
+        </div>
+        {editMode && (
+          <span title="تغيير صورة البانر"
+            onClick={e=>{ e.stopPropagation(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const url=await sbUpload("protech-media",`banners/garden-${uid()}-${inp.files[0].name.replace(/\s/g,"_")}`,inp.files[0]); await updateBanner(url); showToast?.("تم تحديث صورة البانر"); }catch(err){ showToast?.("فشل رفع الصورة"); } }; inp.click(); }}
+            style={{ position:"absolute", top:8, insetInlineEnd:8, zIndex:10, background:"var(--brand)", borderRadius:"var(--radius)", width:36, height:36, display:"grid", placeItems:"center", color:"#fff", cursor:"pointer" }}>
+            <Icon name="image" size={16}/>
+          </span>
+        )}
+      </button>
+    </div>
+  );
+};
+
 const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navigate, onWish, isWished, pinnedCodes }) => {
   const items = products.filter(p => {
     const cats = Array.isArray(p.categories) ? p.categories : [];
@@ -2362,6 +2397,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
           
           
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
+          <GardenBanner settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
           <CategoryRail catId="sets" num="04c" eyebrow="TOOL SETS" title="اطقم أدوات وكومبو" desc="طقم نجار، طقم سباك، طقم كهربائي — كل حاجة محتاجها في علبة واحدة بسعر موفر." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
