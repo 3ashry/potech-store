@@ -1173,7 +1173,7 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
     onUpdateSettings("banners", next);
   };
   return (
-    <div style={{ padding:"0 16px", margin:"6px 0 26px" }}>
+    <div style={{ maxWidth:"var(--wrap)", margin:"6px auto 26px", padding:"0 16px" }}>
       <button onClick={()=>navigate("shop",{ category:"garden" })}
         style={{ position:"relative", display:"block", width:"100%", border:0, padding:0, cursor:"pointer",
           borderRadius:"var(--radius-lg,16px)", overflow:"hidden", aspectRatio:"1500 / 420",
