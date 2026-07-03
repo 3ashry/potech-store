@@ -2410,7 +2410,8 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       {page==="home" && (
         <>
           <HeroA settings={settings} navigate={navigate} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
-          <OffersSection {...sharedProps}/>
+          {/* Daily Offers section hidden on the home page for now — re-enable by uncommenting: */}
+          {/* <OffersSection {...sharedProps}/> */}
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
