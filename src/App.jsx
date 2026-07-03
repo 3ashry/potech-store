@@ -393,6 +393,9 @@ input,select,textarea{font-family:inherit;}
 /* BANNERS */
 .banners-wrap{max-width:var(--wrap);margin:0 auto;padding:0 16px;}
 .banners{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.garden-banner{aspect-ratio:1500/420;}
+@media(max-width:768px){.garden-banner{aspect-ratio:3/2;}}
+@media(max-width:480px){.garden-banner{aspect-ratio:4/3;}}
 @media(max-width:768px){.banners{grid-template-columns:1fr;}}
 .bnr{position:relative;border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;min-height:180px;transition:transform .2s;cursor:pointer;}.bnr:hover{transform:translateY(-2px);}
 .bnr-inner{position:relative;z-index:1;padding:28px 22px;display:flex;flex-direction:column;height:100%;}
@@ -1192,9 +1195,9 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
   };
   return (
     <div style={{ maxWidth:"var(--wrap)", margin:"6px auto 26px", padding:"0 16px" }}>
-      <button onClick={()=>navigate("shop",{ category:"garden" })}
+      <button className="garden-banner" onClick={()=>navigate("shop",{ category:"garden" })}
         style={{ position:"relative", display:"block", width:"100%", border:0, padding:0, cursor:"pointer",
-          borderRadius:"var(--radius-lg,16px)", overflow:"hidden", aspectRatio:"1500 / 420",
+          borderRadius:"var(--radius-lg,16px)", overflow:"hidden",
           background: img ? "#0b1a10" : "linear-gradient(120deg,#14532d,#22c55e)" }}>
         {img && <img src={optimizeImg(img, 1600)} alt="أدوات الحدائق" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>}
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12))" }}/>
