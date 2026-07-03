@@ -126,6 +126,24 @@ const optimizeImg = (url, width = 600) => {
   if (!url || !url.includes('supabase.co')) return url;
   return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&output=webp&q=80`;
 };
+// Resize + re-encode an image File in the browser so uploads stay small (avoids the
+// storage "Payload too large" limit and keeps the store fast). Returns a JPEG Blob.
+const compressImage = (file, maxW = 1600, quality = 0.82) => new Promise((resolve, reject) => {
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const scale = Math.min(1, maxW / (img.width || maxW));
+    const w = Math.max(1, Math.round(img.width * scale));
+    const h = Math.max(1, Math.round(img.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error("compress failed")), "image/jpeg", quality);
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("image load failed")); };
+  img.src = url;
+});
 
 const getSessionId = () => {
   let sid = sessionStorage.getItem('protech_session');
@@ -1187,7 +1205,7 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
         </div>
         {editMode && (
           <span title="تغيير صورة البانر"
-            onClick={e=>{ e.stopPropagation(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const f=inp.files[0]; const ext=((f.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"").toLowerCase())||"jpg"; const url=await sbUpload("protech-media",`banners/garden-${uid()}.${ext}`,f); await updateBanner(url); showToast?.("تم تحديث صورة البانر ✓"); }catch(err){ showToast?.("فشل الرفع: "+String(err?.message||err).slice(0,160)); } }; inp.click(); }}
+            onClick={e=>{ e.stopPropagation(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const blob=await compressImage(inp.files[0],1600,0.82); const url=await sbUpload("protech-media",`banners/garden-${uid()}.jpg`,blob); await updateBanner(url); showToast?.("تم تحديث صورة البانر ✓"); }catch(err){ showToast?.("فشل الرفع: "+String(err?.message||err).slice(0,160)); } }; inp.click(); }}
             style={{ position:"absolute", top:8, insetInlineEnd:8, zIndex:10, background:"var(--brand)", borderRadius:"var(--radius)", width:36, height:36, display:"grid", placeItems:"center", color:"#fff", cursor:"pointer" }}>
             <Icon name="image" size={16}/>
           </span>
