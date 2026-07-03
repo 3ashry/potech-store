@@ -1199,8 +1199,8 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
         style={{ position:"relative", display:"block", width:"100%", border:0, padding:0, cursor:"pointer",
           borderRadius:"var(--radius-lg,16px)", overflow:"hidden",
           background: img ? "#0b1a10" : "linear-gradient(120deg,#14532d,#22c55e)" }}>
-        {img && <img src={optimizeImg(img, 1600)} alt="أدوات الحدائق" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>}
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12))" }}/>
+        {img && <img src={optimizeImg(img, 1600)} alt="أدوات الحدائق" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", filter:"brightness(1.15)" }}/>}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,.05))" }}/>
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"flex-end", justifyContent:"center", textAlign:"right", padding:"0 6%", color:"#fff" }}>
           <div style={{ fontSize:"clamp(1.2rem,3.2vw,2.1rem)", fontWeight:900, fontFamily:"var(--f-ar)", lineHeight:1.2 }}>أدوات الحدائق</div>
           <div style={{ fontSize:"clamp(.72rem,1.7vw,1.05rem)", opacity:.92, fontFamily:"var(--f-ar)", marginTop:6 }}>مناشير • جزازات • أدوات العناية بالحديقة</div>
