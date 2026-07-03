@@ -2289,13 +2289,18 @@ export default function App() {
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState(false);
-  // Restore/verify an existing admin session from the stored refresh token.
-  useEffect(() => { (async () => { const ok = await adminRefresh(); setAdminUnlocked(ok); })(); }, []);
-
- const adminRequested = typeof window !== "undefined" && (
-    new URLSearchParams(window.location.search).get("admin")==="1" ||
-    localStorage.getItem("protech_admin")==="1"
-  );
+  // Admin is OPT-IN only: it never auto-opens on a normal visit. It shows only when the
+  // URL has ?admin=1, or within a tab that already unlocked it this session.
+  const adminRequested = typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("admin")==="1";
+  // Restore an existing admin session ONLY when admin was explicitly requested — otherwise
+  // every visitor (and you) just sees the normal customer store.
+  useEffect(() => {
+    let sessionUnlocked = false;
+    try { sessionUnlocked = sessionStorage.getItem("protech_admin_unlocked")==="1"; } catch {}
+    if (!adminRequested && !sessionUnlocked) return;
+    (async () => { const ok = await adminRefresh(); setAdminUnlocked(ok); })();
+  }, []);
   const isAdmin = adminUnlocked;
 
   const handlePasswordSubmit = async () => {
