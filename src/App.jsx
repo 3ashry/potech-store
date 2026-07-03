@@ -1187,7 +1187,7 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
         </div>
         {editMode && (
           <span title="تغيير صورة البانر"
-            onClick={e=>{ e.stopPropagation(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const url=await sbUpload("protech-media",`banners/garden-${uid()}-${inp.files[0].name.replace(/\s/g,"_")}`,inp.files[0]); await updateBanner(url); showToast?.("تم تحديث صورة البانر"); }catch(err){ showToast?.("فشل رفع الصورة"); } }; inp.click(); }}
+            onClick={e=>{ e.stopPropagation(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ try{ const f=inp.files[0]; const ext=((f.name.split(".").pop()||"jpg").replace(/[^a-z0-9]/gi,"").toLowerCase())||"jpg"; const url=await sbUpload("protech-media",`banners/garden-${uid()}.${ext}`,f); await updateBanner(url); showToast?.("تم تحديث صورة البانر ✓"); }catch(err){ showToast?.("فشل الرفع: "+String(err?.message||err).slice(0,160)); } }; inp.click(); }}
             style={{ position:"absolute", top:8, insetInlineEnd:8, zIndex:10, background:"var(--brand)", borderRadius:"var(--radius)", width:36, height:36, display:"grid", placeItems:"center", color:"#fff", cursor:"pointer" }}>
             <Icon name="image" size={16}/>
           </span>
