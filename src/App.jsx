@@ -95,16 +95,24 @@ const adminSignOut = () => {
 
 const sb = async (path, opts = {}) => {
   const { prefer, ...fetchOpts } = opts;
-  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+  const doFetch = (token) => fetch(`${SB_URL}/rest/v1/${path}`, {
     headers: {
       apikey: SB_KEY,
-      Authorization: `Bearer ${adminToken || SB_KEY}`,
+      Authorization: `Bearer ${token || SB_KEY}`,
       "Content-Type": "application/json",
       Prefer: prefer || "return=representation",
       ...opts.headers,
     },
     ...fetchOpts,
   });
+  let res = await doFetch(adminToken);
+  // If the admin JWT has expired (401 / PGRST303), refresh it once and retry — and if
+  // the refresh fails, retry with the public key so customer actions (like ordering)
+  // never break just because an admin session expired.
+  if (res.status === 401 && adminToken) {
+    const ok = await adminRefresh();
+    res = await doFetch(ok ? adminToken : null);
+  }
   if (!res.ok) { const t = await res.text(); throw new Error(t); }
   return res.json().catch(() => null);
 };
