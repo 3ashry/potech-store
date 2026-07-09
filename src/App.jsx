@@ -2315,6 +2315,10 @@ export default function App() {
     sb("site_settings?select=*").then(rows=>{ if(!rows) return; const map={}; rows.forEach(r=>{map[r.key]=r;}); setSettings(map); }).catch(()=>{});
     const logo=`${SB_URL}/storage/v1/object/public/protech-media/brand/logo.jpg`;
     fetch(logo,{method:"HEAD"}).then(r=>{ if(r.ok) setLogoSrc(logo); }).catch(()=>{});
+    // Count this person as a store visit — once per browser session, so the dashboard can
+    // show real visitor numbers (not just people who opened a product).
+    try { if (!sessionStorage.getItem("protech_visit_logged")) { logAnalytics("visit"); sessionStorage.setItem("protech_visit_logged","1"); } }
+    catch { logAnalytics("visit"); }
   }, []);
   // Parse URL once products are loaded
   useEffect(() => {
