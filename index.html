@@ -26,11 +26,102 @@
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>بروتيك — أدوات المحترفين في مصر</title>
-    <link rel="icon" type="image/png" sizes="2048x2048" href="/fac-icon.svg" />
+
+    <!-- ── SEO ─────────────────────────────────────────────────────────────
+         Latin brand names (Protech Stores / TOTAL / WADFOW / INGCO) live in the
+         title + description so Latin-script searches ("protech", "total tools")
+         match, alongside the Arabic terms. -->
+    <title>Protech Stores بروتيك ستورز — أدوات وعدد المحترفين TOTAL و WADFOW في مصر</title>
+    <meta name="description" content="بروتيك ستورز (Protech Stores) متجر أدوات وعدد المحترفين في مصر. وكيل TOTAL و WADFOW و INGCO — أدوات كهربائية، أدوات بطارية، عدد يدوية، أدوات قياس، أدوات السلامة، أدوات السيارات، أدوات الحدائق واطقم كومبو. أسعار مميزة وشحن لكل المحافظات." />
+    <meta name="keywords" content="بروتيك, بروتيك ستورز, Protech, Protech Stores, protechstores, TOTAL, توتال, TOTAL مصر, WADFOW, وادفو, INGCO, أدوات كهربائية, أدوات بطارية, عدد يدوية, أدوات قياس, أدوات المحترفين, أدوات مصر, عدد وأدوات" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="Protech Stores" />
+    <meta name="theme-color" content="#0a1628" />
+    <link rel="canonical" href="https://www.protechstores.com/" />
+
+    <!-- Open Graph (Facebook / WhatsApp link previews) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Protech Stores" />
+    <meta property="og:title" content="Protech Stores بروتيك ستورز — أدوات وعدد المحترفين في مصر" />
+    <meta property="og:description" content="وكيل TOTAL و WADFOW و INGCO في مصر. أدوات كهربائية، بطارية، عدد يدوية وأكثر — أسعار مميزة وشحن لكل المحافظات." />
+    <meta property="og:url" content="https://www.protechstores.com/" />
+    <meta property="og:image" content="https://www.protechstores.com/main-logo.svg" />
+    <meta property="og:locale" content="ar_EG" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Protech Stores بروتيك ستورز — أدوات المحترفين في مصر" />
+    <meta name="twitter:description" content="وكيل TOTAL و WADFOW و INGCO في مصر. أدوات كهربائية، بطارية، عدد يدوية وأكثر." />
+    <meta name="twitter:image" content="https://www.protechstores.com/main-logo.svg" />
+
+    <link rel="icon" type="image/svg+xml" href="/fac-icon.svg" />
+
+    <!-- Structured data: the store identity + a site-search action. Helps Google
+         recognise the brand name "Protech Stores / بروتيك" and can enable a
+         search box in the results. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Protech Stores",
+      "alternateName": ["بروتيك ستورز", "بروتيك", "Protech", "protechstores"],
+      "url": "https://www.protechstores.com/",
+      "logo": "https://www.protechstores.com/main-logo.svg",
+      "image": "https://www.protechstores.com/main-logo.svg",
+      "description": "متجر أدوات وعدد المحترفين في مصر. وكيل TOTAL و WADFOW و INGCO.",
+      "priceRange": "EGP",
+      "currenciesAccepted": "EGP",
+      "areaServed": { "@type": "Country", "name": "Egypt" },
+      "brand": ["TOTAL", "WADFOW", "INGCO"],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+201034482071",
+        "contactType": "customer service",
+        "areaServed": "EG",
+        "availableLanguage": ["Arabic", "English"]
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Protech Stores",
+      "alternateName": "بروتيك ستورز",
+      "url": "https://www.protechstores.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.protechstores.com/shop?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Crawlable fallback: React replaces #root on load, but search engines that
+         don't run JavaScript (and social scrapers) still read this text, so the
+         brand + main categories are indexable even before the app hydrates. -->
+    <div id="root">
+      <div style="max-width:900px;margin:0 auto;padding:24px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0a1628;text-align:center">
+        <h1>Protech Stores — بروتيك ستورز</h1>
+        <p>متجر أدوات وعدد المحترفين في مصر. وكيل TOTAL و WADFOW و INGCO.</p>
+        <nav>
+          <a href="/shop">كل المنتجات</a> ·
+          <a href="/shop?category=electric">أدوات كهربائية</a> ·
+          <a href="/shop?category=battery">أدوات بطارية</a> ·
+          <a href="/shop?category=hand">عدد يدوية</a> ·
+          <a href="/shop?category=measuring">أدوات قياس</a> ·
+          <a href="/shop?category=safety">أدوات السلامة</a> ·
+          <a href="/shop?category=car">أدوات السيارات</a> ·
+          <a href="/shop?category=garden">أدوات الحدائق</a> ·
+          <a href="/shop?category=sets">اطقم أدوات وكومبو</a>
+        </nav>
+        <p>جارٍ تحميل المتجر…</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
