@@ -1640,6 +1640,12 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
+  // Promo code (free shipping). Single-use is enforced server-side in promo_codes.
+  const [promo, setPromo] = useState("");
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoMsg, setPromoMsg] = useState("");
+  const [promoChecking, setPromoChecking] = useState(false);
 
   const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
   const total = cart.reduce((s,it)=>s+getPrice(it)*it.qty,0);
@@ -1662,8 +1668,37 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     return Math.max(0, shipping - 40);
   };
   const OPEN_PACKAGE_FEE = 7;
-  const shipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
+  const baseShipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
+  // A valid promo code makes shipping free (merchant absorbs the real Bosta cost).
+  const shipping = promoApplied ? 0 : baseShipping;
 const grand = total + shipping;
+
+  // Check a promo code with the server (does NOT consume it — that happens on order
+  // placement). Applies free shipping in the UI if the code is valid and unused.
+  const applyPromo = async () => {
+    const c = (promo || "").trim();
+    if (!c) { setPromoMsg("اكتب كود الخصم أولاً"); return; }
+    setPromoChecking(true); setPromoMsg("");
+    try {
+      const r = await fetch('https://protech-stores.vercel.app/api/promo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: c, action: 'validate' }),
+      });
+      const d = await r.json();
+      if (d.valid) {
+        setPromoApplied(true); setPromoCode(d.code || c);
+        setPromoMsg("✓ تم تفعيل الكود — شحن مجاني 🎉");
+      } else {
+        setPromoApplied(false); setPromoCode("");
+        setPromoMsg(d.reason || "كود غير صالح أو مستخدم من قبل");
+      }
+    } catch (e) {
+      setPromoApplied(false);
+      setPromoMsg("تعذر التحقق من الكود، حاول مرة أخرى");
+    }
+    setPromoChecking(false);
+  };
+  const clearPromo = () => { setPromoApplied(false); setPromoCode(""); setPromo(""); setPromoMsg(""); };
 
   // Abandoned-cart capture: save the cart with a PLAIN insert (once per checkout session)
   // so the dashboard can follow up if they don't finish. A plain insert avoids the RLS
@@ -1728,6 +1763,15 @@ const grand = total + shipping;
   est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
 }),
       });
+
+      // Redeem the promo code (mark it used — single-use, enforced atomically
+      // server-side). Best-effort: the order is already saved, so this never blocks.
+      if (promoApplied && promoCode) {
+        fetch('https://protech-stores.vercel.app/api/promo', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: promoCode, action: 'redeem', orderId, phone: form.phone }),
+        }).catch(err => console.warn('promo redeem failed (order still saved):', err));
+      }
 
       // Fire Bosta shipment (non-blocking)
       fetch('https://protech-stores.vercel.app/api/bosta', {
@@ -1872,14 +1916,29 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <div className="summary-row">
             <span style={{color:"var(--ink-3)"}}>الشحن {form.city ? `(${form.city})` : ""}</span>
             <b style={{color:shipping===0?"var(--green)":undefined}}>
-              {!form.city ? "اختر المحافظة" : shipping===0 ? "مجاني 🎉" : `${fmtEGP(shipping)} ج.م`}
+              {promoApplied ? "مجاني 🎉 (كود خصم)" : !form.city ? "اختر المحافظة" : shipping===0 ? "مجاني 🎉" : `${fmtEGP(shipping)} ج.م`}
             </b>
           </div>
-          {total < FREE_SHIPPING_THRESHOLD && (
+          {!promoApplied && total < FREE_SHIPPING_THRESHOLD && (
             <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)",marginBottom:6}}>
               أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني
             </div>
           )}
+          {/* Promo code — free shipping, single use */}
+          <div style={{margin:"8px 0 4px",padding:"12px",background:"var(--bg-2)",border:`1px solid ${promoApplied?"var(--green)":"var(--line)"}`,borderRadius:"var(--radius)"}}>
+            <label style={{display:"block",fontSize:"0.82rem",fontWeight:800,marginBottom:6}}>🎟️ كود الخصم</label>
+            <div style={{display:"flex",gap:8}}>
+              <input className="form-input" style={{flex:1}} value={promo} dir="ltr"
+                onChange={e=>setPromo(e.target.value)} placeholder="بروتيك-XXXX" disabled={promoApplied}
+                onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); applyPromo(); } }}/>
+              {promoApplied
+                ? <button className="btn btn-ghost" style={{whiteSpace:"nowrap",padding:"0 14px"}} onClick={clearPromo}>إلغاء</button>
+                : <button className="btn btn-dark" style={{border:0,whiteSpace:"nowrap",padding:"0 14px"}} onClick={applyPromo} disabled={promoChecking}>
+                    {promoChecking?"جارٍ…":"فعل كود الخصم"}
+                  </button>}
+            </div>
+            {promoMsg && <div style={{fontSize:"0.78rem",marginTop:6,fontWeight:700,color:promoApplied?"var(--green)":"var(--brand)"}}>{promoMsg}</div>}
+          </div>
           <div className="summary-total"><span>الإجمالي</span><span className="amt">{fmtEGP(grand)} ج.م</span></div>
           <button className="btn btn-primary btn-block" style={{marginTop:18,padding:14,fontSize:"0.95rem",border:0}} onClick={submit} disabled={loading}>
             {loading?"جاري إتمام الطلب…":"اشترِ الآن 🛒"}
