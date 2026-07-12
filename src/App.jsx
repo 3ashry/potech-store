@@ -1800,21 +1800,10 @@ const grand = total + shipping;
         console.warn('⚠️ Bosta fetch failed (order still saved):', err);
       });
 
-      // Send the WhatsApp confirm/cancel message to the customer (non-blocking).
-      // Inert until the Meta WhatsApp Business API env vars are configured on Vercel.
-      fetch('https://protech-stores.vercel.app/api/wa-confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId,
-          phone:        form.phone,
-          customerName: form.name,
-          code,
-          total:        grand,
-        }),
-      }).catch(err => {
-        console.warn('⚠️ WhatsApp confirm failed (order still saved):', err);
-      });
+      // NOTE: the order-confirmation WhatsApp message is NOT sent here. It is sent
+      // ~6 hours after the order by the scheduled sender (/api/wa-cron), which waits
+      // until Bosta has assigned the ship code so the customer gets the real tracking
+      // number. Sending here at checkout time would fire before the code exists.
 
       // This phone's cart converted — clear any open rows for this phone from follow-ups.
       sb(`abandoned_carts?phone=eq.${encodeURIComponent(form.phone)}&status=eq.open`, {
