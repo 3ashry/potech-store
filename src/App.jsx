@@ -1570,12 +1570,19 @@ function fbAdvancedMatch({ name, phone, city, code } = {}){
     if (parts.length > 1) ud.ln = parts.slice(1).join(' ');
   }
   const ct = String(city || '').trim();
-  if (ct) { ud.ct = ct; ud.st = ct; }
+  if (ct) ud.ct = ct;               // full city → ct. We deliberately do NOT set st:
+                                     // fbevents truncates st to 2 chars, so an Egyptian
+                                     // city name would hash to a meaningless stub.
   ud.country = 'eg';
   if (code) ud.external_id = String(code);
   // Re-init the same pixel with user data attached; this augments matching for
   // subsequent events (the Purchase we fire next). It does not re-fire PageView.
-  try { window.fbq('init', PIXEL_ID, ud); } catch (_) {}
+  // Immediately re-assert autoConfig=false so this second init can never re-enable
+  // Meta's page-scraper (which used to double-fire Purchase — the fix we shipped).
+  try {
+    window.fbq('init', PIXEL_ID, ud);
+    window.fbq('set', 'autoConfig', false, PIXEL_ID);
+  } catch (_) {}
 }
 
 /* ─── Per-product SEO (SPA) ──────────────────────────────────────────────────
