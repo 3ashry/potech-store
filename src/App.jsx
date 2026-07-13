@@ -1417,7 +1417,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
               <button className="btn btn-primary btn-block" style={{border:0}} onClick={()=>{
                 window.fbq?.('track', 'InitiateCheckout', {
                   num_items: items.reduce((s, it) => s + it.qty, 0),
-                  value: total,
+                  value: Number(total) || 0,
                   currency: 'EGP',
                 });
                 logAnalytics('checkout_view');
@@ -1541,6 +1541,43 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
   );
 };
 
+/* ─── Meta Pixel Advanced Matching ───────────────────────────────────────────
+   Raises Event Match Quality: at checkout we already collect the customer's
+   name / phone / city, so we hand that to the pixel (plaintext — fbevents.js
+   normalises + SHA-256 hashes it in the browser before sending; the raw values
+   never leave the device). Meta then matches the Purchase to a real account far
+   more often, which lowers ad cost. Called once, right before we fire Purchase. */
+const PIXEL_ID = '1876792236325466';
+// Egyptian mobiles are 01XXXXXXXXX; Meta wants a country-coded number with no
+// leading zero or symbols, so 01034482071 → 201034482071. Anything already
+// starting with 20 (or other shapes) is just stripped to digits.
+function normEgPhone(p){
+  const d = String(p || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('20')) return d;
+  if (d.startsWith('0'))  return '20' + d.slice(1);
+  if (d.length === 10 && d.startsWith('1')) return '20' + d; // 1XXXXXXXXX (no zero)
+  return d;
+}
+function fbAdvancedMatch({ name, phone, city, code } = {}){
+  if (typeof window === 'undefined' || !window.fbq) return;
+  const ud = {};
+  const ph = normEgPhone(phone);
+  if (ph) ud.ph = ph;
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length) {
+    ud.fn = parts[0];
+    if (parts.length > 1) ud.ln = parts.slice(1).join(' ');
+  }
+  const ct = String(city || '').trim();
+  if (ct) { ud.ct = ct; ud.st = ct; }
+  ud.country = 'eg';
+  if (code) ud.external_id = String(code);
+  // Re-init the same pixel with user data attached; this augments matching for
+  // subsequent events (the Purchase we fire next). It does not re-fire PageView.
+  try { window.fbq('init', PIXEL_ID, ud); } catch (_) {}
+}
+
 /* ─── Per-product SEO (SPA) ──────────────────────────────────────────────────
    The store is client-rendered, so each product page normally shares the home
    page's <head>. This injects a per-product title, description, Open Graph image
@@ -1590,7 +1627,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
       content_ids: [product.id],
       content_name: product.name,
       content_type: 'product',
-      value: product.is_offer && product.offer_price ? product.offer_price : product.price,
+      value: Number(product.is_offer && product.offer_price ? product.offer_price : product.price) || 0,
       currency: 'EGP',
     });
     logAnalytics('product_view', { product_id: product.id, product_code: product.code, product_name: product.name });
@@ -1860,9 +1897,12 @@ const grand = total + shipping;
         }
         setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
       } catch(stockErr){ console.warn('⚠️ Stock update failed (order still saved):', stockErr); }
+      // Attach customer match data (hashed in-browser) so Meta can match this
+      // Purchase to a real account — higher Event Match Quality, cheaper ads.
+      fbAdvancedMatch({ name: form.name, phone: form.phone, city: form.city, code });
       // eventID = order code lets Meta deduplicate if this ever fires twice for one order.
       window.fbq?.('track', 'Purchase', {
-        value: grand,
+        value: Number(grand) || 0,
         currency: 'EGP',
         content_ids: cart.map(i => i.id),
         content_type: 'product',
@@ -2469,7 +2509,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       content_ids: [p.id],
       content_name: p.name,
       content_type: 'product',
-      value: (p.is_offer && p.offer_price ? p.offer_price : p.price) * (p.qty || 1),
+      value: Number(p.is_offer && p.offer_price ? p.offer_price : p.price) * (p.qty || 1) || 0,
       currency: 'EGP',
     });
     showToast("تمت الإضافة للسلة ✓");
