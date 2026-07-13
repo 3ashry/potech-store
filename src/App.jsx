@@ -1541,10 +1541,50 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
   );
 };
 
+/* ─── Per-product SEO (SPA) ──────────────────────────────────────────────────
+   The store is client-rendered, so each product page normally shares the home
+   page's <head>. This injects a per-product title, description, Open Graph image
+   and Product structured data (JSON-LD with sku=code, image, price, brand) when a
+   product page is shown, so Google can index each product — and show its image —
+   when someone searches its code. Cleaned up when leaving the page. */
+const PSEO_SITE = 'https://www.protechstores.com';
+const PSEO_DEFAULT_TITLE = typeof document !== 'undefined' ? document.title : '';
+function pseoAbs(u){ if(!u) return ''; return /^https?:\/\//i.test(u) ? u : PSEO_SITE + (u.startsWith('/')?'':'/') + u; }
+function applyProductSeo(product){
+  if (typeof document === 'undefined' || !product) return;
+  const imgs = (Array.isArray(product.images)?product.images:[]).map(pseoAbs).filter(Boolean);
+  const img = imgs[0] || `${PSEO_SITE}/main-logo.svg`;
+  const price = product.is_offer && product.offer_price ? product.offer_price : product.price;
+  const code = String(product.code || '');
+  const url = `${PSEO_SITE}/products/${code.toLowerCase()}`;
+  const brand = product.brand ? String(product.brand) : 'Protech';
+  const desc = (product.description && product.description.trim())
+    ? product.description.trim().replace(/\s+/g,' ').slice(0,300)
+    : `${product.name} — كود ${code}${product.brand ? ' — '+brand.toUpperCase() : ''}. متوفر في بروتيك ستورز، وكيل TOTAL و WADFOW في مصر. شحن لكل المحافظات.`;
+  const title = `${product.name} (${code}) — بروتيك ستورز`;
+  const set = (attr,key,val)=>{ let el=document.head.querySelector(`meta[${attr}="${key}"][data-pseo]`); if(!el){el=document.createElement('meta');el.setAttribute(attr,key);el.setAttribute('data-pseo','1');document.head.appendChild(el);} el.setAttribute('content',val); };
+  document.title = title;
+  set('name','description',desc);
+  set('property','og:title',title);
+  set('property','og:description',desc);
+  set('property','og:type','product');
+  set('property','og:url',url);
+  set('property','og:image',img);
+  set('name','twitter:card','summary_large_image');
+  set('name','twitter:image',img);
+  let canon=document.head.querySelector('link[rel="canonical"][data-pseo]');
+  if(!canon){canon=document.createElement('link');canon.rel='canonical';canon.setAttribute('data-pseo','1');document.head.appendChild(canon);}
+  canon.href=url;
+  const ld={ '@context':'https://schema.org','@type':'Product',name:product.name,sku:code,mpn:code,image:imgs.length?imgs:[img],description:desc,brand:{'@type':'Brand',name:brand},offers:{'@type':'Offer',url,priceCurrency:'EGP',price:String(price),availability:product.qty>0?'https://schema.org/InStock':'https://schema.org/OutOfStock',itemCondition:'https://schema.org/NewCondition'} };
+  let s=document.getElementById('pseo-ld'); if(!s){s=document.createElement('script');s.type='application/ld+json';s.id='pseo-ld';document.head.appendChild(s);} s.textContent=JSON.stringify(ld);
+  return ()=>{ document.title=PSEO_DEFAULT_TITLE; document.head.querySelectorAll('[data-pseo]').forEach(e=>e.remove()); const x=document.getElementById('pseo-ld'); if(x) x.remove(); };
+}
+
 /* ─── Product Detail ─────────────────────────────────────────────────────── */
 const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWished }) => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  useEffect(() => applyProductSeo(product), [product.id]);
   useEffect(() => {
     window.fbq?.('track', 'ViewContent', {
       content_ids: [product.id],
