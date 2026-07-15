@@ -1749,7 +1749,8 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     } else {
       shipping = Math.ceil(1.14 * baseRate);
     }
-    return Math.max(0, shipping - 40);
+    // Customer pays the full Bosta shipping cost (no merchant subsidy).
+    return Math.max(0, shipping);
   };
   const OPEN_PACKAGE_FEE = 7;
   const baseShipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
