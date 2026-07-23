@@ -357,8 +357,8 @@ input,select,textarea{font-family:inherit;}
 /* PRODUCT CARD */
 .card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;transition:all .15s;cursor:pointer;}
 .card:hover{border-color:var(--ink-3);box-shadow:var(--shadow-md);}
-.card-media{position:relative;width:100%;height:200px;overflow:hidden;background:var(--bg-2);flex-shrink:0;}
-.card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:10px;transition:transform .3s;}
+.card-media{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:var(--bg-2);flex-shrink:0;}
+.card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:4px;transition:transform .3s;}
 .card:hover .card-media img{transform:scale(1.04);}
 .badge{position:absolute;top:8px;inset-inline-start:8px;background:var(--brand);color:#fff;font-size:0.68rem;font-weight:800;padding:3px 8px;border-radius:var(--radius);font-family:var(--f-mono);z-index:1;}
 .badge-offer{background:var(--red);}
