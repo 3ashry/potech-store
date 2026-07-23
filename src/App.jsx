@@ -189,18 +189,21 @@ const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th11836
 
 const sortPinned = (items, pinnedCodes) => {
   const lower = pinnedCodes.map(c => c.toLowerCase());
+  // Free-shipping products always come first — strongest marketing signal.
+  const freeShip = items.filter(p => p.free_shipping === true);
+  const nonFreeShip = items.filter(p => p.free_shipping !== true);
   const pinned = [];
   const rest = [];
-  // First pass: collect pinned in order
+  // First pass: collect pinned in order (only from non-free-shipping so we don't double-count)
   for (const code of lower) {
-    const found = items.find(p => (p.code || '').toLowerCase() === code);
+    const found = nonFreeShip.find(p => (p.code || '').toLowerCase() === code);
     if (found) pinned.push(found);
   }
-  // Second pass: collect the rest
-  for (const p of items) {
+  // Second pass: collect the rest (excluding free-ship which are already at the front)
+  for (const p of nonFreeShip) {
     if (!lower.includes((p.code || '').toLowerCase())) rest.push(p);
   }
-  return [...pinned, ...rest];
+  return [...freeShip, ...pinned, ...rest];
 };
 
 const STATUS_MAP = {
@@ -362,6 +365,7 @@ input,select,textarea{font-family:inherit;}
 .card:hover .card-media img{transform:scale(1.04);}
 .badge{position:absolute;top:8px;inset-inline-start:8px;background:var(--brand);color:#fff;font-size:0.68rem;font-weight:800;padding:3px 8px;border-radius:var(--radius);font-family:var(--f-mono);z-index:1;}
 .badge-offer{background:var(--red);}
+.badge-ship{background:#10b981;color:#fff;letter-spacing:0.02em;}
 .wish{position:absolute;top:8px;inset-inline-end:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.9);display:grid;place-items:center;color:var(--ink-2);border:1px solid var(--line);z-index:1;transition:all .15s;}
 .wish:hover{color:var(--brand);border-color:var(--brand);}
 .wish.wished{color:#e53e3e;border-color:#e53e3e;background:#fff0f0;}
@@ -732,6 +736,7 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
       <div className="card-media">
         {thumb ? <img src={optimizeImg(thumb, 400)} alt={p.name} loading="lazy" /> : <PP stripe={(p.id||0) % 6} label={p.name} sku={p.code} />}
         {displayBadge && <span className={`badge ${hasOffer ? "badge-offer" : ""}`}>{displayBadge}</span>}
+        {p.free_shipping && <span className="badge badge-ship" style={{top:'auto',bottom:8}}>🚚 شحن مجاني</span>}
         <button
           className={`wish${isWished ? " wished" : ""}`}
           aria-label="حفظ"
@@ -1503,8 +1508,11 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
     const matchSearch = !search || p.name?.toLowerCase().includes(s) || p.code?.toLowerCase().includes(s);
     return matchCat && matchSearch;
   });
+  // Default sort: free-shipping products first (strongest marketing signal).
+  // Explicit price sorts override this.
   if (sort==="price_asc") items=[...items].sort((a,b)=>a.price-b.price);
-  if (sort==="price_desc") items=[...items].sort((a,b)=>b.price-a.price);
+  else if (sort==="price_desc") items=[...items].sort((a,b)=>b.price-a.price);
+  else items=[...items].sort((a,b)=>((b.free_shipping===true)?1:0)-((a.free_shipping===true)?1:0));
 
   return (
     <div className="shop-layout">
@@ -1753,9 +1761,17 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     return Math.max(0, shipping - 10);
   };
   const OPEN_PACKAGE_FEE = 7;
+  // Some products (e.g. big combos) grant free shipping automatically to any
+  // order that contains them — checked at checkout so it's tamper-proof, no
+  // promo code needed. We resolve against the live products list so the flag
+  // can't be spoofed via a stale cart entry.
+  const cartHasFreeShippingItem = cart.some(i => {
+    const dbP = products.find(p => p.id === i.id);
+    return dbP && dbP.free_shipping === true;
+  });
   const baseShipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
-  // A valid promo code makes shipping free (merchant absorbs the real Bosta cost).
-  const shipping = promoApplied ? 0 : baseShipping;
+  // Free shipping if: promo code applied, OR the cart contains a free-shipping product.
+  const shipping = (promoApplied || cartHasFreeShippingItem) ? 0 : baseShipping;
 const grand = total + shipping;
 
   // Check a promo code with the server (does NOT consume it — that happens on order
@@ -1993,10 +2009,14 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <div className="summary-row">
             <span style={{color:"var(--ink-3)"}}>الشحن {form.city ? `(${form.city})` : ""}</span>
             <b style={{color:shipping===0?"var(--green)":undefined}}>
-              {promoApplied ? "مجاني 🎉 (كود خصم)" : !form.city ? "اختر المحافظة" : shipping===0 ? "مجاني 🎉" : `${fmtEGP(shipping)} ج.م`}
+              {promoApplied ? "مجاني 🎉 (كود خصم)"
+                : cartHasFreeShippingItem ? "مجاني 🎉 (شحن مجاني)"
+                : !form.city ? "اختر المحافظة"
+                : shipping===0 ? "مجاني 🎉"
+                : `${fmtEGP(shipping)} ج.م`}
             </b>
           </div>
-          {!promoApplied && total < FREE_SHIPPING_THRESHOLD && (
+          {!promoApplied && !cartHasFreeShippingItem && total < FREE_SHIPPING_THRESHOLD && (
             <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)",marginBottom:6}}>
               أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني
             </div>
