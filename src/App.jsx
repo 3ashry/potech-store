@@ -2145,15 +2145,12 @@ const grand = total + shipping;
         body: JSON.stringify({ status: 'converted', updated_at: new Date().toISOString() }),
       }).catch(()=>{});
 
-      // Stock decrement is best-effort: the order is already saved, so a failure
-      // here (e.g. RLS blocking anonymous product updates) must NOT error the customer.
-      try {
-        for(const item of cart){
-          const dbP=products.find(p=>p.id===item.id);
-          if(dbP) await sb(`products?id=eq.${item.id}`,{method:"PATCH",prefer:"return=minimal",body:JSON.stringify({qty:Math.max(0,dbP.qty-item.qty)})});
-        }
-        setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
-      } catch(stockErr){ console.warn('⚠️ Stock update failed (order still saved):', stockErr); }
+      // Stock decrement happens SERVER-SIDE in /api/bosta (uses service_role key
+      // so RLS can't block it, and is idempotent via the ship_code guard). We used
+      // to also decrement here, but that caused every order to subtract stock twice.
+      // Client-side we just update the local cache so the UI immediately reflects
+      // the new qty — the DB was updated by /api/bosta right after we called it.
+      setProducts(prev=>prev.map(p=>{ const ci=cart.find(i=>i.id===p.id); return ci?{...p,qty:Math.max(0,p.qty-ci.qty)}:p; }));
       // Attach customer match data (hashed in-browser) so Meta can match this
       // Purchase to a real account — higher Event Match Quality, cheaper ads.
       fbAdvancedMatch({ name: form.name, phone: form.phone, city: form.city, code });
