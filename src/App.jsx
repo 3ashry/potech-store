@@ -2123,14 +2123,6 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
         </div>
         <div className="order-summary">
           <h3>ملخص طلبك</h3>
-          <SuggestionStrip
-            items={smartSuggestions(cart, products, { limit: 6, excludeIds: cart.map(i=>i.id) })}
-            onAdd={(p)=>{ setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; }); showToast("تمت الإضافة للسلة ✓"); }}
-            navigate={navigate}
-            title="أضف قبل ما تنهي طلبك"
-            dense={true}
-          />
-
           <div className="summary-items">
             {cart.map(it=>{
               const thumb=Array.isArray(it.images)?it.images[0]:null;
@@ -2180,11 +2172,18 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             {loading?"جاري إتمام الطلب…":"اشترِ الآن 🛒"}
           </button>
           <p style={{textAlign:"center",fontSize:"0.72rem",color:"var(--ink-3)",marginTop:8}}>بالضغط توافق على شروط الخدمة.</p>
+          <SuggestionStrip
+            items={smartSuggestions(cart, products, { limit: 6, excludeIds: cart.map(i=>i.id) })}
+            onAdd={(p)=>{ setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; }); showToast("تمت الإضافة للسلة ✓"); }}
+            navigate={navigate}
+            title="أضف قبل ما تنهي طلبك"
+            dense={true}
+          />
         </div>
       </div>
     </div>
   );
-}; 
+};
 
 /* ─── Confirmation ───────────────────────────────────────────────────────── */
 const ConfirmationPage = ({ pageData, navigate }) => {
