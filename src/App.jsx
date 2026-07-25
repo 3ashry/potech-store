@@ -187,12 +187,102 @@ const PINNED_TOP_SELLING = ['thkthp41667','tidli426981','thkthp41487','thkthp900
 const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
 const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
 
+/* ─── Accessory rules ─────────────────────────────────────────────────────────
+   Category-aware complementary suggestions. If a customer's cart contains a
+   drill, we suggest drill bits; angle grinder → cutting/grinding discs; car
+   tool → other car/garden tools. Rules are checked in order — first match's
+   suggestions land at the top of the strip.
+
+   Add more rules here as the catalogue grows (e.g. chainsaws → chains). */
+const _prodCats = (p) => Array.isArray(p?.categories) ? p.categories : (p?.category ? [p.category] : []);
+const _prodPrice = (p) => Number(p?.is_offer && p?.offer_price ? p.offer_price : p?.price) || 0;
+const _hasWord = (name, patterns) => {
+  const s = String(name || '');
+  return patterns.some(re => re.test(s));
+};
+
+// Names commonly used for the accessory types.
+const _BIT_WORDS  = [/بنطه/, /بنط/, /بيت/, /\bbit\b/i, /\bbits\b/i, /دريل/, /رأس/];
+const _DISC_WORDS = [/قرص/, /اقراص/, /أقراص/, /\bdisc\b/i, /\bdiscs\b/i, /صنفره/, /قطع/, /تلميع/];
+
+const ACCESSORY_RULES = [
+  {
+    // Drills — battery (TIDLI*, TDLI*, TID*) and corded (TD followed by digit).
+    // Matches: TID..., TDLI..., TD12345.  Excludes: TDSLI (screwdrivers).
+    name: 'drill→bits',
+    match: (p) => {
+      const c = String(p.code || '').toUpperCase();
+      if (/^TDSLI/.test(c)) return false; // screwdriver family
+      return /^T[I]?DLI/.test(c) || /^TD\d/.test(c) || /^TID/.test(c);
+    },
+    pick: (p, all) => all
+      .filter(x => x.id !== p.id && /^TAC/i.test(x.code || '') && _hasWord(x.name, _BIT_WORDS))
+      .sort((a, b) => _prodPrice(a) - _prodPrice(b)),
+  },
+  {
+    // Angle grinders — battery (TAGLI*) and corded (TG followed by digit).
+    name: 'grinder→discs',
+    match: (p) => {
+      const c = String(p.code || '').toUpperCase();
+      return /^TAG/.test(c) || /^TG\d/.test(c);
+    },
+    pick: (p, all) => all
+      .filter(x => x.id !== p.id && /^TAC/i.test(x.code || '') && _hasWord(x.name, _DISC_WORDS))
+      .sort((a, b) => _prodPrice(a) - _prodPrice(b)),
+  },
+  {
+    // Car tools — suggest cheaper car tools, then garden tools.
+    name: 'car→more-car-or-garden',
+    match: (p) => _prodCats(p).includes('car'),
+    pick: (p, all) => {
+      const same = all.filter(x => x.id !== p.id && _prodCats(x).includes('car'));
+      const cross = all.filter(x => x.id !== p.id && !_prodCats(x).includes('car') && _prodCats(x).includes('garden'));
+      const myPrice = _prodPrice(p);
+      const cheapFirst = arr => arr.sort((a, b) => _prodPrice(a) - _prodPrice(b));
+      // Prefer items strictly cheaper than the anchor product — easier add-ons.
+      const cheaperSame = cheapFirst(same.filter(x => _prodPrice(x) < myPrice));
+      const restSame = cheapFirst(same.filter(x => _prodPrice(x) >= myPrice));
+      return [...cheaperSame, ...restSame, ...cheapFirst(cross)];
+    },
+  },
+  {
+    // Garden tools — mirror of the car rule.
+    name: 'garden→more-garden-or-car',
+    match: (p) => _prodCats(p).includes('garden'),
+    pick: (p, all) => {
+      const same = all.filter(x => x.id !== p.id && _prodCats(x).includes('garden'));
+      const cross = all.filter(x => x.id !== p.id && !_prodCats(x).includes('garden') && _prodCats(x).includes('car'));
+      const cheapFirst = arr => arr.sort((a, b) => _prodPrice(a) - _prodPrice(b));
+      return [...cheapFirst(same), ...cheapFirst(cross)];
+    },
+  },
+];
+
+function accessoriesFor(items, allProducts) {
+  const ctx = Array.isArray(items) ? items : [items];
+  const out = [];
+  const seen = new Set();
+  for (const it of ctx) {
+    if (!it) continue;
+    for (const rule of ACCESSORY_RULES) {
+      if (!rule.match(it)) continue;
+      for (const p of rule.pick(it, allProducts)) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        out.push(p);
+      }
+    }
+  }
+  return out;
+}
+
 /* ─── Smart cross-sell suggestions ────────────────────────────────────────────
    Given cart items (or the currently-viewed product) and the full product
    catalogue, return up to `limit` products to suggest. Priority order:
-     1. Admin-marked "suggested" products
-     2. Same brand as context items
-     3. Same category as context items
+     1. Admin-marked "suggested" products (⭐)
+     2. Accessory rules (drill→bits, grinder→discs, car→more-car/garden…)
+     3. Same brand as context items
+     4. Same category as context items
    Filters out: out-of-stock, unpublished, current product, already-in-cart.
    Within each tier, cheaper products come first (easier add-on). */
 function smartSuggestions(contextItems, allProducts, { limit = 4, excludeIds = [] } = {}) {
@@ -216,12 +306,16 @@ function smartSuggestions(contextItems, allProducts, { limit = 4, excludeIds = [
   const take = (list) => list.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
 
   const tier1 = cheapFirst(eligible.filter(p => p.is_suggested === true));
-  const tier2 = cheapFirst(eligible.filter(p => (p.brand || '').toLowerCase() && brands.has((p.brand || '').toLowerCase())));
-  const tier3 = cheapFirst(eligible.filter(p => {
+  // Accessory tier: rule-based (drill→bits, grinder→discs, car→more-car/garden).
+  // Filter through `eligible` to keep the out-of-stock / already-in-cart guarantees.
+  const eligibleIds = new Set(eligible.map(p => p.id));
+  const tier2 = accessoriesFor(ctx, allProducts).filter(p => eligibleIds.has(p.id));
+  const tier3 = cheapFirst(eligible.filter(p => (p.brand || '').toLowerCase() && brands.has((p.brand || '').toLowerCase())));
+  const tier4 = cheapFirst(eligible.filter(p => {
     const c = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
     return c.some(x => cats.has(x));
   }));
-  return take([...tier1, ...tier2, ...tier3]).slice(0, limit);
+  return take([...tier1, ...tier2, ...tier3, ...tier4]).slice(0, limit);
 }
 
 /* ─── "Frequently bought together" bundle for a product ───────────────────
