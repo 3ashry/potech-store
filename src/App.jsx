@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 
 const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
@@ -186,6 +186,133 @@ const CATS = [
 const PINNED_TOP_SELLING = ['thkthp41667','tidli426981','thkthp41487','thkthp90076','tws10501','tpwli20362','web1520','th118366'];
 const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
 const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
+
+/* ─── Smart cross-sell suggestions ────────────────────────────────────────────
+   Given cart items (or the currently-viewed product) and the full product
+   catalogue, return up to `limit` products to suggest. Priority order:
+     1. Admin-marked "suggested" products
+     2. Same brand as context items
+     3. Same category as context items
+   Filters out: out-of-stock, unpublished, current product, already-in-cart.
+   Within each tier, cheaper products come first (easier add-on). */
+function smartSuggestions(contextItems, allProducts, { limit = 4, excludeIds = [] } = {}) {
+  if (!Array.isArray(allProducts) || !allProducts.length) return [];
+  const ctx = Array.isArray(contextItems) ? contextItems : [contextItems];
+  const excl = new Set([...excludeIds, ...ctx.map(i => i?.id).filter(Boolean)]);
+  const brands = new Set(ctx.map(i => (i?.brand || '').toLowerCase()).filter(Boolean));
+  const cats = new Set();
+  for (const it of ctx) {
+    const c = Array.isArray(it?.categories) ? it.categories : (it?.category ? [it.category] : []);
+    c.forEach(x => cats.add(x));
+  }
+  const eligible = allProducts.filter(p =>
+    p && !excl.has(p.id)
+    && (p.is_published !== false)
+    && (Number(p.qty || 0) > 0)
+  );
+  const priceOf = p => Number(p.is_offer && p.offer_price ? p.offer_price : p.price) || 0;
+  const cheapFirst = arr => arr.sort((a, b) => priceOf(a) - priceOf(b));
+  const seen = new Set();
+  const take = (list) => list.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+
+  const tier1 = cheapFirst(eligible.filter(p => p.is_suggested === true));
+  const tier2 = cheapFirst(eligible.filter(p => (p.brand || '').toLowerCase() && brands.has((p.brand || '').toLowerCase())));
+  const tier3 = cheapFirst(eligible.filter(p => {
+    const c = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    return c.some(x => cats.has(x));
+  }));
+  return take([...tier1, ...tier2, ...tier3]).slice(0, limit);
+}
+
+/* ─── "Frequently bought together" bundle for a product ───────────────────
+   Admin sets `bundle_with` on a product: an array of companion product codes.
+   We resolve those codes to product objects, filtering out anything missing,
+   out-of-stock, unpublished, or the product itself. */
+function bundleCompanions(product, allProducts) {
+  if (!product || !Array.isArray(allProducts)) return [];
+  const raw = product.bundle_with;
+  const codes = Array.isArray(raw) ? raw : (typeof raw === 'string' ? raw.split(/[,\s]+/) : []);
+  const clean = codes.map(c => String(c || '').trim().toUpperCase()).filter(Boolean);
+  if (!clean.length) return [];
+  const byCode = new Map(allProducts.map(p => [String(p.code || '').toUpperCase(), p]));
+  const out = [];
+  for (const c of clean) {
+    const p = byCode.get(c);
+    if (!p) continue;
+    if (p.id === product.id) continue;
+    if (p.is_published === false) continue;
+    if ((Number(p.qty || 0) <= 0)) continue;
+    out.push(p);
+  }
+  return out.slice(0, 3);
+}
+
+/* ─── Compact suggestion strip UI ─────────────────────────────────────────── */
+const SuggestionStrip = ({ items, onAdd, navigate, title = 'قد يعجبك أيضاً', dense = false }) => {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{margin:'12px 0', padding: dense ? '10px 12px' : '14px 16px', background:'var(--bg-2)', border:'1px solid var(--line)', borderRadius:'var(--radius)'}}>
+      <div style={{fontWeight:800, fontSize:'0.85rem', marginBottom:8, display:'flex', alignItems:'center', gap:6}}>
+        <span>💡</span><span>{title}</span>
+      </div>
+      <div style={{display:'flex', gap:8, overflowX:'auto', paddingBottom:4, scrollSnapType:'x mandatory'}}>
+        {items.map(p => {
+          const thumb = Array.isArray(p.images) ? p.images[0] : null;
+          const price = Number(p.is_offer && p.offer_price ? p.offer_price : p.price) || 0;
+          return (
+            <div key={p.id} style={{flex:'0 0 140px', scrollSnapAlign:'start', background:'var(--bg)', border:'1px solid var(--line)', borderRadius:'var(--radius)', overflow:'hidden', display:'flex', flexDirection:'column', cursor:'pointer'}}
+                 onClick={()=>navigate?.('product', { product: p })}>
+              <div style={{width:'100%', aspectRatio:'1/1', background:'var(--bg-2)', position:'relative'}}>
+                {thumb ? <img src={optimizeImg(thumb, 200)} alt={p.name} style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'contain', padding:4}}/> : null}
+              </div>
+              <div style={{padding:'6px 8px', display:'flex', flexDirection:'column', gap:4}}>
+                <div style={{fontSize:'0.7rem', fontWeight:700, lineHeight:1.3, height:'2.5em', overflow:'hidden'}}>{p.name}</div>
+                <div style={{fontWeight:900, fontSize:'0.8rem', fontFamily:'var(--f-mono)', color:'var(--brand)'}}>{fmtEGP(price)} ج.م</div>
+                <button className="btn btn-primary" style={{border:0, padding:'5px 8px', fontSize:'0.72rem'}} onClick={(e)=>{e.stopPropagation(); onAdd?.(p);}}>+ أضف</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ─── "Buy it with" (frequently bought together) — bundle row ────────────── */
+const BundleRow = ({ product, companions, onAdd }) => {
+  if (!companions || !companions.length) return null;
+  const priceOf = p => Number(p.is_offer && p.offer_price ? p.offer_price : p.price) || 0;
+  const bundleTotal = priceOf(product) + companions.reduce((s,p)=>s+priceOf(p), 0);
+  const addAll = () => { onAdd?.(product); companions.forEach(p => onAdd?.(p)); };
+  return (
+    <div style={{margin:'20px 0', padding:'16px', background:'var(--brand-soft)', border:`1.5px solid var(--brand)`, borderRadius:'var(--radius)'}}>
+      <div style={{fontWeight:900, fontSize:'0.95rem', marginBottom:12, display:'flex', alignItems:'center', gap:6}}>
+        <span>🎁</span><span>اشتريها مع</span>
+      </div>
+      <div style={{display:'flex', gap:10, flexWrap:'wrap', alignItems:'stretch'}}>
+        {[product, ...companions].map((p, idx) => {
+          const thumb = Array.isArray(p.images) ? p.images[0] : null;
+          return (
+            <Fragment key={p.id}>
+              {idx > 0 && <div style={{alignSelf:'center', fontSize:'1.5rem', fontWeight:900, color:'var(--brand)'}}>+</div>}
+              <div style={{flex:'1 1 120px', minWidth:120, background:'var(--bg)', border:'1px solid var(--line)', borderRadius:'var(--radius)', overflow:'hidden', display:'flex', flexDirection:'column'}}>
+                <div style={{width:'100%', aspectRatio:'1/1', background:'var(--bg-2)', position:'relative'}}>
+                  {thumb ? <img src={optimizeImg(thumb, 200)} alt={p.name} style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'contain', padding:4}}/> : null}
+                </div>
+                <div style={{padding:'6px 8px', fontSize:'0.72rem', fontWeight:700, lineHeight:1.3, minHeight:'2.5em'}}>{p.name}</div>
+                <div style={{padding:'0 8px 8px', fontWeight:900, fontSize:'0.8rem', fontFamily:'var(--f-mono)', color:'var(--brand)'}}>{fmtEGP(priceOf(p))} ج.م</div>
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:14, flexWrap:'wrap', gap:8}}>
+        <div style={{fontSize:'0.9rem', fontWeight:800}}>سعر الإجمالي: <span style={{color:'var(--brand)', fontFamily:'var(--f-mono)', fontSize:'1.05rem'}}>{fmtEGP(bundleTotal)} ج.م</span></div>
+        <button className="btn btn-primary" style={{border:0, padding:'8px 16px'}} onClick={addAll}>➕ أضف الكل للسلة</button>
+      </div>
+    </div>
+  );
+};
 
 const sortPinned = (items, pinnedCodes) => {
   const lower = pinnedCodes.map(c => c.toLowerCase());
@@ -1371,7 +1498,8 @@ const SiteFooter = ({ logoSrc, navigate }) => (
 );
 
 /* ─── Cart Drawer ────────────────────────────────────────────────────────── */
-const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) => {
+const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate, products = [], onAdd }) => {
+  const suggestions = smartSuggestions(items, products, { limit: 6 });
   const total = items.reduce((s,it) => s + (it.is_offer && it.offer_price ? it.offer_price : it.price) * it.qty, 0);
   const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : null;
   return (
@@ -1414,6 +1542,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate }) 
                 );
               })}
             </div>
+            <SuggestionStrip items={suggestions} onAdd={onAdd} navigate={navigate} title="أضف كمان" dense={true} />
             <div className="drawer-foot">
               <div className="drawer-row"><span>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
               <div className="drawer-row"><span>الشحن</span><b style={{color:shipping===0?"var(--green)":"var(--ink-3)"}}>{shipping===0?`مجاني 🎉 (فوق ${FREE_SHIPPING_THRESHOLD.toLocaleString()} ج.م)`:"يُحسب حسب المحافظة"}</b></div>
@@ -1648,7 +1777,8 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
     logAnalytics('product_view', { product_id: product.id, product_code: product.code, product_name: product.name });
   }, [product.id]);
   const imgs = Array.isArray(product.images) ? product.images : [];
-  const suggested = products.filter(p=>p.id!==product.id && p.category===product.category).slice(0,4);
+  const suggested = smartSuggestions(product, products, { limit: 4, excludeIds: [product.id] });
+  const bundleWith = bundleCompanions(product, products);
   const hasOffer = product.is_offer && product.offer_price && product.offer_price < product.price;
   const displayPrice = hasOffer ? product.offer_price : product.price;
   const discount = hasOffer ? Math.round((1-product.offer_price/product.price)*100) : (product.old_price>product.price ? Math.round((1-product.price/product.old_price)*100) : 0);
@@ -1716,6 +1846,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
           </div>
         </div>
       </div>
+      <BundleRow product={product} companions={bundleWith} onAdd={onAdd}/>
       {suggested.length>0 && (
         <div>
           <h2 style={{fontSize:"1.3rem",fontWeight:900,marginBottom:18}}>منتجات قد تعجبك</h2>
@@ -1992,6 +2123,14 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
         </div>
         <div className="order-summary">
           <h3>ملخص طلبك</h3>
+          <SuggestionStrip
+            items={smartSuggestions(cart, products, { limit: 6, excludeIds: cart.map(i=>i.id) })}
+            onAdd={(p)=>{ setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; }); showToast("تمت الإضافة للسلة ✓"); }}
+            navigate={navigate}
+            title="أضف قبل ما تنهي طلبك"
+            dense={true}
+          />
+
           <div className="summary-items">
             {cart.map(it=>{
               const thumb=Array.isArray(it.images)?it.images[0]:null;
@@ -2608,7 +2747,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
 
       <SiteFooter logoSrc={logoSrc} navigate={navigate}/>
 
-      <CartDrawer open={cartOpen} items={cart} onClose={()=>{setCartOpen(false);if(window.location.pathname==="/cart")window.history.back();}} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate}/>
+      <CartDrawer open={cartOpen} items={cart} onClose={()=>{setCartOpen(false);if(window.location.pathname==="/cart")window.history.back();}} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate} products={products} onAdd={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓"); }}/>
       <WishlistDrawer
         open={wishlistOpen}
         items={wishlist}
