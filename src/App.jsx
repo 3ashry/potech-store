@@ -208,24 +208,31 @@ const _DISC_WORDS = [/قرص/, /اقراص/, /أقراص/, /\bdisc\b/i, /\bdiscs
 
 const ACCESSORY_RULES = [
   {
-    // Drills — battery (TIDLI*, TDLI*, TID*) and corded (TD followed by digit).
-    // Matches: TID..., TDLI..., TD12345.  Excludes: TDSLI (screwdrivers).
+    // Drills — matches individual drills, drill sets (طقم شنيور), and combos
+    // that contain a drill. We check both the code prefix AND the product name
+    // so sets/combos like THKTHP41667 ("طقم شنيور 166ق") and TCKLI (combo kits)
+    // trigger too. TDSLI (screwdrivers) is intentionally excluded from the
+    // code-prefix path — but a "شنيور" in the name still counts.
     name: 'drill→bits',
     match: (p) => {
       const c = String(p.code || '').toUpperCase();
-      if (/^TDSLI/.test(c)) return false; // screwdriver family
-      return /^T[I]?DLI/.test(c) || /^TD\d/.test(c) || /^TID/.test(c);
+      const codeIsDrill = /^T[I]?DLI/.test(c) || (/^TD\d/.test(c) && !/^TDSLI/.test(c)) || /^TID/.test(c);
+      const nameIsDrill = _hasWord(p.name, [/شنيور/, /دريل/, /\bdrill\b/i, /هلتى/, /هلتي/]);
+      return codeIsDrill || nameIsDrill;
     },
     pick: (p, all) => all
       .filter(x => x.id !== p.id && /^TAC/i.test(x.code || '') && _hasWord(x.name, _BIT_WORDS))
       .sort((a, b) => _prodPrice(a) - _prodPrice(b)),
   },
   {
-    // Angle grinders — battery (TAGLI*) and corded (TG followed by digit).
+    // Angle grinders — matches individual grinders, grinder sets, and combos.
+    // Same principle: code prefix OR "صاروخ" in the name catches everything.
     name: 'grinder→discs',
     match: (p) => {
       const c = String(p.code || '').toUpperCase();
-      return /^TAG/.test(c) || /^TG\d/.test(c);
+      const codeIsGrinder = /^TAG/.test(c) || /^TG\d/.test(c);
+      const nameIsGrinder = _hasWord(p.name, [/صاروخ/, /\bgrinder\b/i]);
+      return codeIsGrinder || nameIsGrinder;
     },
     pick: (p, all) => all
       .filter(x => x.id !== p.id && /^TAC/i.test(x.code || '') && _hasWord(x.name, _DISC_WORDS))
