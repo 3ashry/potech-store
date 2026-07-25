@@ -180,6 +180,7 @@ const CATS = [
   { id: "car",       ar: "أدوات السيارات",    en: "Car Tools",           icon: "car" },
   { id: "garden",    ar: "أدوات الحدائق",     en: "Gardening Tools",     icon: "leaf" },
   { id: "sets",      ar: "اطقم أدوات وكومبو", en: "Tool Sets & Combos",  icon: "case" },
+  { id: "accessories", ar: "اكسسوارات ولقم",   en: "Accessories & Bits",  icon: "case" },
   { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
   { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
 ];
@@ -203,7 +204,7 @@ const _hasWord = (name, patterns) => {
 
 // Names commonly used for the accessory types.
 const _BIT_WORDS  = [/بنطه/, /بنط/, /بيت/, /\bbit\b/i, /\bbits\b/i, /دريل/, /رأس/];
-const _DISC_WORDS = [/قرص/, /اقراص/, /أقراص/, /\bdisc\b/i, /\bdiscs\b/i, /صنفره/, /قطع/, /تلميع/];
+const _DISC_WORDS = [/قرص/, /اقراص/, /أقراص/, /\bdisc\b/i, /\bdiscs\b/i, /صنفره/, /قطع/, /تلميع/, /حجر/, /اسطوانه/, /أسطوانه/, /\bstone\b/i, /\bwheel\b/i];
 
 const ACCESSORY_RULES = [
   {
