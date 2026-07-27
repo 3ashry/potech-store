@@ -495,7 +495,17 @@ input,select,textarea{font-family:inherit;}
 
 /* HEADER */
 .hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:10px 16px;}
-@media(max-width:767px){.hdr{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px;}}
+/* MOBILE header (hidden ≥768px) — [cart+wish]  logo (center)  [search+profile] */
+.hdr-mobile{display:none;}
+.hdr-mob-side{display:flex;gap:4px;align-items:center;}
+.hdr-mob-icon{position:relative;width:40px;height:40px;display:grid;place-items:center;background:transparent;border:0;color:var(--ink);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:0;}
+.hdr-mob-icon:active{opacity:.6;}
+.brand-btn-mobile{margin:0 auto;}
+.hdr-mob-search{padding:0 12px 10px;}
+@media(max-width:767px){
+  .hdr-desktop{display:none;}
+  .hdr-mobile{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:6px 10px;gap:6px;}
+}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
 /* Landscape logo (icon + بروتيك + PROTECH baked in). Height-driven so it
    scales cleanly on every screen; width follows the image's natural aspect.
@@ -1015,9 +1025,11 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
 const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, logoSrc, wishCount, onWishlist }) => {
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState("");
+  const [mobSearchOpen, setMobSearchOpen] = useState(false);
   const submitSearch = () => {
     if (q.trim()) window.fbq?.('track', 'Search', { search_string: q });
     navigate("shop", { search: q });
+    setMobSearchOpen(false);
   };
   return (
     <header className="site-header">
@@ -1037,7 +1049,41 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
           </div>
         </div>
       </div>
-      <div className="wrap hdr">
+      {/* MOBILE header: [cart + wish] | logo (center) | [search + profile] */}
+      <div className="hdr-mobile">
+        <div className="hdr-mob-side">
+          <button className="hdr-mob-icon" onClick={onCart} aria-label="السلة">
+            {cartCount > 0 && <span className="hdr-cart-badge">{cartCount}</span>}
+            <Icon name="cart" size={22} />
+          </button>
+          <button className="hdr-mob-icon" onClick={onWishlist} aria-label="المفضلة">
+            {wishCount > 0 && <span className="hdr-cart-badge" style={{background:"#e53e3e"}}>{wishCount}</span>}
+            <Icon name="heart" size={22} />
+          </button>
+        </div>
+        <button className="brand-btn brand-btn-mobile" onClick={() => navigate("home")} aria-label="بروتيك — Protech Stores">
+          <div className="brand-mark">{logoSrc && <img src={logoSrc} alt="Protech بروتيك" />}</div>
+        </button>
+        <div className="hdr-mob-side">
+          <button className="hdr-mob-icon" onClick={() => setMobSearchOpen(o => !o)} aria-label="بحث">
+            <Icon name={mobSearchOpen ? "close" : "search"} size={22} />
+          </button>
+          <button className="hdr-mob-icon" onClick={() => navigate("orders")} aria-label="حسابي">
+            <Icon name="user" size={22} />
+          </button>
+        </div>
+      </div>
+      {mobSearchOpen && (
+        <div className="hdr-mob-search wrap">
+          <div className="search" style={{width:"100%"}}>
+            <input className="search-input" autoFocus placeholder="ابحث عن منتج، ماركة، كود…" value={q}
+              onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === "Enter" && submitSearch()} />
+            <button className="search-btn" onClick={submitSearch}><Icon name="search" size={17} /></button>
+          </div>
+        </div>
+      )}
+      {/* DESKTOP header: unchanged */}
+      <div className="wrap hdr hdr-desktop">
         <button className="brand-btn" onClick={() => navigate("home")} aria-label="بروتيك — Protech Stores">
           <div className="brand-mark">{logoSrc && <img src={logoSrc} alt="Protech بروتيك" />}</div>
         </button>
