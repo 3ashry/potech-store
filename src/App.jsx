@@ -1646,8 +1646,8 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate, pr
                   </div>
                 );
               })}
+              <SuggestionStrip items={suggestions} onAdd={onAdd} navigate={navigate} title="أضف كمان" dense={true} />
             </div>
-            <SuggestionStrip items={suggestions} onAdd={onAdd} navigate={navigate} title="أضف كمان" dense={true} />
             <div className="drawer-foot">
               <div className="drawer-row"><span>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
               <div className="drawer-row"><span>الشحن</span><b style={{color:shipping===0?"var(--green)":"var(--ink-3)"}}>{shipping===0?`مجاني 🎉 (فوق ${FREE_SHIPPING_THRESHOLD.toLocaleString()} ج.م)`:"يُحسب حسب المحافظة"}</b></div>
