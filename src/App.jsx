@@ -497,11 +497,11 @@ input,select,textarea{font-family:inherit;}
 .hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:10px 16px;}
 @media(max-width:767px){.hdr{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px;}}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
-.brand-mark{width:92px;height:92px;display:grid;place-items:center;flex-shrink:0;}
-.brand-mark img{width:100%;height:100%;object-fit:contain;}
-.brand-text b{display:block;font-size:1.25rem;line-height:1;font-weight:900;color:var(--brand);}
-.brand-text small{display:block;font-family:var(--f-mono);font-size:0.62rem;color:var(--ink-3);letter-spacing:0.06em;margin-top:3px;}
-@media(max-width:480px){.brand-text b{font-size:1.05rem;} .brand-text small{display:none;}}
+/* Landscape logo (icon + بروتيك + PROTECH baked in). Height-driven so it
+   scales cleanly on every screen; width follows the image's natural aspect. */
+.brand-mark{height:68px;display:grid;place-items:center;flex-shrink:0;}
+.brand-mark img{height:100%;width:auto;object-fit:contain;display:block;}
+@media(max-width:480px){.brand-mark{height:50px;}}
 .search{display:flex;align-items:stretch;border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;background:var(--bg);height:44px;}
 .search-input{flex:1;border:0;background:transparent;padding:0 12px;font-size:0.9rem;color:var(--ink);outline:none;min-width:0;}
 .search-input::placeholder{color:var(--mute);font-size:0.85rem;}
@@ -1027,9 +1027,8 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
         </div>
       </div>
       <div className="wrap hdr">
-        <button className="brand-btn" onClick={() => navigate("home")}>
-          <div className="brand-mark">{logoSrc && <img src={logoSrc} alt="Protech" />}</div>
-          <div className="brand-text"><b>بروتيك</b><small>الشغل عليك والعدة علينا</small></div>
+        <button className="brand-btn" onClick={() => navigate("home")} aria-label="بروتيك — Protech Stores">
+          <div className="brand-mark">{logoSrc && <img src={logoSrc} alt="Protech بروتيك" />}</div>
         </button>
         <div className="search">
           <input className="search-input" placeholder="ابحث عن منتج، ماركة، كود…" value={q} onChange={e => setQ(e.target.value)}
@@ -2661,11 +2660,10 @@ const parseUrl = (pathname, search, products) => {
 export default function App() {
   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState({});
-  // Default to the local transparent-background SVG so the header doesn't show
-  // a white box around the logo. The Supabase JPG is a fallback the admin can
-  // upload later; if it loads it overrides this — but a JPG will always have
-  // a solid background, so prefer the SVG in normal use.
-  const [logoSrc, setLogoSrc] = useState("/Untitled_design__37_-removebg-preview.svg");
+  // Full transparent-background logo (icon + بروتيك + PROTECH) hosted on
+  // Supabase Storage. This one image replaces the previous icon-only mark
+  // and the separate Arabic/tagline text in the header.
+  const [logoSrc, setLogoSrc] = useState("https://wljxplbcfoorqpoflcdz.supabase.co/storage/v1/object/public/protech-media/brand/Untitled%20design%20(47).png");
   const [dark, setDark] = useState(false);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
