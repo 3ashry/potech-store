@@ -2710,8 +2710,9 @@ export default function App() {
   useEffect(() => {
     sb("products?select=*&is_published=eq.true&order=sort_order.asc,id.asc").then(d=>setProducts(d||[])).catch(()=>{});
     sb("site_settings?select=*").then(rows=>{ if(!rows) return; const map={}; rows.forEach(r=>{map[r.key]=r;}); setSettings(map); }).catch(()=>{});
-    const logo=`${SB_URL}/storage/v1/object/public/protech-media/brand/logo.jpg`;
-    fetch(logo,{method:"HEAD"}).then(r=>{ if(r.ok) setLogoSrc(logo); }).catch(()=>{});
+    // Skip the Supabase JPG override — JPGs have no alpha channel so they
+    // always carry a solid background. The local transparent SVG set as the
+    // initial state is what we want to keep showing.
     // Count this person as a store visit — once per browser session, so the dashboard can
     // show real visitor numbers (not just people who opened a product).
     try { if (!sessionStorage.getItem("protech_visit_logged")) { logAnalytics("visit"); sessionStorage.setItem("protech_visit_logged","1"); } }
