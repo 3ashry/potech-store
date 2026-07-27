@@ -497,7 +497,7 @@ input,select,textarea{font-family:inherit;}
 .hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:10px 16px;}
 @media(max-width:767px){.hdr{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px;}}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
-.brand-mark{width:68px;height:68px;border-radius:8px;overflow:hidden;background:#fff;display:grid;place-items:center;box-shadow:0 2px 12px rgba(242,106,33,0.25);border:2px solid var(--brand);flex-shrink:0;}
+.brand-mark{width:92px;height:92px;display:grid;place-items:center;flex-shrink:0;}
 .brand-mark img{width:100%;height:100%;object-fit:contain;}
 .brand-text b{display:block;font-size:1rem;line-height:1;}
 .brand-text small{display:block;font-family:var(--f-mono);font-size:0.62rem;color:var(--ink-3);letter-spacing:0.06em;margin-top:3px;}
