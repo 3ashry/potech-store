@@ -498,10 +498,17 @@ input,select,textarea{font-family:inherit;}
 @media(max-width:767px){.hdr{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px;}}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
 /* Landscape logo (icon + بروتيك + PROTECH baked in). Height-driven so it
-   scales cleanly on every screen; width follows the image's natural aspect. */
-.brand-mark{height:68px;display:grid;place-items:center;flex-shrink:0;}
-.brand-mark img{height:100%;width:auto;object-fit:contain;display:block;}
-@media(max-width:480px){.brand-mark{height:50px;}}
+   scales cleanly on every screen; width follows the image's natural aspect.
+   Belt-and-suspenders sizing: an outer height + inline-block box AND explicit
+   max-height/max-width on the img — some browsers (and mid-load states) can
+   ignore height:100% when the parent uses display:grid, briefly rendering
+   the image at its natural PNG size (~1000px+). */
+.brand-mark{height:68px;max-width:240px;display:inline-flex;align-items:center;justify-content:flex-start;flex-shrink:0;overflow:hidden;}
+.brand-mark img{max-height:68px;max-width:240px;height:auto;width:auto;object-fit:contain;display:block;}
+@media(max-width:480px){
+  .brand-mark{height:50px;max-width:180px;}
+  .brand-mark img{max-height:50px;max-width:180px;}
+}
 .search{display:flex;align-items:stretch;border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;background:var(--bg);height:44px;}
 .search-input{flex:1;border:0;background:transparent;padding:0 12px;font-size:0.9rem;color:var(--ink);outline:none;min-width:0;}
 .search-input::placeholder{color:var(--mute);font-size:0.85rem;}
