@@ -479,7 +479,7 @@ input,select,textarea{font-family:inherit;}
 .btn-dark{background:var(--ink);color:var(--bg);}.btn-dark:hover{opacity:.85;}
 .btn-ghost{border-color:var(--line-2);color:var(--ink);background:var(--bg);}.btn-ghost:hover{border-color:var(--ink);}
 .btn-block{width:100%;justify-content:center;}
-.icon-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:var(--radius);border:1px solid var(--line);background:var(--bg);flex-shrink:0;}
+.icon-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:var(--radius);border:1px solid var(--line);background:var(--bg);flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .icon-btn:hover{border-color:var(--ink);}
 
 /* TOPBAR */
@@ -1056,7 +1056,6 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
       <nav className="navbar">
         <div className="wrap nav-inner">
           <button className="nav-all"
-            onMouseEnter={() => setMenu(true)}
             onClick={() => setMenu(m => !m)}>
             <Icon name="menu" size={15}/> كل الأقسام <Icon name="chevdown" size={11}/>
           </button>
@@ -2848,7 +2847,15 @@ window.history.pushState({ page: "cart" }, "", "/cart");
 
       <SiteFooter logoSrc={logoSrc} navigate={navigate}/>
 
-      <CartDrawer open={cartOpen} items={cart} onClose={()=>{setCartOpen(false);if(window.location.pathname==="/cart")window.history.back();}} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate} products={products} onAdd={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓"); }}/>
+      <CartDrawer open={cartOpen} items={cart} onClose={()=>{
+        // Close the drawer AND strip /cart from the URL without pushing a new
+        // history entry. Using history.back() here caused a popstate/state
+        // race on iOS that reopened the drawer on the first tap.
+        setCartOpen(false);
+        if (window.location.pathname === "/cart") {
+          try { window.history.replaceState({}, "", "/"); } catch(_) {}
+        }
+      }} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate} products={products} onAdd={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓"); }}/>
       <WishlistDrawer
         open={wishlistOpen}
         items={wishlist}
