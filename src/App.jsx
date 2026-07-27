@@ -516,12 +516,12 @@ input,select,textarea{font-family:inherit;}
 .brand-mark{height:110px;max-width:340px;display:inline-flex;align-items:center;justify-content:flex-start;flex-shrink:0;overflow:hidden;}
 .brand-mark img{max-height:110px;max-width:340px;height:auto;width:auto;object-fit:contain;display:block;}
 @media(max-width:767px){
-  .brand-mark{height:80px;max-width:240px;}
-  .brand-mark img{max-height:80px;max-width:240px;}
+  .brand-mark{height:110px;max-width:300px;}
+  .brand-mark img{max-height:110px;max-width:300px;}
 }
 @media(max-width:480px){
-  .brand-mark{height:64px;max-width:200px;}
-  .brand-mark img{max-height:64px;max-width:200px;}
+  .brand-mark{height:92px;max-width:260px;}
+  .brand-mark img{max-height:92px;max-width:260px;}
 }
 .search{display:flex;align-items:stretch;border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;background:var(--bg);height:44px;}
 .search-input{flex:1;border:0;background:transparent;padding:0 12px;font-size:0.9rem;color:var(--ink);outline:none;min-width:0;}
