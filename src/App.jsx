@@ -715,7 +715,7 @@ input,select,textarea{font-family:inherit;}
 
 /* DRAWER */
 .drawer-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80;}.drawer-scrim.on{opacity:1;pointer-events:auto;}
-.drawer{position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;background:var(--bg);z-index:81;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);}.drawer.on{transform:translateX(0);}
+.drawer{position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;height:100dvh;background:var(--bg);z-index:81;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);padding-bottom:env(safe-area-inset-bottom,0);}.drawer.on{transform:translateX(0);}
 .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);}
 .drawer-head b{display:block;font-size:1.05rem;}.drawer-head small{color:var(--ink-3);font-size:0.78rem;}
 .drawer-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
@@ -768,7 +768,8 @@ input,select,textarea{font-family:inherit;}
 .form-input{padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--radius);font-family:var(--f-ar);font-size:0.92rem;color:var(--ink);background:var(--bg);outline:none;transition:border-color .15s;width:100%;}.form-input:focus{border-color:var(--brand);}.form-input.err{border-color:var(--red);}
 .form-err{font-size:0.73rem;color:var(--red);}
 .payment-option{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--brand);border-radius:var(--radius);background:var(--brand-soft);}
-.order-summary{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;position:sticky;top:120px;}
+.order-summary{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;position:sticky;top:120px;max-height:calc(100vh - 140px);overflow-y:auto;}
+@media(max-width:900px){.order-summary{position:static;max-height:none;overflow-y:visible;}}
 .order-summary h3{margin:0 0 16px;font-size:1rem;font-weight:800;}
 .summary-items{max-height:240px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:12px;}
 .summary-item{display:flex;gap:10px;align-items:center;}
