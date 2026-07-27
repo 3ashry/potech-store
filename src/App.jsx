@@ -2661,7 +2661,11 @@ const parseUrl = (pathname, search, products) => {
 export default function App() {
   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState({});
-  const [logoSrc, setLogoSrc] = useState(null);
+  // Default to the local transparent-background SVG so the header doesn't show
+  // a white box around the logo. The Supabase JPG is a fallback the admin can
+  // upload later; if it loads it overrides this — but a JPG will always have
+  // a solid background, so prefer the SVG in normal use.
+  const [logoSrc, setLogoSrc] = useState("/Untitled_design__37_-removebg-preview.svg");
   const [dark, setDark] = useState(false);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
