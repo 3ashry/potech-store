@@ -504,7 +504,7 @@ input,select,textarea{font-family:inherit;}
 .hdr-mob-search{padding:0 12px 10px;}
 @media(max-width:767px){
   .hdr-desktop{display:none;}
-  .hdr-mobile{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:6px 10px;gap:6px;}
+  .hdr-mobile{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:0 10px;gap:6px;}
 }
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
 /* Landscape logo (icon + بروتيك + PROTECH baked in). Height-driven so it
@@ -516,12 +516,12 @@ input,select,textarea{font-family:inherit;}
 .brand-mark{height:110px;max-width:340px;display:inline-flex;align-items:center;justify-content:flex-start;flex-shrink:0;overflow:hidden;}
 .brand-mark img{max-height:110px;max-width:340px;height:auto;width:auto;object-fit:contain;display:block;}
 @media(max-width:767px){
-  .brand-mark{height:110px;max-width:300px;}
-  .brand-mark img{max-height:110px;max-width:300px;}
+  .brand-mark{height:88px;max-width:260px;}
+  .brand-mark img{max-height:88px;max-width:260px;}
 }
 @media(max-width:480px){
-  .brand-mark{height:92px;max-width:260px;}
-  .brand-mark img{max-height:92px;max-width:260px;}
+  .brand-mark{height:76px;max-width:220px;}
+  .brand-mark img{max-height:76px;max-width:220px;}
 }
 .search{display:flex;align-items:stretch;border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;background:var(--bg);height:44px;}
 .search-input{flex:1;border:0;background:transparent;padding:0 12px;font-size:0.9rem;color:var(--ink);outline:none;min-width:0;}
