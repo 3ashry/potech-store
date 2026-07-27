@@ -499,9 +499,9 @@ input,select,textarea{font-family:inherit;}
 .brand-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;}
 .brand-mark{width:92px;height:92px;display:grid;place-items:center;flex-shrink:0;}
 .brand-mark img{width:100%;height:100%;object-fit:contain;}
-.brand-text b{display:block;font-size:1rem;line-height:1;}
+.brand-text b{display:block;font-size:1.25rem;line-height:1;font-weight:900;color:var(--brand);}
 .brand-text small{display:block;font-family:var(--f-mono);font-size:0.62rem;color:var(--ink-3);letter-spacing:0.06em;margin-top:3px;}
-@media(max-width:480px){.brand-text{display:none;}}
+@media(max-width:480px){.brand-text b{font-size:1.05rem;} .brand-text small{display:none;}}
 .search{display:flex;align-items:stretch;border:2px solid var(--ink);border-radius:var(--radius);overflow:hidden;background:var(--bg);height:44px;}
 .search-input{flex:1;border:0;background:transparent;padding:0 12px;font-size:0.9rem;color:var(--ink);outline:none;min-width:0;}
 .search-input::placeholder{color:var(--mute);font-size:0.85rem;}
