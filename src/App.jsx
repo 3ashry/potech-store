@@ -793,6 +793,23 @@ input,select,textarea{font-family:inherit;}
 @media(max-width:900px){.order-summary{position:static;max-height:none;overflow-y:visible;}}
 .checkout-grid > *{min-width:0;}
 .checkout-wrap{overflow-x:hidden;}
+/* Checkout upsell popup (battery add-on for the drill+grinder combo). Center
+   modal on desktop, bottom sheet on phones — feels more native to tap. */
+.upsell-scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;animation:upsell-fade .18s ease-out;}
+.upsell-sheet{background:var(--bg);border-radius:14px;max-width:440px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);animation:upsell-pop .22s cubic-bezier(.4,0,.2,1);}
+.upsell-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);}
+.upsell-body{padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+.upsell-battery{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;}
+.upsell-battery img{width:96px;height:96px;object-fit:contain;background:var(--bg);border-radius:8px;padding:6px;flex-shrink:0;}
+.upsell-battery-meta{flex:1;min-width:0;}
+.upsell-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;background:var(--bg-2);padding-bottom:calc(12px + env(safe-area-inset-bottom,0));}
+@keyframes upsell-fade{from{opacity:0}to{opacity:1}}
+@keyframes upsell-pop{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){
+  .upsell-scrim{align-items:flex-end;padding:0;}
+  .upsell-sheet{max-width:100%;border-radius:16px 16px 0 0;}
+  @keyframes upsell-pop{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+}
 .order-summary h3{margin:0 0 16px;font-size:1rem;font-weight:800;}
 .summary-items{max-height:240px;overflow-y:auto;margin-bottom:16px;display:flex;flex-direction:column;gap:12px;}
 .summary-item{display:flex;gap:10px;align-items:center;}
@@ -2129,11 +2146,29 @@ const grand = total + shipping;
     return !Object.keys(e).length;
   };
 
+  // Checkout upsell: if cart contains the drill+grinder combo (which ships
+  // with only one 4A battery), offer an extra 4A battery once per session.
+  const BATTERY_UPSELL_CODE = 'TFBLI20021';
+  const cartHasComboMissingBattery = cart.some(i => {
+    const c = String(i.code || '').toUpperCase();
+    return c.includes('TIDLI206681') && c.includes('TAGLI261521');
+  }) && !cart.some(i => String(i.code || '').toUpperCase() === BATTERY_UPSELL_CODE);
+  const batteryUpsellProduct = products.find(p => String(p.code || '').toUpperCase() === BATTERY_UPSELL_CODE);
+  const [showBatteryUpsell, setShowBatteryUpsell] = useState(false);
+
   const submit = async () => {
     if(!validate()||!cart.length) return;
     // Synchronous guard: a fast double-click / re-submit can fire before the
     // disabled state re-renders, which double-counts the order (incl. on Meta Pixel).
     if(submittingRef.current) return;
+    // Battery upsell: interrupt the first submit if the combo is in cart and
+    // the customer hasn't yet responded (or dismissed) the offer this session.
+    let seenUpsell = false;
+    try { seenUpsell = !!sessionStorage.getItem('protech_battery_upsell_seen'); } catch {}
+    if (cartHasComboMissingBattery && batteryUpsellProduct && !seenUpsell) {
+      setShowBatteryUpsell(true);
+      return;
+    }
     submittingRef.current = true;
     setLoading(true);
     try {
@@ -2338,6 +2373,69 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           />
         </div>
       </div>
+      {showBatteryUpsell && batteryUpsellProduct && (() => {
+        // Grab the combo product (image + name) from the cart to show its picture.
+        const combo = cart.find(i => {
+          const c = String(i.code || '').toUpperCase();
+          return c.includes('TIDLI206681') && c.includes('TAGLI261521');
+        });
+        const comboImg = Array.isArray(combo?.images) ? combo.images[0] : null;
+        const bat = batteryUpsellProduct;
+        const batImg = Array.isArray(bat.images) ? bat.images[0] : null;
+        const batPrice = Number(bat.is_offer && bat.offer_price ? bat.offer_price : bat.price) || 0;
+        const dismissAndSubmit = (add) => {
+          try { sessionStorage.setItem('protech_battery_upsell_seen', '1'); } catch {}
+          if (add) {
+            const line = {...bat, qty: 1};
+            setCart(c => {
+              const ex = c.find(i => i.id === bat.id);
+              if (ex) return c.map(i => i.id === bat.id ? {...i, qty: i.qty + 1} : i);
+              return [...c, line];
+            });
+            showToast("تمت إضافة البطارية ✓");
+          }
+          setShowBatteryUpsell(false);
+          // Re-trigger submit on next tick — sessionStorage flag prevents re-showing.
+          setTimeout(() => submit(), 100);
+        };
+        return (
+          <div className="upsell-scrim" onClick={() => setShowBatteryUpsell(false)}>
+            <div className="upsell-sheet" onClick={e => e.stopPropagation()}>
+              <div className="upsell-head">
+                <div style={{display:'flex',alignItems:'center',gap:12}}>
+                  {comboImg && <img src={optimizeImg(comboImg, 120)} alt="" style={{width:56,height:56,objectFit:'contain',borderRadius:8,background:'var(--bg-2)'}}/>}
+                  <div>
+                    <div style={{fontWeight:800,fontSize:'0.95rem',lineHeight:1.3}}>{combo?.name || 'العرض في سلتك'}</div>
+                    <div style={{fontSize:'0.72rem',color:'var(--ink-3)',fontFamily:'var(--f-mono)',marginTop:2}}>{combo?.code}</div>
+                  </div>
+                </div>
+                <button className="icon-btn" onClick={() => setShowBatteryUpsell(false)} aria-label="إغلاق"><Icon name="close" size={17}/></button>
+              </div>
+              <div className="upsell-body">
+                <div style={{background:'#fff8f5',border:'1.5px solid var(--brand)',borderRadius:10,padding:'12px 14px',fontSize:'0.95rem',fontWeight:700,color:'var(--brand-ink)',lineHeight:1.5}}>
+                  هذا العرض يحتوي على بطارية واحدة ٤ امبير
+                </div>
+                <div className="upsell-battery">
+                  {batImg && <img src={optimizeImg(batImg, 200)} alt={bat.name} />}
+                  <div className="upsell-battery-meta">
+                    <div style={{fontWeight:800,fontSize:'0.92rem',lineHeight:1.3}}>{bat.name}</div>
+                    <div style={{fontFamily:'var(--f-mono)',fontSize:'0.72rem',color:'var(--ink-3)',marginTop:2}}>{bat.code}</div>
+                    <div style={{marginTop:8,fontWeight:900,fontSize:'1.15rem',fontFamily:'var(--f-mono)',color:'var(--brand)'}}>{fmtEGP(batPrice)} ج.م</div>
+                  </div>
+                </div>
+              </div>
+              <div className="upsell-foot">
+                <button className="btn btn-primary btn-block" style={{border:0,padding:'13px',fontSize:'0.95rem'}} onClick={() => dismissAndSubmit(true)}>
+                  ➕ أضف بطارية (+{fmtEGP(batPrice)} ج.م)
+                </button>
+                <button className="btn btn-ghost btn-block" style={{padding:'11px',fontSize:'0.88rem'}} onClick={() => dismissAndSubmit(false)}>
+                  أعلم، أريد بطارية واحدة فقط
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
