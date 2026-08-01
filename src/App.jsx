@@ -2146,14 +2146,34 @@ const grand = total + shipping;
     return !Object.keys(e).length;
   };
 
-  // Checkout upsell: if cart contains the drill+grinder combo (which ships
-  // with only one 4A battery), offer an extra 4A battery once per session.
-  const BATTERY_UPSELL_CODE = 'TFBLI20021';
-  const cartHasComboMissingBattery = cart.some(i => {
-    const c = String(i.code || '').toUpperCase();
-    return c.includes('TIDLI206681') && c.includes('TAGLI261521');
-  }) && !cart.some(i => String(i.code || '').toUpperCase() === BATTERY_UPSELL_CODE);
-  const batteryUpsellProduct = products.find(p => String(p.code || '').toUpperCase() === BATTERY_UPSELL_CODE);
+  // Checkout upsell: some products ship with only ONE 4A battery — if any of
+  // them are in cart, offer the matching extra battery once per session per
+  // product. Add more rules to the array as new combos launch.
+  const BATTERY_UPSELL_RULES = [
+    {
+      // Drill + Grinder combo (Tidli206681+Tagli261521): offer a 4A battery.
+      matches: (c) => c.includes('TIDLI206681') && c.includes('TAGLI261521'),
+      addonCode: 'TFBLI20021',
+    },
+    {
+      // 166-piece drill set (THKTHP41667): offer a 4A battery.
+      matches: (c) => c === 'THKTHP41667',
+      addonCode: 'TFBLI20011',
+    },
+  ];
+  const cartCodesUpper = cart.map(i => String(i.code || '').toUpperCase());
+  const activeBatteryUpsell = (() => {
+    for (const rule of BATTERY_UPSELL_RULES) {
+      const anchor = cart.find(i => rule.matches(String(i.code || '').toUpperCase()));
+      if (!anchor) continue;
+      // Skip if the customer already has the matching battery in cart.
+      if (cartCodesUpper.includes(rule.addonCode.toUpperCase())) continue;
+      const addon = products.find(p => String(p.code || '').toUpperCase() === rule.addonCode.toUpperCase());
+      if (!addon) continue;
+      return { rule, anchor, addon };
+    }
+    return null;
+  })();
   const [showBatteryUpsell, setShowBatteryUpsell] = useState(false);
 
   const submit = async () => {
@@ -2161,13 +2181,17 @@ const grand = total + shipping;
     // Synchronous guard: a fast double-click / re-submit can fire before the
     // disabled state re-renders, which double-counts the order (incl. on Meta Pixel).
     if(submittingRef.current) return;
-    // Battery upsell: interrupt the first submit if the combo is in cart and
-    // the customer hasn't yet responded (or dismissed) the offer this session.
-    let seenUpsell = false;
-    try { seenUpsell = !!sessionStorage.getItem('protech_battery_upsell_seen'); } catch {}
-    if (cartHasComboMissingBattery && batteryUpsellProduct && !seenUpsell) {
-      setShowBatteryUpsell(true);
-      return;
+    // Battery upsell: interrupt the first submit if the cart contains a combo
+    // with a battery upsell rule and the customer hasn't yet dismissed it this
+    // session. Dismiss flag is PER-RULE so each combo gets its own single chance.
+    if (activeBatteryUpsell) {
+      const flagKey = `protech_battery_upsell_seen_${activeBatteryUpsell.rule.addonCode}`;
+      let seen = false;
+      try { seen = !!sessionStorage.getItem(flagKey); } catch {}
+      if (!seen) {
+        setShowBatteryUpsell(true);
+        return;
+      }
     }
     submittingRef.current = true;
     setLoading(true);
@@ -2373,18 +2397,15 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           />
         </div>
       </div>
-      {showBatteryUpsell && batteryUpsellProduct && (() => {
-        // Grab the combo product (image + name) from the cart to show its picture.
-        const combo = cart.find(i => {
-          const c = String(i.code || '').toUpperCase();
-          return c.includes('TIDLI206681') && c.includes('TAGLI261521');
-        });
+      {showBatteryUpsell && activeBatteryUpsell && (() => {
+        const combo = activeBatteryUpsell.anchor;
         const comboImg = Array.isArray(combo?.images) ? combo.images[0] : null;
-        const bat = batteryUpsellProduct;
+        const bat = activeBatteryUpsell.addon;
         const batImg = Array.isArray(bat.images) ? bat.images[0] : null;
         const batPrice = Number(bat.is_offer && bat.offer_price ? bat.offer_price : bat.price) || 0;
+        const flagKey = `protech_battery_upsell_seen_${activeBatteryUpsell.rule.addonCode}`;
         const dismissAndSubmit = (add) => {
-          try { sessionStorage.setItem('protech_battery_upsell_seen', '1'); } catch {}
+          try { sessionStorage.setItem(flagKey, '1'); } catch {}
           if (add) {
             const line = {...bat, qty: 1};
             setCart(c => {
