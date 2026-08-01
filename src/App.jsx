@@ -2151,14 +2151,16 @@ const grand = total + shipping;
   // product. Add more rules to the array as new combos launch.
   const BATTERY_UPSELL_RULES = [
     {
-      // Drill + Grinder combo (Tidli206681+Tagli261521): offer a 4A battery.
+      // Drill + Grinder combo (Tidli206681+Tagli261521): ships with 1 × 4A battery.
       matches: (c) => c.includes('TIDLI206681') && c.includes('TAGLI261521'),
       addonCode: 'TFBLI20021',
+      message: 'هذا العرض يحتوي على بطارية واحدة ٤ امبير',
     },
     {
-      // 166-piece drill set (THKTHP41667): offer a 4A battery.
+      // 166-piece drill set (THKTHP41667): ships with 1 × 2A battery.
       matches: (c) => c === 'THKTHP41667',
       addonCode: 'TFBLI20011',
+      message: 'هذا العرض يحتوي على بطارية واحدة ٢ امبير',
     },
   ];
   const cartCodesUpper = cart.map(i => String(i.code || '').toUpperCase());
@@ -2434,7 +2436,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
               </div>
               <div className="upsell-body">
                 <div style={{background:'#fff8f5',border:'1.5px solid var(--brand)',borderRadius:10,padding:'12px 14px',fontSize:'0.95rem',fontWeight:700,color:'var(--brand-ink)',lineHeight:1.5}}>
-                  هذا العرض يحتوي على بطارية واحدة ٤ امبير
+                  {activeBatteryUpsell.rule.message}
                 </div>
                 <div className="upsell-battery">
                   {batImg && <img src={optimizeImg(batImg, 200)} alt={bat.name} />}
