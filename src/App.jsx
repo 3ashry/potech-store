@@ -1558,15 +1558,17 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
   );
 };
 
-// Curated combo/bundle showcase — 4 cards styled like a proper bundle catalog.
-// Pulls any products that have `bundle_with` populated (main product + its
-// linked items = one combo). Piece count is bundle_with.length + 1.
-// Savings badge shows the difference from the product's original price if
-// stored on `original_price` or `orig_price`.
+// All combos shown here — a product counts as a combo if it's in the
+// "sets" (Tool Sets & Combos) category. Piece count comes from the
+// manually-entered `combo_pieces` field (set from the dashboard product
+// form); falls back to `bundle_with.length + 1` if that's not set yet.
+// Savings badge = original_price − sell_price when both are known.
 const CombosSection = ({ products, navigate }) => {
-  const combos = (products || [])
-    .filter(p => Array.isArray(p.bundle_with) && p.bundle_with.length > 0)
-    .slice(0, 4);
+  const isCombo = (p) => {
+    const cats = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
+    return cats.includes('sets') || (Array.isArray(p.bundle_with) && p.bundle_with.length > 0);
+  };
+  const combos = (products || []).filter(isCombo);
   if (!combos.length) return null;
   const fmtNum = (n) => Number(n || 0).toLocaleString('ar-EG');
   return (
@@ -1574,7 +1576,10 @@ const CombosSection = ({ products, navigate }) => {
       cta={{ label: "شوف كل الكومبوهات", fn: () => navigate("shop", { category: "sets" }) }}>
       <div className="combos-grid">
         {combos.map(p => {
-          const pieces = (Array.isArray(p.bundle_with) ? p.bundle_with.length : 0) + 1;
+          const manualPieces = parseInt(p.combo_pieces);
+          const pieces = Number.isFinite(manualPieces) && manualPieces > 0
+            ? manualPieces
+            : (Array.isArray(p.bundle_with) ? p.bundle_with.length : 0) + 1;
           const price = parseFloat(p.sell_price || p.price || 0);
           const orig = parseFloat(p.original_price || p.orig_price || 0);
           const savings = orig > price ? Math.round(orig - price) : 0;
