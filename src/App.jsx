@@ -899,8 +899,12 @@ input,select,textarea{font-family:inherit;}
 .carousel-arrow{display:none;position:absolute;top:calc(50% - 22px);transform:translateY(-50%);z-index:6;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,0.96);color:var(--ink);align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.14);transition:transform .15s,background .15s;padding:0;font-size:22px;font-weight:900;line-height:1;font-family:inherit;}
 .carousel-arrow:hover{background:var(--brand);color:#fff;transform:translateY(-50%) scale(1.05);}
 .carousel-arrow[disabled]{opacity:0;pointer-events:none;}
-.carousel-arrow-prev{insetInlineStart:-18px;}
-.carousel-arrow-next{insetInlineEnd:-18px;}
+.carousel-arrow-prev{inset-inline-start:-18px;}
+.carousel-arrow-next{inset-inline-end:-18px;}
+/* Safety fallback for browsers that ignore logical properties (older Safari) —
+   in this RTL site prev = right visually and next = left visually. */
+[dir="rtl"] .carousel-arrow-prev{right:-18px;left:auto;}
+[dir="rtl"] .carousel-arrow-next{left:-18px;right:auto;}
 @media(min-width:900px){.carousel-arrow{display:flex;}}
 @media(max-width:768px){
   .mega{position:fixed;top:auto;left:0;right:0;width:100vw;max-height:80vh;overflow-y:auto;border-radius:0 0 16px 16px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:9999;}
