@@ -673,6 +673,27 @@ input,select,textarea{font-family:inherit;}
 .bnr-1 .bnr-cta{color:var(--brand);}.bnr-2 .bnr-cta{color:#fff;}.bnr-3 .bnr-cta{color:var(--brand);}
 .bnr-stripes{position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,0.05) 18px 19px);pointer-events:none;z-index:0;}
 
+/* ── Home Combos section (cream-toned bundle cards) ── */
+.combos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media(max-width:900px){.combos-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:520px){.combos-grid{grid-template-columns:1fr;}}
+.combo-tile{position:relative;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;text-align:right;padding:0;cursor:pointer;transition:transform .2s,box-shadow .2s;font-family:inherit;color:inherit;}
+.combo-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
+.combo-media{position:relative;aspect-ratio:16/9;background:#e8e2d3;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.combo-media img{width:100%;height:100%;object-fit:cover;}
+.combo-media::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(0,0,0,0.04) 14px 15px);pointer-events:none;}
+.combo-photo-label{color:#a89e88;font-family:var(--f-mono);font-size:0.85rem;letter-spacing:0.18em;font-weight:700;position:relative;z-index:1;}
+.combo-savings{position:absolute;top:12px;insetInlineEnd:auto;left:12px;background:var(--brand);color:#fff;font-family:var(--f-ar);font-weight:800;font-size:0.8rem;padding:5px 12px;border-radius:999px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.combo-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;}
+.combo-pieces{font-family:var(--f-ar);font-size:0.72rem;color:var(--ink-3);font-weight:700;}
+.combo-name{margin:2px 0 0;font-family:var(--f-ar);font-size:1.05rem;font-weight:800;line-height:1.3;color:var(--ink);}
+.combo-desc{margin:0;font-family:var(--f-ar);font-size:0.78rem;color:var(--ink-3);line-height:1.4;}
+.combo-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:8px;}
+.combo-cta{color:var(--brand);font-family:var(--f-ar);font-weight:800;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;}
+.combo-price{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15;}
+.combo-price b{font-family:var(--f-ar);font-weight:900;font-size:1.05rem;color:var(--ink);}
+.combo-price s{font-family:var(--f-ar);font-size:0.75rem;color:var(--ink-3);opacity:0.7;}
+
 /* CAT RAIL */
 .cat-rail{background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
 .rail-hero{display:grid;grid-template-columns:1fr 2.5fr;gap:20px;align-items:stretch;}
@@ -1532,6 +1553,54 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
         )}
       </button>
     </div>
+  );
+};
+
+// Curated combo/bundle showcase — 4 cards styled like a proper bundle catalog.
+// Pulls any products that have `bundle_with` populated (main product + its
+// linked items = one combo). Piece count is bundle_with.length + 1.
+// Savings badge shows the difference from the product's original price if
+// stored on `original_price` or `orig_price`.
+const CombosSection = ({ products, navigate }) => {
+  const combos = (products || [])
+    .filter(p => Array.isArray(p.bundle_with) && p.bundle_with.length > 0)
+    .slice(0, 4);
+  if (!combos.length) return null;
+  const fmtNum = (n) => Number(n || 0).toLocaleString('ar-EG');
+  return (
+    <Section id="home-combos" num="04d" eyebrow="COMBOS" title="كومبوهات وأطقم العدة"
+      cta={{ label: "شوف كل الكومبوهات", fn: () => navigate("shop", { category: "sets" }) }}>
+      <div className="combos-grid">
+        {combos.map(p => {
+          const pieces = (Array.isArray(p.bundle_with) ? p.bundle_with.length : 0) + 1;
+          const price = parseFloat(p.sell_price || p.price || 0);
+          const orig = parseFloat(p.original_price || p.orig_price || 0);
+          const savings = orig > price ? Math.round(orig - price) : 0;
+          const img = Array.isArray(p.images) ? p.images[0] : null;
+          const desc = p.short_desc || p.tagline || '';
+          return (
+            <button key={p.id} className="combo-tile" onClick={() => navigate("product", { product: p })}>
+              <div className="combo-media">
+                {img ? <img src={optimizeImg(img, 500)} alt={p.name || ''}/> : <span className="combo-photo-label">COMBO PHOTO</span>}
+                {savings > 0 && <span className="combo-savings">وفر {fmtNum(savings)} جنيه</span>}
+              </div>
+              <div className="combo-body">
+                <div className="combo-pieces">{pieces} قطعة</div>
+                <h3 className="combo-name">{p.name}</h3>
+                {desc && <p className="combo-desc">{desc}</p>}
+                <div className="combo-foot">
+                  <span className="combo-cta">عرض الكومبو ←</span>
+                  <div className="combo-price">
+                    <b>{fmtNum(price)} جنيه</b>
+                    {orig > price && <s>{fmtNum(orig)} جنيه</s>}
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </Section>
   );
 };
 
@@ -3006,13 +3075,10 @@ window.history.pushState({ page: "cart" }, "", "/cart");
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
-          {/* Garden Tools Banner */}
-          
-          
+          <CombosSection products={products} navigate={navigate}/>
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
           <GardenBanner settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
-          <CategoryRail catId="sets" num="04c" eyebrow="TOOL SETS" title="اطقم أدوات وكومبو" desc="طقم نجار، طقم سباك، طقم كهربائي — كل حاجة محتاجها في علبة واحدة بسعر موفر." {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
             <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate} onWish={toggleWish} isWished={isWished(p.id)}/>)}</div>
           </Section>
