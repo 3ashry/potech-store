@@ -673,29 +673,6 @@ input,select,textarea{font-family:inherit;}
 .bnr-1 .bnr-cta{color:var(--brand);}.bnr-2 .bnr-cta{color:#fff;}.bnr-3 .bnr-cta{color:var(--brand);}
 .bnr-stripes{position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,0.05) 18px 19px);pointer-events:none;z-index:0;}
 
-/* ── Home Combos section (cream-toned bundle cards, horizontal carousel) ── */
-.combos-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 4px 10px;-webkit-overflow-scrolling:touch;align-items:stretch;}
-.combos-carousel::-webkit-scrollbar{height:4px;}
-.combos-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
-.combos-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
-.combo-tile{position:relative;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;text-align:right;padding:0;cursor:pointer;transition:transform .2s,box-shadow .2s;font-family:inherit;color:inherit;min-width:260px;max-width:280px;scroll-snap-align:start;flex-shrink:0;}
-@media(max-width:520px){.combo-tile{min-width:230px;max-width:230px;}}
-.combo-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
-.combo-media{position:relative;aspect-ratio:1/1;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:14px;}
-.combo-media img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;position:relative;z-index:1;}
-/* Beige stripe backdrop only shown when there's no image (placeholder mode). */
-.combo-media:not(:has(img)){background:#e8e2d3;}
-.combo-media:not(:has(img))::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(0,0,0,0.04) 14px 15px);pointer-events:none;}
-.combo-photo-label{color:#a89e88;font-family:var(--f-mono);font-size:0.85rem;letter-spacing:0.18em;font-weight:700;position:relative;z-index:1;}
-.combo-savings{position:absolute;top:12px;insetInlineEnd:auto;left:12px;background:var(--brand);color:#fff;font-family:var(--f-ar);font-weight:800;font-size:0.8rem;padding:5px 12px;border-radius:999px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.15);}
-.combo-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;}
-.combo-name{margin:0;font-family:var(--f-ar);font-size:1.05rem;font-weight:800;line-height:1.3;color:var(--ink);}
-.combo-desc{margin:0;font-family:var(--f-ar);font-size:0.78rem;color:var(--ink-3);line-height:1.4;}
-.combo-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:8px;}
-.combo-cta{color:var(--brand);font-family:var(--f-ar);font-weight:800;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;}
-.combo-price{display:flex;flex-direction:column;align-items:flex-start;line-height:1.15;}
-.combo-price b{font-family:var(--f-ar);font-weight:900;font-size:1.05rem;color:var(--ink);}
-.combo-price s{font-family:var(--f-ar);font-size:0.75rem;color:var(--ink-3);opacity:0.7;}
 
 /* CAT RAIL */
 .cat-rail{background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
@@ -1562,44 +1539,25 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
 // All combos shown here — a product counts as a combo if it's in the
 // "sets" (Tool Sets & Combos) category, or has a populated bundle_with.
 // Savings badge = original_price − sell_price when both are known.
-const CombosSection = ({ products, navigate }) => {
+// Reuses the same ProductCard component as every other product rail so
+// combos look identical to the rest of the site (wishlist heart, discount
+// pill, free-shipping badge, add-to-cart button, etc.). Horizontal carousel
+// keeps the swipe interaction from the previous version.
+const CombosSection = ({ products, navigate, onAdd, onWish, isWished }) => {
   const isCombo = (p) => {
     const cats = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
     return cats.includes('sets') || (Array.isArray(p.bundle_with) && p.bundle_with.length > 0);
   };
   const combos = (products || []).filter(isCombo);
   if (!combos.length) return null;
-  const fmtNum = (n) => Number(n || 0).toLocaleString('ar-EG');
   return (
     <Section id="home-combos" num="04d" eyebrow="COMBOS" title="كومبوهات وأطقم العدة"
       cta={{ label: "شوف كل الكومبوهات", fn: () => navigate("shop", { category: "sets" }) }}>
-      <div className="combos-carousel">
-        {combos.map(p => {
-          const price = parseFloat(p.sell_price || p.price || 0);
-          const orig = parseFloat(p.original_price || p.orig_price || 0);
-          const savings = orig > price ? Math.round(orig - price) : 0;
-          const img = Array.isArray(p.images) ? p.images[0] : null;
-          const desc = p.short_desc || p.tagline || '';
-          return (
-            <button key={p.id} className="combo-tile" onClick={() => navigate("product", { product: p })}>
-              <div className="combo-media">
-                {img ? <img src={optimizeImg(img, 500)} alt={p.name || ''}/> : <span className="combo-photo-label">COMBO PHOTO</span>}
-                {savings > 0 && <span className="combo-savings">وفر {fmtNum(savings)} جنيه</span>}
-              </div>
-              <div className="combo-body">
-                <h3 className="combo-name">{p.name}</h3>
-                {desc && <p className="combo-desc">{desc}</p>}
-                <div className="combo-foot">
-                  <span className="combo-cta">عرض الكومبو ←</span>
-                  <div className="combo-price">
-                    <b>{fmtNum(price)} جنيه</b>
-                    {orig > price && <s>{fmtNum(orig)} جنيه</s>}
-                  </div>
-                </div>
-              </div>
-            </button>
-          );
-        })}
+      <div className="cat-carousel">
+        {combos.map(p => (
+          <ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}
+            onWish={onWish} isWished={isWished ? isWished(p.id) : false}/>
+        ))}
       </div>
     </Section>
   );
@@ -3076,7 +3034,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
           <TopSellingSection {...sharedProps}/>
           <CategoriesSection products={products} navigate={navigate} settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode}/>
           <DealBanners settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
-          <CombosSection products={products} navigate={navigate}/>
+          <CombosSection {...sharedProps}/>
           <CategoryRail catId="battery" num="04a" eyebrow="CORDLESS POWER" title="أدوات البطارية" desc="أحدث موديلات الدريلات والمناشير والمفاتيح اللاسلكية — بطاريات ليثيوم عالية الأداء وضمان الوكيل ٦ أشهر." pinnedCodes={PINNED_BATTERY} {...sharedProps}/>
           <GardenBanner settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
