@@ -673,11 +673,13 @@ input,select,textarea{font-family:inherit;}
 .bnr-1 .bnr-cta{color:var(--brand);}.bnr-2 .bnr-cta{color:#fff;}.bnr-3 .bnr-cta{color:var(--brand);}
 .bnr-stripes{position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,0.05) 18px 19px);pointer-events:none;z-index:0;}
 
-/* ── Home Combos section (cream-toned bundle cards) ── */
-.combos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-@media(max-width:900px){.combos-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:520px){.combos-grid{grid-template-columns:1fr;}}
-.combo-tile{position:relative;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;text-align:right;padding:0;cursor:pointer;transition:transform .2s,box-shadow .2s;font-family:inherit;color:inherit;}
+/* ── Home Combos section (cream-toned bundle cards, horizontal carousel) ── */
+.combos-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 4px 10px;-webkit-overflow-scrolling:touch;align-items:stretch;}
+.combos-carousel::-webkit-scrollbar{height:4px;}
+.combos-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
+.combos-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
+.combo-tile{position:relative;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;text-align:right;padding:0;cursor:pointer;transition:transform .2s,box-shadow .2s;font-family:inherit;color:inherit;min-width:260px;max-width:280px;scroll-snap-align:start;flex-shrink:0;}
+@media(max-width:520px){.combo-tile{min-width:230px;max-width:230px;}}
 .combo-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
 .combo-media{position:relative;aspect-ratio:1/1;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:14px;}
 .combo-media img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;position:relative;z-index:1;}
@@ -1574,7 +1576,7 @@ const CombosSection = ({ products, navigate }) => {
   return (
     <Section id="home-combos" num="04d" eyebrow="COMBOS" title="كومبوهات وأطقم العدة"
       cta={{ label: "شوف كل الكومبوهات", fn: () => navigate("shop", { category: "sets" }) }}>
-      <div className="combos-grid">
+      <div className="combos-carousel">
         {combos.map(p => {
           const manualPieces = parseInt(p.combo_pieces);
           const pieces = Number.isFinite(manualPieces) && manualPieces > 0
