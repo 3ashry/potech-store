@@ -894,6 +894,14 @@ input,select,textarea{font-family:inherit;}
 .cat-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
 .cat-carousel .card{min-width:160px;max-width:220px;scroll-snap-align:start;flex-shrink:0;}
 @media(min-width:768px){.cat-carousel .card{min-width:260px;max-width:260px;}}
+/* ── Desktop arrow controls for horizontal product rails ── */
+.carousel-wrap{position:relative;}
+.carousel-arrow{display:none;position:absolute;top:calc(50% - 22px);transform:translateY(-50%);z-index:6;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,0.96);color:var(--ink);align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.14);transition:transform .15s,background .15s;padding:0;font-size:22px;font-weight:900;line-height:1;font-family:inherit;}
+.carousel-arrow:hover{background:var(--brand);color:#fff;transform:translateY(-50%) scale(1.05);}
+.carousel-arrow[disabled]{opacity:0;pointer-events:none;}
+.carousel-arrow-prev{insetInlineStart:-18px;}
+.carousel-arrow-next{insetInlineEnd:-18px;}
+@media(min-width:900px){.carousel-arrow{display:flex;}}
 @media(max-width:768px){
   .mega{position:fixed;top:auto;left:0;right:0;width:100vw;max-height:80vh;overflow-y:auto;border-radius:0 0 16px 16px;box-shadow:0 12px 40px rgba(0,0,0,0.18);z-index:9999;}
   .mega-inner{grid-template-columns:1fr;}
@@ -1342,6 +1350,47 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
 
 
 /* ─── Sections ───────────────────────────────────────────────────────────── */
+// Horizontal product rail with prev/next arrow buttons on desktop.
+// Mobile keeps the native touch-scroll behaviour (arrows hidden < 900px).
+// Arrows sit in the section's outer gutter so they never cover a card.
+// Disabled state hides the arrow when we're already at that edge.
+const Carousel = ({ children, className = "cat-carousel" }) => {
+  const ref = useRef(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const isRtl = getComputedStyle(el).direction === 'rtl';
+      const max = el.scrollWidth - el.clientWidth;
+      const pos = isRtl ? Math.abs(el.scrollLeft) : el.scrollLeft;
+      setAtStart(pos <= 2);
+      setAtEnd(pos >= max - 2);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => { el.removeEventListener('scroll', update); ro.disconnect(); };
+  });
+  const scroll = (dir) => {
+    const el = ref.current;
+    if (!el) return;
+    const card = el.querySelector('.card') || el.firstElementChild;
+    const step = card ? card.getBoundingClientRect().width + 14 : 280;
+    const isRtl = getComputedStyle(el).direction === 'rtl';
+    el.scrollBy({ left: (isRtl ? -1 : 1) * dir * step * 2, behavior: 'smooth' });
+  };
+  return (
+    <div className="carousel-wrap">
+      <button type="button" className="carousel-arrow carousel-arrow-prev" onClick={() => scroll(-1)} disabled={atStart} aria-label="السابق">‹</button>
+      <div ref={ref} className={className}>{children}</div>
+      <button type="button" className="carousel-arrow carousel-arrow-next" onClick={() => scroll(1)} disabled={atEnd} aria-label="التالي">›</button>
+    </div>
+  );
+};
+
 const Section = ({ id, num, eyebrow, title, children, cta }) => (
   <section id={id} className="section">
     <div className="wrap">
@@ -1373,7 +1422,7 @@ const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
       </div>
       {items.length===0
         ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>لا توجد منتجات بعد.</div>
-        : <div className="cat-carousel">{sortPinned(items, PINNED_TOP_SELLING).slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
+        : <Carousel>{sortPinned(items, PINNED_TOP_SELLING).slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</Carousel>
       }
     </Section>
   );
@@ -1384,9 +1433,9 @@ const OffersSection = ({ products, onAdd, navigate, onWish, isWished }) => {
   if (!offerProducts.length) return null;
   return (
     <Section id="offers" num="04" eyebrow="DAILY OFFERS" title="عروض اليوم" cta={{ label:"كل العروض", fn:()=>navigate("shop",{category:"offers"}) }}>
-      <div className="cat-carousel">
+      <Carousel>
         {offerProducts.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}
-      </div>
+      </Carousel>
     </Section>
   );
 };
@@ -1553,12 +1602,12 @@ const CombosSection = ({ products, navigate, onAdd, onWish, isWished }) => {
   return (
     <Section id="home-combos" num="04d" eyebrow="COMBOS" title="كومبوهات وأطقم العدة"
       cta={{ label: "شوف كل الكومبوهات", fn: () => navigate("shop", { category: "sets" }) }}>
-      <div className="cat-carousel">
+      <Carousel>
         {combos.map(p => (
           <ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate}
             onWish={onWish} isWished={isWished ? isWished(p.id) : false}/>
         ))}
-      </div>
+      </Carousel>
     </Section>
   );
 };
@@ -1588,9 +1637,9 @@ const CategoryRail = ({ catId, num, eyebrow, title, desc, products, onAdd, navig
             </div>
           </div>
           <div style={{overflow:"hidden"}}>
-            <div className="cat-carousel">
+            <Carousel>
               {sorted.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}
-            </div>
+            </Carousel>
           </div>
         </div>
       </div>
@@ -3039,7 +3088,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
           <GardenBanner settings={settings} onUpdateSettings={updateSettings} showToast={showToast} editMode={editMode} navigate={navigate}/>
           <CategoryRail catId="electric" num="04b" eyebrow="CORDED POWER" title="الأدوات الكهربائية" desc="آلات كهربائية للنجارة والحدادة والديكور — قوة مستمرة، أداء احترافي، موثوقية الاستخدام اليومي في الورش والمواقع." pinnedCodes={PINNED_ELECTRIC} {...sharedProps}/>
           <Section id="new" num="05" eyebrow="NEW ARRIVALS" title="وصل حديثاً" cta={{label:"عرض كل الجديد",fn:()=>navigate("shop",{category:"new"})}}>
-            <div className="cat-carousel">{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate} onWish={toggleWish} isWished={isWished(p.id)}/>)}</div>
+            <Carousel>{products.slice(-8).reverse().map(p=><ProductCard key={p.id} p={p} onAdd={addToCart} onNavigate={navigate} onWish={toggleWish} isWished={isWished(p.id)}/>)}</Carousel>
           </Section>
           <ReviewsSection/>
         </>
