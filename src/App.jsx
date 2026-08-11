@@ -679,9 +679,11 @@ input,select,textarea{font-family:inherit;}
 @media(max-width:520px){.combos-grid{grid-template-columns:1fr;}}
 .combo-tile{position:relative;display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;text-align:right;padding:0;cursor:pointer;transition:transform .2s,box-shadow .2s;font-family:inherit;color:inherit;}
 .combo-tile:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);}
-.combo-media{position:relative;aspect-ratio:16/9;background:#e8e2d3;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-.combo-media img{width:100%;height:100%;object-fit:cover;}
-.combo-media::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(0,0,0,0.04) 14px 15px);pointer-events:none;}
+.combo-media{position:relative;aspect-ratio:1/1;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:14px;}
+.combo-media img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;position:relative;z-index:1;}
+/* Beige stripe backdrop only shown when there's no image (placeholder mode). */
+.combo-media:not(:has(img)){background:#e8e2d3;}
+.combo-media:not(:has(img))::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 14px,rgba(0,0,0,0.04) 14px 15px);pointer-events:none;}
 .combo-photo-label{color:#a89e88;font-family:var(--f-mono);font-size:0.85rem;letter-spacing:0.18em;font-weight:700;position:relative;z-index:1;}
 .combo-savings{position:absolute;top:12px;insetInlineEnd:auto;left:12px;background:var(--brand);color:#fff;font-family:var(--f-ar);font-weight:800;font-size:0.8rem;padding:5px 12px;border-radius:999px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.15);}
 .combo-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;}
