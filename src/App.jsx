@@ -689,8 +689,7 @@ input,select,textarea{font-family:inherit;}
 .combo-photo-label{color:#a89e88;font-family:var(--f-mono);font-size:0.85rem;letter-spacing:0.18em;font-weight:700;position:relative;z-index:1;}
 .combo-savings{position:absolute;top:12px;insetInlineEnd:auto;left:12px;background:var(--brand);color:#fff;font-family:var(--f-ar);font-weight:800;font-size:0.8rem;padding:5px 12px;border-radius:999px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.15);}
 .combo-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;}
-.combo-pieces{font-family:var(--f-ar);font-size:0.72rem;color:var(--ink-3);font-weight:700;}
-.combo-name{margin:2px 0 0;font-family:var(--f-ar);font-size:1.05rem;font-weight:800;line-height:1.3;color:var(--ink);}
+.combo-name{margin:0;font-family:var(--f-ar);font-size:1.05rem;font-weight:800;line-height:1.3;color:var(--ink);}
 .combo-desc{margin:0;font-family:var(--f-ar);font-size:0.78rem;color:var(--ink-3);line-height:1.4;}
 .combo-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:8px;}
 .combo-cta{color:var(--brand);font-family:var(--f-ar);font-weight:800;font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;}
@@ -1561,9 +1560,7 @@ const GardenBanner = ({ settings, onUpdateSettings, showToast, editMode, navigat
 };
 
 // All combos shown here — a product counts as a combo if it's in the
-// "sets" (Tool Sets & Combos) category. Piece count comes from the
-// manually-entered `combo_pieces` field (set from the dashboard product
-// form); falls back to `bundle_with.length + 1` if that's not set yet.
+// "sets" (Tool Sets & Combos) category, or has a populated bundle_with.
 // Savings badge = original_price − sell_price when both are known.
 const CombosSection = ({ products, navigate }) => {
   const isCombo = (p) => {
@@ -1578,10 +1575,6 @@ const CombosSection = ({ products, navigate }) => {
       cta={{ label: "شوف كل الكومبوهات", fn: () => navigate("shop", { category: "sets" }) }}>
       <div className="combos-carousel">
         {combos.map(p => {
-          const manualPieces = parseInt(p.combo_pieces);
-          const pieces = Number.isFinite(manualPieces) && manualPieces > 0
-            ? manualPieces
-            : (Array.isArray(p.bundle_with) ? p.bundle_with.length : 0) + 1;
           const price = parseFloat(p.sell_price || p.price || 0);
           const orig = parseFloat(p.original_price || p.orig_price || 0);
           const savings = orig > price ? Math.round(orig - price) : 0;
@@ -1594,7 +1587,6 @@ const CombosSection = ({ products, navigate }) => {
                 {savings > 0 && <span className="combo-savings">وفر {fmtNum(savings)} جنيه</span>}
               </div>
               <div className="combo-body">
-                <div className="combo-pieces">{pieces} قطعة</div>
                 <h3 className="combo-name">{p.name}</h3>
                 {desc && <p className="combo-desc">{desc}</p>}
                 <div className="combo-foot">
