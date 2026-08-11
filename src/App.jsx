@@ -187,6 +187,9 @@ const CATS = [
 const PINNED_TOP_SELLING = ['thkthp41667','tidli426981','thkthp41487','thkthp90076','tws10501','tpwli20362','web1520','th118366'];
 const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
 const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
+// Featured combos — appear first in the Home Combos carousel AND at the top
+// of the "Tool Sets & Combos" (sets) category on the shop page.
+const PINNED_SETS = ['tckli20358','tckli20286','tckli202598','tckli20256'];
 
 /* ─── Accessory rules ─────────────────────────────────────────────────────────
    Category-aware complementary suggestions. If a customer's cart contains a
@@ -1601,7 +1604,7 @@ const CombosSection = ({ products, navigate, onAdd, onWish, isWished }) => {
     const cats = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
     return cats.includes('sets') || (Array.isArray(p.bundle_with) && p.bundle_with.length > 0);
   };
-  const combos = (products || []).filter(isCombo);
+  const combos = sortPinned((products || []).filter(isCombo), PINNED_SETS);
   if (!combos.length) return null;
   return (
     <Section id="home-combos" num="04d" eyebrow="COMBOS" title="كومبوهات وأطقم العدة"
@@ -1896,10 +1899,15 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
     return matchCat && matchSearch;
   });
   // Default sort: free-shipping products first (strongest marketing signal).
-  // Explicit price sorts override this.
+  // Explicit price sorts override this. Category-specific pinning applies on
+  // top of the default sort so featured combos stay at the head of the "sets"
+  // category page — but users who choose price sorting see pure price order.
   if (sort==="price_asc") items=[...items].sort((a,b)=>a.price-b.price);
   else if (sort==="price_desc") items=[...items].sort((a,b)=>b.price-a.price);
-  else items=[...items].sort((a,b)=>((b.free_shipping===true)?1:0)-((a.free_shipping===true)?1:0));
+  else {
+    items=[...items].sort((a,b)=>((b.free_shipping===true)?1:0)-((a.free_shipping===true)?1:0));
+    if (cat === 'sets') items = sortPinned(items, PINNED_SETS);
+  }
 
   return (
     <div className="shop-layout">
