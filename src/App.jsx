@@ -2031,6 +2031,14 @@ function applyProductSeo(product){
 const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWished }) => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  // Variants: `product.variants` is an optional array of {name, price}. If
+  // present, the customer picks one and its price + label overrides the
+  // base product's price + gets appended to the cart line.
+  const variants = Array.isArray(product.variants) ? product.variants.filter(v => v && v.name) : [];
+  const hasVariants = variants.length > 0;
+  const [variantIdx, setVariantIdx] = useState(0);
+  useEffect(() => setVariantIdx(0), [product.id]);
+  const selectedVariant = hasVariants ? variants[variantIdx] : null;
   useEffect(() => applyProductSeo(product), [product.id]);
   useEffect(() => {
     window.fbq?.('track', 'ViewContent', {
@@ -2046,8 +2054,14 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
   const suggested = smartSuggestions(product, products, { limit: 4, excludeIds: [product.id] });
   const bundleWith = bundleCompanions(product, products);
   const hasOffer = product.is_offer && product.offer_price && product.offer_price < product.price;
-  const displayPrice = hasOffer ? product.offer_price : product.price;
-  const discount = hasOffer ? Math.round((1-product.offer_price/product.price)*100) : (product.old_price>product.price ? Math.round((1-product.price/product.old_price)*100) : 0);
+  const baseDisplay = hasOffer ? product.offer_price : product.price;
+  // When a variant is chosen its price wins over the base price. Offer
+  // discounts don't apply on top of variant pricing — variants are a
+  // separate pricing dimension (different SKU-in-one).
+  const displayPrice = selectedVariant ? parseFloat(selectedVariant.price) : baseDisplay;
+  const discount = !selectedVariant && hasOffer
+    ? Math.round((1-product.offer_price/product.price)*100)
+    : (!selectedVariant && product.old_price>product.price ? Math.round((1-product.price/product.old_price)*100) : 0);
   const wished = isWished?.(product.id);
   return (
     <div className="product-detail">
@@ -2085,7 +2099,28 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
           <div style={{color:product.qty>0?"var(--green)":"var(--red)",fontWeight:700,fontSize:"0.85rem"}}>
             {product.qty>0 ? `✓ متوفر (${product.qty} قطعة في المخزون)` : "✗ نفذ المخزون"}
           </div>
-          {product.qty>0 && (
+          {hasVariants && (
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              <div style={{fontWeight:800,fontSize:"0.9rem"}}>اختر النوع:</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {variants.map((v, i) => {
+                  const on = i === variantIdx;
+                  return (
+                    <button key={i} type="button" onClick={()=>setVariantIdx(i)}
+                      style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,textAlign:"right",padding:"12px 14px",border:`2px solid ${on ? 'var(--brand)' : 'var(--line)'}`,borderRadius:"var(--radius)",background:on ? '#fff7f2' : 'var(--bg-2)',cursor:"pointer",fontFamily:"var(--f-ar)"}}>
+                      <span style={{fontWeight:700,fontSize:"0.92rem",flex:1}}>{v.name}</span>
+                      <span style={{fontFamily:"var(--f-mono)",fontWeight:900,fontSize:"1rem",color:on ? 'var(--brand)' : 'var(--ink-2)'}}>{fmtEGP(v.price)} ج.م</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {product.qty>0 && (() => {
+            const cartItem = selectedVariant
+              ? { ...product, name: `${product.name} — ${selectedVariant.name}`, price: parseFloat(selectedVariant.price), offer_price: null, is_offer: false, variant_name: selectedVariant.name, qty }
+              : { ...product, qty };
+            return (
             <>
               <div className="qty-row">
                 <span style={{fontWeight:700,fontSize:"0.9rem"}}>الكمية:</span>
@@ -2096,15 +2131,16 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
                 </div>
               </div>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                <button className="btn btn-primary lg" style={{flex:1,border:0}} onClick={()=>onAdd({...product,qty})}>+ أضف للسلة</button>
-                <button className="btn btn-dark lg" style={{flex:1,border:0}} onClick={()=>{onAdd({...product,qty});navigate("checkout");}}>اشترِ الآن</button>
+                <button className="btn btn-primary lg" style={{flex:1,border:0}} onClick={()=>onAdd(cartItem)}>+ أضف للسلة</button>
+                <button className="btn btn-dark lg" style={{flex:1,border:0}} onClick={()=>{onAdd(cartItem);navigate("checkout");}}>اشترِ الآن</button>
                 <button onClick={()=>onWish?.(product)}
                   style={{width:44,height:44,border:`1.5px solid ${wished?"#e53e3e":"var(--line)"}`,borderRadius:"var(--radius)",background:wished?"#fff0f0":"var(--bg)",color:wished?"#e53e3e":"var(--ink-3)",display:"grid",placeItems:"center",cursor:"pointer",flexShrink:0,transition:"all .15s"}}>
                   <Icon name="heart" size={18}/>
                 </button>
               </div>
             </>
-          )}
+            );
+          })()}
           <div style={{background:"var(--bg-2)",borderRadius:"var(--radius)",padding:"14px 16px",display:"flex",gap:20,flexWrap:"wrap"}}>
             {[["🚚","شحن ٣-٤ أيام"],["🔒","منتج أصلي"],["🔧","ضمان ٦ أشهر"],["↩️","استبدال ٧ أيام"]].map(([ic,t])=>(
               <span key={t} style={{fontSize:"0.8rem",color:"var(--ink-2)",display:"flex",alignItems:"center",gap:5}}><span>{ic}</span>{t}</span>
