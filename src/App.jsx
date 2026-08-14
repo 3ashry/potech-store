@@ -189,7 +189,7 @@ const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
 const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
 // Featured combos — appear first in the Home Combos carousel AND at the top
 // of the "Tool Sets & Combos" (sets) category on the shop page.
-const PINNED_SETS = ['thkthp41677','thkthp41667','tckli20358','tckli20286','tckli202598','tckli20256'];
+const PINNED_SETS = ['tckli202598','thkthp41677','thkthp41667','tckli20358','tckli20286','tckli20256'];
 
 /* ─── Accessory rules ─────────────────────────────────────────────────────────
    Category-aware complementary suggestions. If a customer's cart contains a
