@@ -883,14 +883,35 @@ input,select,textarea{font-family:inherit;}
 /* SHOP PAGE */
 .shop-layout{max-width:var(--wrap);margin:0 auto;padding:32px 16px;}
 .shop-grid{display:grid;grid-template-columns:220px 1fr;gap:28px;align-items:start;}
-@media(max-width:768px){.shop-grid{grid-template-columns:1fr;}}
 .shop-sidebar{position:sticky;top:100px;}
-@media(max-width:768px){.shop-sidebar{position:static;}}
 .sidebar-box{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-md);padding:18px;margin-bottom:14px;}
 .sidebar-box h4{margin:0 0 12px;font-size:0.85rem;font-weight:800;}
 .sidebar-cat-btn{display:block;width:100%;text-align:right;padding:7px 10px;background:none;border:none;border-radius:var(--radius);font-family:var(--f-ar);font-size:0.85rem;cursor:pointer;color:var(--ink-2);font-weight:400;margin-bottom:2px;transition:all .15s;}
 .sidebar-cat-btn.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:700;border-right:3px solid var(--brand);}
 .sidebar-cat-btn:hover:not(.on){background:var(--bg-2);}
+/* Desktop keeps the sidebar as it was: <details> panels behave as plain
+   containers, summary bar is invisible so the h4 headings + full lists show. */
+@media(min-width:769px){
+  .shop-sidebar details > summary{display:none;}
+  .shop-sidebar details > .drawer-body{padding:0;}
+  .shop-sidebar details > .drawer-body h4{display:block;}
+}
+/* Mobile — collapse the sidebar into two summary/details drawers that sit
+   above the product grid. Products still appear immediately because each
+   drawer is closed by default and only a compact bar shows. Also stops
+   the sticky positioning so it doesn't shove things around on scroll. */
+@media(max-width:768px){
+  .shop-grid{grid-template-columns:1fr;gap:12px;}
+  .shop-sidebar{position:static;top:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+  .shop-sidebar .sidebar-box{margin-bottom:0;padding:0;border-radius:12px;overflow:hidden;}
+  .shop-sidebar details > summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;cursor:pointer;font-family:var(--f-ar);font-weight:800;font-size:0.92rem;color:var(--ink);user-select:none;}
+  .shop-sidebar details > summary::-webkit-details-marker{display:none;}
+  .shop-sidebar details > summary::after{content:"▾";font-size:0.85rem;color:var(--brand);transition:transform .2s;}
+  .shop-sidebar details[open] > summary::after{transform:rotate(180deg);}
+  .shop-sidebar details > .drawer-body{padding:0 14px 14px;}
+  .shop-sidebar details > .drawer-body h4{display:none;}
+  .shop-sidebar .cat-current{font-family:var(--f-ar);font-weight:600;color:var(--brand);font-size:0.82rem;margin-inline-end:6px;}
+}
 .cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:flex-start;}
 .cat-carousel::-webkit-scrollbar{height:4px;}
 .cat-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
@@ -1909,20 +1930,41 @@ const ShopPage = ({ products, onAdd, navigate, initialCat, initialSearch, onWish
     if (cat === 'sets') items = sortPinned(items, PINNED_SETS);
   }
 
+  const currentCatLabel = cat === 'all' ? 'الكل'
+    : (CATS.find(c => c.id === cat)?.ar || 'الكل');
   return (
     <div className="shop-layout">
-      <h1 style={{margin:"0 0 24px",fontSize:"1.6rem",fontWeight:900}}>كل المنتجات</h1>
+      <h1 style={{margin:"0 0 24px",fontSize:"1.6rem",fontWeight:900}}>{currentCatLabel}</h1>
       <div className="shop-grid">
+        {/* Sidebar wraps each box in <details> so mobile shows collapsed
+            drawers (products stay above the fold). Desktop CSS forces both
+            drawers open via `[open]`-less styling and keeps them visible. */}
         <div className="shop-sidebar">
           <div className="sidebar-box">
-            <h4>بحث</h4>
-            <input className="form-input" value={search} onChange={e=>setSearch(e.target.value)} placeholder="اسم المنتج أو الكود…"/>
+            <details open>
+              <summary>
+                <span>🔍 بحث</span>
+                {search && <span className="cat-current">{search}</span>}
+              </summary>
+              <div className="drawer-body">
+                <h4>بحث</h4>
+                <input className="form-input" value={search} onChange={e=>setSearch(e.target.value)} placeholder="اسم المنتج أو الكود…"/>
+              </div>
+            </details>
           </div>
           <div className="sidebar-box">
-            <h4>الأقسام</h4>
-            {[{id:"all",ar:"الكل"},...CATS].map(c => (
-              <button key={c.id} className={`sidebar-cat-btn${cat===c.id?" on":""}`} onClick={()=>setCat(c.id)}>{c.ar}</button>
-            ))}
+            <details>
+              <summary>
+                <span>📂 الأقسام</span>
+                <span className="cat-current">{currentCatLabel}</span>
+              </summary>
+              <div className="drawer-body">
+                <h4>الأقسام</h4>
+                {[{id:"all",ar:"الكل"},...CATS].map(c => (
+                  <button key={c.id} className={`sidebar-cat-btn${cat===c.id?" on":""}`} onClick={()=>setCat(c.id)}>{c.ar}</button>
+                ))}
+              </div>
+            </details>
           </div>
         </div>
         <div>
