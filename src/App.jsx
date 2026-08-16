@@ -890,10 +890,13 @@ input,select,textarea{font-family:inherit;}
 .sidebar-cat-btn.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:700;border-right:3px solid var(--brand);}
 .sidebar-cat-btn:hover:not(.on){background:var(--bg-2);}
 /* Desktop keeps the sidebar as it was: <details> panels behave as plain
-   containers, summary bar is invisible so the h4 headings + full lists show. */
+   containers. Native <details> hides non-summary children when the element
+   isn't `open`, so we force the drawer-body to always render, and hide the
+   summary bar so only the h4 headings + full lists show — exactly like the
+   pre-details layout. */
 @media(min-width:769px){
   .shop-sidebar details > summary{display:none;}
-  .shop-sidebar details > .drawer-body{padding:0;}
+  .shop-sidebar details > .drawer-body{display:block !important;padding:0;}
   .shop-sidebar details > .drawer-body h4{display:block;}
 }
 /* Mobile — collapse the sidebar into two summary/details drawers that sit
