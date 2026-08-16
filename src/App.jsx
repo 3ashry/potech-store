@@ -891,7 +891,7 @@ input,select,textarea{font-family:inherit;}
 .sidebar-cat-btn:hover:not(.on){background:var(--bg-2);}
 /* Desktop keeps the sidebar as it was: <details> panels behave as plain
    containers. Native <details> hides non-summary children when the element
-   isn't `open`, so we force the drawer-body to always render, and hide the
+   isn't open, so we force the drawer-body to always render, and hide the
    summary bar so only the h4 headings + full lists show — exactly like the
    pre-details layout. */
 @media(min-width:769px){
