@@ -663,6 +663,24 @@ input,select,textarea{font-family:inherit;}
 .dot-green{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;}
 .live-dot{width:8px;height:8px;background:#e11d48;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 0 0 rgba(225,29,72,0.6);animation:live-pulse 1.6s ease-in-out infinite;}
 @keyframes live-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,0.55);}70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+.flash-banner{display:flex;align-items:center;gap:14px;padding:10px 18px;background:linear-gradient(90deg,#dc2626 0%,#ea580c 100%);color:#fff;cursor:pointer;user-select:none;border:0;font-family:var(--f-ar);position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(220,38,38,0.28);}
+.flash-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 50%, rgba(255,255,255,0.18), transparent 60%);pointer-events:none;}
+.flash-banner-bolt{font-size:1.4rem;animation:flash-shake 1.4s ease-in-out infinite;}
+@keyframes flash-shake{0%,100%{transform:rotate(-6deg) scale(1);}50%{transform:rotate(6deg) scale(1.1);}}
+.flash-banner-text{font-weight:900;font-size:1rem;letter-spacing:0.02em;}
+.flash-banner-timer{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-mono);font-weight:900;font-size:0.95rem;background:rgba(0,0,0,0.22);padding:5px 10px;border-radius:8px;margin-inline-start:auto;}
+.flash-unit{display:inline-flex;align-items:baseline;gap:2px;}
+.flash-unit b{font-size:1rem;font-weight:900;min-width:22px;text-align:center;}
+.flash-unit em{font-style:normal;font-size:0.62rem;opacity:0.75;font-family:var(--f-ar);}
+.flash-sep{opacity:0.6;font-weight:900;padding:0 1px;}
+.flash-banner-cta{background:#fff;color:#dc2626;border:0;padding:7px 14px;border-radius:999px;font-weight:900;font-size:0.85rem;font-family:var(--f-ar);cursor:pointer;transition:transform .12s;flex-shrink:0;}
+.flash-banner-cta:hover{transform:scale(1.05);}
+@media(max-width:640px){
+  .flash-banner{gap:8px;padding:9px 12px;flex-wrap:wrap;}
+  .flash-banner-text{font-size:0.85rem;flex:1;min-width:0;}
+  .flash-banner-timer{margin-inline-start:0;font-size:0.85rem;padding:4px 8px;order:3;flex-basis:100%;justify-content:center;}
+  .flash-banner-cta{padding:6px 12px;font-size:0.78rem;}
+}
 .add{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;background:var(--ink);color:var(--bg);border-radius:var(--radius);font-size:0.78rem;font-weight:700;transition:all .15s;border:0;white-space:nowrap;}.add:hover{background:var(--brand);color:#fff;}
 .add:disabled{opacity:.4;cursor:not-allowed;}
 
@@ -2303,12 +2321,6 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
           <button className="btn btn-dark lg" onClick={()=>{onAdd(cartItem);navigate("checkout");}}>اشترِ الآن</button>
         </div>
       )}
-      {product.qty>0 && (
-        <div className="product-sticky-bar">
-          <button className="btn btn-primary lg" onClick={()=>onAdd(cartItem)}>+ أضف للسلة</button>
-          <button className="btn btn-dark lg" onClick={()=>{onAdd(cartItem);navigate("checkout");}}>اشترِ الآن</button>
-        </div>
-      )}
     </div>
   );
 };
@@ -3072,6 +3084,101 @@ const EditBar = ({ editMode, setEditMode, comingSoon, toggleComingSoon }) => (
     <span style={{color:"rgba(255,255,255,.4)",fontSize:"0.7rem",marginInlineStart:"auto"}}>protech-stores.vercel.app → إدارة المنتجات والطلبات</span>
   </div>
 );
+/* ─── Flash Offer countdown banner ─────────────────────────────────────────
+   Reads settings.flash_offer.value = {enabled, end_at}. Renders a red
+   attention bar at the top of every screen except the flash-offers page
+   itself. Ticks the countdown once a second in state so the h/m/s numbers
+   decrement live. Hides itself when disabled or the deadline has passed. */
+const FlashCountdownBanner = ({ settings, page, navigate }) => {
+  const cfg = settings.flash_offer?.value;
+  const endMs = cfg?.end_at ? new Date(cfg.end_at).getTime() : 0;
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!cfg?.enabled || !endMs) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [cfg?.enabled, endMs]);
+  if (!cfg?.enabled || !endMs) return null;
+  const remaining = Math.max(0, endMs - now);
+  if (remaining <= 0) return null;
+  if (page === "flash") return null;
+  const s = Math.floor(remaining / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return (
+    <div className="flash-banner" onClick={() => navigate("flash")} role="button" tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate("flash"); }}>
+      <span className="flash-banner-bolt" aria-hidden="true">⚡</span>
+      <span className="flash-banner-text">الحق شوف عروض بروتيك</span>
+      <span className="flash-banner-timer" aria-label="الوقت المتبقي">
+        <span className="flash-unit"><b>{pad(h)}</b><em>س</em></span>
+        <span className="flash-sep">:</span>
+        <span className="flash-unit"><b>{pad(m)}</b><em>د</em></span>
+        <span className="flash-sep">:</span>
+        <span className="flash-unit"><b>{pad(sec)}</b><em>ث</em></span>
+      </span>
+      <button type="button" className="flash-banner-cta" onClick={e => { e.stopPropagation(); navigate("flash"); }}>
+        اكتشف العروض ›
+      </button>
+    </div>
+  );
+};
+
+/* ─── Flash Offers page — lists every product with is_flash_offer=true ──── */
+const FlashOffersPage = ({ products, settings, onAdd, navigate, onWish, isWished }) => {
+  const cfg = settings.flash_offer?.value;
+  const endMs = cfg?.end_at ? new Date(cfg.end_at).getTime() : 0;
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!endMs) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [endMs]);
+  const flashProducts = (products || []).filter(p => p.is_flash_offer === true && (p.is_published !== false) && (Number(p.qty || 0) > 0));
+  const remaining = Math.max(0, endMs - now);
+  const s = Math.floor(remaining / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return (
+    <div style={{maxWidth:1200, margin:"0 auto", padding:"24px 16px 60px"}}>
+      <div style={{background:"linear-gradient(135deg,#dc2626,#ea580c)", color:"#fff", borderRadius:14, padding:"22px 22px", marginBottom:24, boxShadow:"0 12px 32px rgba(220,38,38,0.28)"}}>
+        <div style={{fontSize:"0.85rem", opacity:0.9, fontWeight:700, marginBottom:6, letterSpacing:"0.04em"}}>⚡ FLASH OFFERS</div>
+        <h1 style={{margin:0, fontSize:"1.7rem", fontWeight:900}}>الحق شوف عروض بروتيك</h1>
+        {endMs > 0 && remaining > 0 && (
+          <div style={{marginTop:14, display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}>
+            <span style={{fontSize:"0.85rem", opacity:0.9}}>ينتهي خلال:</span>
+            <div style={{display:"inline-flex", gap:6, fontFamily:"var(--f-mono)", fontWeight:900, fontSize:"1.35rem"}}>
+              <span style={{background:"rgba(0,0,0,0.25)", borderRadius:8, padding:"6px 10px", minWidth:56, textAlign:"center"}}>{pad(h)}<span style={{fontSize:"0.6rem", display:"block", opacity:0.7, fontWeight:700, marginTop:2}}>ساعة</span></span>
+              <span style={{background:"rgba(0,0,0,0.25)", borderRadius:8, padding:"6px 10px", minWidth:56, textAlign:"center"}}>{pad(m)}<span style={{fontSize:"0.6rem", display:"block", opacity:0.7, fontWeight:700, marginTop:2}}>دقيقة</span></span>
+              <span style={{background:"rgba(0,0,0,0.25)", borderRadius:8, padding:"6px 10px", minWidth:56, textAlign:"center"}}>{pad(sec)}<span style={{fontSize:"0.6rem", display:"block", opacity:0.7, fontWeight:700, marginTop:2}}>ثانية</span></span>
+            </div>
+          </div>
+        )}
+        {endMs > 0 && remaining <= 0 && (
+          <div style={{marginTop:12, fontSize:"0.95rem", fontWeight:700}}>انتهى العرض — تابعنا لعروضنا القادمة</div>
+        )}
+      </div>
+      {flashProducts.length === 0 ? (
+        <div style={{textAlign:"center", padding:"60px 20px", color:"var(--ink-3)"}}>
+          <div style={{fontSize:"3rem", marginBottom:10}}>🕒</div>
+          <div style={{fontWeight:700, fontSize:"1.1rem", marginBottom:6}}>لا توجد عروض متاحة الآن</div>
+          <button className="btn btn-primary" style={{marginTop:16}} onClick={() => navigate("shop")}>تصفح كل المنتجات</button>
+        </div>
+      ) : (
+        <div className="rail rail-4">
+          {flashProducts.map(p => (
+            <ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ─── URL Routing ────────────────────────────────────────────────────────── */
 const buildUrl = (p, data) => {
   switch (p) {
@@ -3087,6 +3194,7 @@ const buildUrl = (p, data) => {
     case "checkout": return "/checkout";
     case "confirmation": return "/confirmation";
     case "orders": return "/orders";
+    case "flash": return "/flash-offers";
     case "info": return `/info/${data || ""}`;
     default: return "/";
   }
@@ -3107,6 +3215,7 @@ const parseUrl = (pathname, search, products) => {
   if (pathname === "/checkout") return { page: "checkout", data: null };
   if (pathname === "/confirmation") return { page: "confirmation", data: null };
   if (pathname === "/orders") return { page: "orders", data: null };
+  if (pathname === "/flash-offers") return { page: "flash", data: null };
   if (pathname.startsWith("/info/")) {
     const key = pathname.split("/info/")[1];
     return { page: "info", data: key };
@@ -3276,6 +3385,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
         dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
         wishCount={wishCount} onWishlist={()=>setWishlistOpen(true)}
       />
+      <FlashCountdownBanner settings={settings} page={page} navigate={navigate}/>
 
       {page==="home" && (
         <>
@@ -3300,6 +3410,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       {page==="checkout" && <CheckoutPage cart={cart} navigate={navigate} setCart={setCart} products={products} setProducts={setProducts} showToast={showToast}/>}
       {page==="confirmation" && <ConfirmationPage pageData={pageData} navigate={navigate}/>}
       {page==="orders" && <OrdersPage navigate={navigate}/>}
+      {page==="flash" && <FlashOffersPage products={products} settings={settings} onAdd={addToCart} navigate={navigate} onWish={toggleWish} isWished={isWished}/>}
       {page==="info" && <InfoPage pageKey={pageData} navigate={navigate}/>}
 
       <SiteFooter logoSrc={logoSrc} navigate={navigate}/>
