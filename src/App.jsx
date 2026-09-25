@@ -633,6 +633,8 @@ input,select,textarea{font-family:inherit;}
 .card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--line);padding-top:8px;margin-top:auto;}
 .card-stock{font-size:0.75rem;color:var(--ink-3);display:inline-flex;align-items:center;gap:5px;}
 .dot-green{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;}
+.live-dot{width:8px;height:8px;background:#e11d48;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 0 0 rgba(225,29,72,0.6);animation:live-pulse 1.6s ease-in-out infinite;}
+@keyframes live-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,0.55);}70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
 .add{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;background:var(--ink);color:var(--bg);border-radius:var(--radius);font-size:0.78rem;font-weight:700;transition:all .15s;border:0;white-space:nowrap;}.add:hover{background:var(--brand);color:#fff;}
 .add:disabled{opacity:.4;cursor:not-allowed;}
 
@@ -2085,6 +2087,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
   useEffect(() => setVariantIdx(0), [product.id]);
   const selectedVariant = hasVariants ? variants[variantIdx] : null;
   useEffect(() => applyProductSeo(product), [product.id]);
+  const [viewersCount, setViewersCount] = useState(1);
   useEffect(() => {
     window.fbq?.('track', 'ViewContent', {
       content_ids: [product.id],
@@ -2093,8 +2096,38 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
       value: Number(product.is_offer && product.offer_price ? product.offer_price : product.price) || 0,
       currency: 'EGP',
     });
-    logAnalytics('product_view', { product_id: product.id, product_code: product.code, product_name: product.name });
-  }, [product.id]);
+    if (!product?.code) return;
+    // Heartbeat — send product_view every 20s while tab is visible, so the
+    // count query sees this viewer as active until they leave. Rows older
+    // than ~45s stop counting toward "live viewers".
+    const beat = () => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      logAnalytics('product_view', { product_id: product.id, product_code: product.code, product_name: product.name });
+    };
+    beat();
+    const beatId = setInterval(beat, 20000);
+    // Poll live viewer count every 15s — distinct session_ids on
+    // analytics_events for this product in the last 45 seconds.
+    const fetchViewers = async () => {
+      try {
+        const since = new Date(Date.now() - 45000).toISOString();
+        const url = `${SB_URL}/rest/v1/analytics_events?event_type=eq.product_view`
+          + `&product_code=eq.${encodeURIComponent(product.code)}`
+          + `&created_at=gte.${encodeURIComponent(since)}`
+          + `&select=session_id`;
+        const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+        if (!res.ok) return;
+        const rows = await res.json();
+        const uniq = new Set(rows.map(r => r.session_id).filter(Boolean));
+        // Always include self so a lone visitor still sees "1 person".
+        uniq.add(getSessionId());
+        setViewersCount(uniq.size);
+      } catch {}
+    };
+    fetchViewers();
+    const pollId = setInterval(fetchViewers, 15000);
+    return () => { clearInterval(beatId); clearInterval(pollId); };
+  }, [product.id, product.code]);
   const imgs = Array.isArray(product.images) ? product.images : [];
   const suggested = smartSuggestions(product, products, { limit: 4, excludeIds: [product.id] });
   const bundleWith = bundleCompanions(product, products);
@@ -2141,9 +2174,20 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
             {discount>0 && <span style={{textDecoration:"line-through",color:"var(--ink-3)",fontSize:"1rem"}}>{fmtEGP(product.price)} ج.م</span>}
             {discount>0 && <span className="badge badge-offer" style={{position:"static"}}>خصم {discount}٪</span>}
           </div>
-          <div style={{color:product.qty>0?"var(--green)":"var(--red)",fontWeight:700,fontSize:"0.85rem"}}>
-            {product.qty>0 ? `✓ متوفر (${product.qty} قطعة في المخزون)` : "✗ نفذ المخزون"}
-          </div>
+          {product.qty>0 ? (
+            <div style={{color:"var(--brand)",fontWeight:700,fontSize:"0.9rem",display:"flex",alignItems:"center",gap:8}}>
+              <span className="live-dot" aria-hidden="true"></span>
+              {viewersCount === 1
+                ? "شخص واحد يشاهد هذا المنتج الآن"
+                : viewersCount === 2
+                ? "شخصان يشاهدان هذا المنتج الآن"
+                : (viewersCount >= 3 && viewersCount <= 10)
+                ? `${viewersCount} أشخاص يشاهدون هذا المنتج الآن`
+                : `${viewersCount} شخصًا يشاهدون هذا المنتج الآن`}
+            </div>
+          ) : (
+            <div style={{color:"var(--red)",fontWeight:700,fontSize:"0.85rem"}}>✗ نفذ المخزون</div>
+          )}
           {hasVariants && (
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               <div style={{fontWeight:800,fontSize:"0.9rem"}}>اختر النوع:</div>
