@@ -663,7 +663,9 @@ input,select,textarea{font-family:inherit;}
 .dot-green{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;}
 .live-dot{width:8px;height:8px;background:#e11d48;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 0 0 rgba(225,29,72,0.6);animation:live-pulse 1.6s ease-in-out infinite;}
 @keyframes live-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,0.55);}70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
-.flash-banner{display:flex;align-items:center;gap:14px;padding:10px 18px;background:linear-gradient(90deg,#dc2626 0%,#ea580c 100%);color:#fff;cursor:pointer;user-select:none;border:0;font-family:var(--f-ar);position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(220,38,38,0.28);}
+.header-stack{position:sticky;top:0;z-index:50;background:var(--bg);}
+.header-stack .site-header{position:relative;top:auto;z-index:auto;}
+.flash-banner{display:flex;align-items:center;gap:14px;padding:8px 18px;background:linear-gradient(90deg,#dc2626 0%,#ea580c 100%);color:#fff;cursor:pointer;user-select:none;border:0;font-family:var(--f-ar);position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(220,38,38,0.22);}
 .flash-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 50%, rgba(255,255,255,0.18), transparent 60%);pointer-events:none;}
 .flash-banner-bolt{font-size:1.4rem;animation:flash-shake 1.4s ease-in-out infinite;}
 @keyframes flash-shake{0%,100%{transform:rotate(-6deg) scale(1);}50%{transform:rotate(6deg) scale(1.1);}}
@@ -676,10 +678,14 @@ input,select,textarea{font-family:inherit;}
 .flash-banner-cta{background:#fff;color:#dc2626;border:0;padding:7px 14px;border-radius:999px;font-weight:900;font-size:0.85rem;font-family:var(--f-ar);cursor:pointer;transition:transform .12s;flex-shrink:0;}
 .flash-banner-cta:hover{transform:scale(1.05);}
 @media(max-width:640px){
-  .flash-banner{gap:8px;padding:9px 12px;flex-wrap:wrap;}
-  .flash-banner-text{font-size:0.85rem;flex:1;min-width:0;}
-  .flash-banner-timer{margin-inline-start:0;font-size:0.85rem;padding:4px 8px;order:3;flex-basis:100%;justify-content:center;}
-  .flash-banner-cta{padding:6px 12px;font-size:0.78rem;}
+  .flash-banner{gap:6px;padding:6px 10px;flex-wrap:nowrap;overflow:hidden;}
+  .flash-banner-bolt{font-size:1rem;}
+  .flash-banner-text{font-size:0.75rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .flash-banner-timer{margin-inline-start:0;font-size:0.72rem;padding:3px 6px;gap:2px;flex-shrink:0;}
+  .flash-unit b{font-size:0.78rem;min-width:16px;}
+  .flash-unit em{display:none;}
+  .flash-sep{padding:0;}
+  .flash-banner-cta{padding:4px 9px;font-size:0.68rem;flex-shrink:0;}
 }
 .add{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;background:var(--ink);color:var(--bg);border-radius:var(--radius);font-size:0.78rem;font-weight:700;transition:all .15s;border:0;white-space:nowrap;}.add:hover{background:var(--brand);color:#fff;}
 .add:disabled{opacity:.4;cursor:not-allowed;}
@@ -3146,7 +3152,6 @@ const FlashOffersPage = ({ products, settings, onAdd, navigate, onWish, isWished
   return (
     <div style={{maxWidth:1200, margin:"0 auto", padding:"24px 16px 60px"}}>
       <div style={{background:"linear-gradient(135deg,#dc2626,#ea580c)", color:"#fff", borderRadius:14, padding:"22px 22px", marginBottom:24, boxShadow:"0 12px 32px rgba(220,38,38,0.28)"}}>
-        <div style={{fontSize:"0.85rem", opacity:0.9, fontWeight:700, marginBottom:6, letterSpacing:"0.04em"}}>⚡ FLASH OFFERS</div>
         <h1 style={{margin:0, fontSize:"1.7rem", fontWeight:900}}>الحق شوف عروض بروتيك</h1>
         {endMs > 0 && remaining > 0 && (
           <div style={{marginTop:14, display:"flex", alignItems:"center", gap:10, flexWrap:"wrap"}}>
@@ -3380,12 +3385,14 @@ window.history.pushState({ page: "cart" }, "", "/cart");
   return (
     <>
       <style>{CSS}</style>
-      <SiteHeader
-        cartCount={cartCount} cartTotal={cartTotal} onCart={()=>{setCartOpen(true);window.history.pushState({page:"cart"},"","/cart");window.fbq?.('track','CustomEvent',{event_name:'ViewCart',num_items:cartCount,value:cartTotal,currency:'EGP'});}}
-        dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
-        wishCount={wishCount} onWishlist={()=>setWishlistOpen(true)}
-      />
-      <FlashCountdownBanner settings={settings} page={page} navigate={navigate}/>
+      <div className="header-stack">
+        <SiteHeader
+          cartCount={cartCount} cartTotal={cartTotal} onCart={()=>{setCartOpen(true);window.history.pushState({page:"cart"},"","/cart");window.fbq?.('track','CustomEvent',{event_name:'ViewCart',num_items:cartCount,value:cartTotal,currency:'EGP'});}}
+          dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
+          wishCount={wishCount} onWishlist={()=>setWishlistOpen(true)}
+        />
+        <FlashCountdownBanner settings={settings} page={page} navigate={navigate}/>
+      </div>
 
       {page==="home" && (
         <>
