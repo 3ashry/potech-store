@@ -771,6 +771,12 @@ input,select,textarea{font-family:inherit;}
 .product-detail{max-width:1200px;margin:0 auto;padding:32px 16px;}
 .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-bottom:40px;}
 @media(max-width:768px){.product-grid{grid-template-columns:1fr;}}
+.product-sticky-bar{display:none;}
+@media(max-width:900px){
+  .product-detail{padding-bottom:calc(88px + env(safe-area-inset-bottom));}
+  .product-sticky-bar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg);border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));gap:8px;box-shadow:0 -8px 24px rgba(0,0,0,0.10);}
+  .product-sticky-bar .btn{flex:1;min-width:0;border:0;padding:12px 8px;font-size:0.95rem;}
+}
 .gallery-main{border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;aspect-ratio:4/3;background:var(--bg-2);}
 .gallery-main img{width:100%;height:100%;object-fit:contain;padding:16px;}
 .gallery-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
@@ -2141,6 +2147,9 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
     ? Math.round((1-product.offer_price/product.price)*100)
     : (!selectedVariant && product.old_price>product.price ? Math.round((1-product.price/product.old_price)*100) : 0);
   const wished = isWished?.(product.id);
+  const cartItem = selectedVariant
+    ? { ...product, name: `${product.name} — ${selectedVariant.name}`, price: parseFloat(selectedVariant.price), offer_price: null, is_offer: false, variant_name: selectedVariant.name, qty }
+    : { ...product, qty };
   return (
     <div className="product-detail">
       <div style={{fontSize:"0.8rem",color:"var(--ink-3)",marginBottom:24,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
@@ -2205,11 +2214,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
               </div>
             </div>
           )}
-          {product.qty>0 && (() => {
-            const cartItem = selectedVariant
-              ? { ...product, name: `${product.name} — ${selectedVariant.name}`, price: parseFloat(selectedVariant.price), offer_price: null, is_offer: false, variant_name: selectedVariant.name, qty }
-              : { ...product, qty };
-            return (
+          {product.qty>0 && (
             <>
               <div className="qty-row">
                 <span style={{fontWeight:700,fontSize:"0.9rem"}}>الكمية:</span>
@@ -2228,8 +2233,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
                 </button>
               </div>
             </>
-            );
-          })()}
+          )}
           <div style={{background:"var(--bg-2)",borderRadius:"var(--radius)",padding:"14px 16px",display:"flex",gap:20,flexWrap:"wrap"}}>
             {[["🚚","شحن ٣-٤ أيام"],["🔒","منتج أصلي"],["🔧","ضمان ٦ أشهر"],["↩️","استبدال ٧ أيام"]].map(([ic,t])=>(
               <span key={t} style={{fontSize:"0.8rem",color:"var(--ink-2)",display:"flex",alignItems:"center",gap:5}}><span>{ic}</span>{t}</span>
@@ -2242,6 +2246,12 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
         <div>
           <h2 style={{fontSize:"1.3rem",fontWeight:900,marginBottom:18}}>منتجات قد تعجبك</h2>
           <div className="rail rail-4">{suggested.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
+        </div>
+      )}
+      {product.qty>0 && (
+        <div className="product-sticky-bar">
+          <button className="btn btn-primary lg" onClick={()=>onAdd(cartItem)}>+ أضف للسلة</button>
+          <button className="btn btn-dark lg" onClick={()=>{onAdd(cartItem);navigate("checkout");}}>اشترِ الآن</button>
         </div>
       )}
     </div>
