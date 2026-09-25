@@ -666,6 +666,26 @@ input,select,textarea{font-family:inherit;}
 .header-stack{position:-webkit-sticky;position:sticky;top:0;z-index:50;background:var(--bg);isolation:isolate;will-change:transform;}
 .header-stack > header.site-header,
 .header-stack .site-header{position:static !important;top:auto !important;z-index:auto !important;}
+/* Collapse header on scroll — hide the topbar strip + nav row and shrink
+   the logo so only the essentials (logo + icons + flash banner) stay
+   pinned. Every measurable property transitions so the collapse/expand
+   animates smoothly. */
+.header-stack .topbar,
+.header-stack .navbar{transition:max-height .24s ease,opacity .18s ease,padding .24s ease,border-color .24s ease;overflow:hidden;max-height:120px;}
+.header-stack .brand-mark,
+.header-stack .brand-mark img{transition:height .24s ease,max-width .24s ease,max-height .24s ease;}
+.header-stack .hdr-desktop,
+.header-stack .hdr-mobile{transition:padding .24s ease;}
+.header-stack.compact .topbar,
+.header-stack.compact .navbar{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-top-color:transparent;border-bottom-color:transparent;}
+.header-stack.compact .brand-mark{height:44px;max-width:150px;}
+.header-stack.compact .brand-mark img{max-height:44px;max-width:150px;}
+.header-stack.compact .hdr-desktop{padding-top:6px;padding-bottom:6px;}
+@media(max-width:767px){
+  .header-stack.compact .brand-mark{height:36px;max-width:120px;}
+  .header-stack.compact .brand-mark img{max-height:36px;max-width:120px;}
+  .header-stack.compact .hdr-mobile{padding-top:2px;padding-bottom:2px;}
+}
 .flash-banner{display:flex;align-items:center;gap:14px;padding:8px 18px;background:linear-gradient(90deg,#dc2626 0%,#ea580c 100%);color:#fff;cursor:pointer;user-select:none;border:0;font-family:var(--f-ar);position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(220,38,38,0.22);}
 .flash-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 50%, rgba(255,255,255,0.18), transparent 60%);pointer-events:none;}
 .flash-banner-bolt{font-size:1.4rem;animation:flash-shake 1.4s ease-in-out infinite;}
@@ -3317,6 +3337,20 @@ export default function App() {
     document.documentElement.setAttribute("lang","ar");
   }, [dark]);
 
+  // Compact-header on scroll: pulls the topbar + nav row + shrinks the logo
+  // once the customer has scrolled past ~80px, keeps the flash banner + icons
+  // visible. Restores back at the top.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const s = window.scrollY > 80;
+      setScrolled(prev => (prev === s ? prev : s));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
 
 const navigate = (p, data=null) => {
@@ -3386,7 +3420,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
   return (
     <>
       <style>{CSS}</style>
-      <div className="header-stack">
+      <div className={`header-stack ${scrolled ? "compact" : ""}`}>
         <SiteHeader
           cartCount={cartCount} cartTotal={cartTotal} onCart={()=>{setCartOpen(true);window.history.pushState({page:"cart"},"","/cart");window.fbq?.('track','CustomEvent',{event_name:'ViewCart',num_items:cartCount,value:cartTotal,currency:'EGP'});}}
           dark={dark} setDark={setDark} navigate={navigate} logoSrc={logoSrc}
