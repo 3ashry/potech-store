@@ -352,6 +352,34 @@ function bundleCompanions(product, allProducts) {
   return out.slice(0, 3);
 }
 
+/* ─── Related accessories rail — admin-set list ──────────────────────────────
+   Admin sets `accessories_with` on a product: comma-separated codes.
+   Storefront resolves them into products (any number). If the field is empty
+   or the admin hasn't populated it, we fall back to rule-based accessories
+   detection (drill → bits, grinder → discs, …). */
+function relatedAccessories(product, allProducts) {
+  if (!product || !Array.isArray(allProducts)) return [];
+  const raw = product.accessories_with;
+  const codes = Array.isArray(raw) ? raw : (typeof raw === 'string' ? raw.split(/[,\s]+/) : []);
+  const clean = codes.map(c => String(c || '').trim().toUpperCase()).filter(Boolean);
+  const byCode = new Map(allProducts.map(p => [String(p.code || '').toUpperCase(), p]));
+  const isEligible = p => p && p.id !== product.id && (p.is_published !== false) && (Number(p.qty || 0) > 0);
+  if (clean.length) {
+    const out = [];
+    const seen = new Set();
+    for (const c of clean) {
+      const p = byCode.get(c);
+      if (!p || seen.has(p.id)) continue;
+      if (!isEligible(p)) continue;
+      seen.add(p.id);
+      out.push(p);
+    }
+    if (out.length) return out;
+  }
+  // Fallback — rule-based accessories detection.
+  return accessoriesFor(product, allProducts).filter(isEligible);
+}
+
 /* ─── Compact suggestion strip UI ─────────────────────────────────────────── */
 const SuggestionStrip = ({ items, onAdd, navigate, title = 'قد يعجبك أيضاً', dense = false }) => {
   if (!items || !items.length) return null;
@@ -2135,8 +2163,15 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
     return () => { clearInterval(beatId); clearInterval(pollId); };
   }, [product.id, product.code]);
   const imgs = Array.isArray(product.images) ? product.images : [];
-  const suggested = smartSuggestions(product, products, { limit: 4, excludeIds: [product.id] });
   const bundleWith = bundleCompanions(product, products);
+  const accessoriesRail = relatedAccessories(product, products);
+  // "Similar" rail — auto-generated related products. Excludes the current
+  // product, anything in the bundle widget, and anything already surfaced
+  // in the accessories rail so a customer never sees the same card twice.
+  const similarRail = smartSuggestions(product, products, {
+    limit: 20,
+    excludeIds: [product.id, ...bundleWith.map(p => p.id), ...accessoriesRail.map(p => p.id)],
+  });
   const hasOffer = product.is_offer && product.offer_price && product.offer_price < product.price;
   const baseDisplay = hasOffer ? product.offer_price : product.price;
   // When a variant is chosen its price wins over the base price. Offer
@@ -2242,10 +2277,24 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
         </div>
       </div>
       <BundleRow product={product} companions={bundleWith} onAdd={onAdd}/>
-      {suggested.length>0 && (
-        <div>
-          <h2 style={{fontSize:"1.3rem",fontWeight:900,marginBottom:18}}>منتجات قد تعجبك</h2>
-          <div className="rail rail-4">{suggested.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</div>
+      {similarRail.length>0 && (
+        <div style={{marginTop:32}}>
+          <h2 style={{fontSize:"1.3rem",fontWeight:900,marginBottom:14}}>منتجات مشابهة</h2>
+          <Carousel>
+            {similarRail.map(p => (
+              <ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>
+            ))}
+          </Carousel>
+        </div>
+      )}
+      {accessoriesRail.length>0 && (
+        <div style={{marginTop:28}}>
+          <h2 style={{fontSize:"1.3rem",fontWeight:900,marginBottom:14}}>اكسسوارات ذات صلة</h2>
+          <Carousel>
+            {accessoriesRail.map(p => (
+              <ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>
+            ))}
+          </Carousel>
         </div>
       )}
       {product.qty>0 && (
