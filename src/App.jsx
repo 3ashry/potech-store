@@ -477,7 +477,7 @@ const STATUS_MAP = {
 /* ─── CSS ─────────────────────────────────────────────────────────────────── */
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
-*{box-sizing:border-box;}html,body{margin:0;padding:0;overflow-x:hidden;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;overflow-x:clip;}
 :root{
   --brand:#F26A21;--brand-ink:#C04E0F;--brand-soft:#FFE9DA;
   --ink:oklch(0.18 0.01 50);--ink-2:oklch(0.32 0.01 50);--ink-3:oklch(0.50 0.01 50);--mute:oklch(0.65 0.008 50);
@@ -663,8 +663,9 @@ input,select,textarea{font-family:inherit;}
 .dot-green{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;}
 .live-dot{width:8px;height:8px;background:#e11d48;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 0 0 rgba(225,29,72,0.6);animation:live-pulse 1.6s ease-in-out infinite;}
 @keyframes live-pulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,0.55);}70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
-.header-stack{position:sticky;top:0;z-index:50;background:var(--bg);}
-.header-stack .site-header{position:relative;top:auto;z-index:auto;}
+.header-stack{position:-webkit-sticky;position:sticky;top:0;z-index:50;background:var(--bg);isolation:isolate;will-change:transform;}
+.header-stack > header.site-header,
+.header-stack .site-header{position:static !important;top:auto !important;z-index:auto !important;}
 .flash-banner{display:flex;align-items:center;gap:14px;padding:8px 18px;background:linear-gradient(90deg,#dc2626 0%,#ea580c 100%);color:#fff;cursor:pointer;user-select:none;border:0;font-family:var(--f-ar);position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(220,38,38,0.22);}
 .flash-banner::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 50%, rgba(255,255,255,0.18), transparent 60%);pointer-events:none;}
 .flash-banner-bolt{font-size:1.4rem;animation:flash-shake 1.4s ease-in-out infinite;}
