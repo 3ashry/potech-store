@@ -2649,7 +2649,15 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             <h3><span className="step-num">١</span> بيانات التواصل</h3>
             <div className="form-row">
               <div className="form-group"><label>الاسم الكامل *</label><input {...inp("name")} placeholder="محمد أحمد"/>{errors.name&&<span className="form-err">{errors.name}</span>}</div>
-              <div className="form-group"><label>رقم الهاتف *</label><input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr" inputMode="tel"/>{errors.phone&&<span className="form-err">{errors.phone}</span>}</div>
+              <div className="form-group">
+                <label>رقم الهاتف *</label>
+                <input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr" inputMode="tel"/>
+                <div style={{fontSize:"0.72rem",color:"var(--ink-3)",marginTop:4,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                  <span style={{color:"#25D366",fontSize:"0.85rem",lineHeight:1}} aria-hidden="true">💬</span>
+                  <span>يُفضَّل أن يكون هذا الرقم متاحًا على واتساب حتى نرسل لك تفاصيل الطلب ورابط التتبع.</span>
+                </div>
+                {errors.phone&&<span className="form-err">{errors.phone}</span>}
+              </div>
             </div>
             <div className="form-group" style={{marginTop:12}}>
               <label>رقم هاتف احتياطي (اختياري)</label>
