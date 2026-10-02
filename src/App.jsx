@@ -4,7 +4,6 @@ const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201034482071";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
-const FREE_SHIPPING_THRESHOLD = 3500;
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        102,
   'القاهره':        102,
@@ -1174,8 +1173,6 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
       <div className="topbar">
         <div className="wrap topbar-inner">
           <div className="tb-left">
-            <span className="tb-item"><Icon name="truck" size={13} /> شحن مجاني فوق 3500 ج.م</span>
-            <span className="tb-sep" />
             <span className="tb-item"><Icon name="pin" size={13} /> التوصيل ٣-٤ أيام لكل المحافظات</span>
             <span className="tb-sep" />
             <span className="tb-item"><Icon name="shield" size={13} /> وكيل رسمي Total و Wadfow</span>
@@ -1316,7 +1313,7 @@ const HeroTicker = () => (
       {[0,1].map(i => (
         <div className="ticker-group" key={i}>
           {[
-            ["truck","شحن مجاني فوق 3500 ج.م"],
+            ["truck","توصيل سريع ٣-٤ أيام لكل المحافظات"],
             ["shield","وكيل رسمي Total و Wadfow"],
             ["tag","بطاقة ولاء مجانية مع كل طلب — خصم ١٠٠ ج.م على طلبك التاني"],
             ["chat","استشارة فنية مجانية"],
@@ -1867,7 +1864,6 @@ const SiteFooter = ({ logoSrc, navigate }) => (
 const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate, products = [], onAdd }) => {
   const suggestions = smartSuggestions(items, products, { limit: 6 });
   const total = items.reduce((s,it) => s + (it.is_offer && it.offer_price ? it.offer_price : it.price) * it.qty, 0);
-  const shipping = total >= FREE_SHIPPING_THRESHOLD ? 0 : null;
   return (
     <>
       <div className={`drawer-scrim${open?" on":""}`} onClick={onClose}/>
@@ -1911,8 +1907,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate, pr
             </div>
             <div className="drawer-foot">
               <div className="drawer-row"><span>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
-              <div className="drawer-row"><span>الشحن</span><b style={{color:shipping===0?"var(--green)":"var(--ink-3)"}}>{shipping===0?`مجاني 🎉 (فوق ${FREE_SHIPPING_THRESHOLD.toLocaleString()} ج.م)`:"يُحسب حسب المحافظة"}</b></div>
-              {total < FREE_SHIPPING_THRESHOLD && <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)"}}> أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني</div>}
+              <div className="drawer-row"><span>الشحن</span><b style={{color:"var(--ink-3)"}}>يُحسب حسب المحافظة</b></div>
               <div className="drawer-row total"><span>الإجمالي</span><b>{fmtEGP(total)} ج.م +شحن</b></div>
               <button className="btn btn-primary btn-block" style={{border:0}} onClick={()=>{
                 window.fbq?.('track', 'InitiateCheckout', {
@@ -2375,7 +2370,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   //   vat = (base_rate + cod_fee) × 0.14
   //   shipping = base_rate + cod_fee + vat
   const getShipping = (city) => {
-    if (!city || total >= FREE_SHIPPING_THRESHOLD) return 0;
+    if (!city) return 0;
     const baseRate = BOSTA_SHIPPING_RATES[city] || 115;
     let shipping;
     if (total + 1.14 * baseRate >= 2000) {
@@ -2676,7 +2671,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
               {["القاهرة","الجيزة","الإسكندرية","الشرقية","الدقهلية","القليوبية","المنوفية","الغربية","كفر الشيخ","البحيرة","الإسماعيلية","السويس","بورسعيد","دمياط","سوهاج","أسيوط","المنيا","الفيوم","بني سويف","قنا","الأقصر","أسوان","مرسي مطروح","الساحل الشمالي","البحر الأحمر","الوادي الجديد","شمال سيناء","جنوب سيناء"].map(g=><option key={g}>{g}</option>)}
               </select>
               {errors.city&&<span className="form-err">{errors.city}</span>}
-              {form.city && total < FREE_SHIPPING_THRESHOLD && (
+              {form.city && (
                 <div style={{fontSize:"0.78rem",color:"var(--brand)",marginTop:4,fontWeight:600}}>
                   تكلفة الشحن إلى {form.city}: {fmtEGP(shipping)} ج.م
                 </div>
@@ -2722,11 +2717,6 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
                 : `${fmtEGP(shipping)} ج.م`}
             </b>
           </div>
-          {!promoApplied && !cartHasFreeShippingItem && total < FREE_SHIPPING_THRESHOLD && (
-            <div style={{fontSize:"0.75rem",color:"var(--brand)",background:"var(--brand-soft)",padding:"7px 10px",borderRadius:"var(--radius)",marginBottom:6}}>
-              أضف {fmtEGP(FREE_SHIPPING_THRESHOLD-total)} ج.م للحصول على شحن مجاني
-            </div>
-          )}
           {/* Promo code — free shipping, single use */}
           <div style={{margin:"8px 0 4px",padding:"12px",background:"var(--bg-2)",border:`1px solid ${promoApplied?"var(--green)":"var(--line)"}`,borderRadius:"var(--radius)"}}>
             <label style={{display:"block",fontSize:"0.82rem",fontWeight:800,marginBottom:6}}>🎟️ كود الخصم</label>
@@ -2979,7 +2969,7 @@ const INFO_PAGES = {
         <div className="info-highlight">نوصّل لجميع محافظات مصر خلال <b>٣ إلى ٤ أيام عمل</b> من تأكيد الطلب.</div>
         <div className="info-section">
           <h2>تكلفة الشحن</h2>
-          <p>الشحن مجاني على الطلبات التي تتجاوز <b>3500 ج.م</b>. وللطلبات الأقل يُحسب سعر الشحن حسب المحافظة عند إتمام الطلب.</p>
+          <p>يُحسب سعر الشحن حسب المحافظة عند إتمام الطلب.</p>
         </div>
         <div className="info-section">
           <h2>شريك التوصيل</h2>
