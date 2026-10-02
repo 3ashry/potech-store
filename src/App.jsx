@@ -2354,7 +2354,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
 
 /* ─── Checkout ───────────────────────────────────────────────────────────── */
 const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToast }) => {
-  const [form, setForm] = useState({ name:"", phone:"", address:"", city:"", notes:"", allowOpen:false });
+  const [form, setForm] = useState({ name:"", phone:"", phone2:"", address:"", city:"", notes:"", allowOpen:false });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
@@ -2458,6 +2458,11 @@ const grand = total + shipping;
     const e={};
     if(!form.name.trim()) e.name="الاسم مطلوب";
     if(!/^01[0-9]{9}$/.test(form.phone)) e.phone="رقم الهاتف غير صحيح (01XXXXXXXXX)";
+    // Second phone is optional. If present, must be valid and different from phone 1.
+    if(form.phone2 && form.phone2.trim()) {
+      if(!/^01[0-9]{9}$/.test(form.phone2.trim())) e.phone2="رقم الهاتف غير صحيح (01XXXXXXXXX)";
+      else if(form.phone2.trim() === form.phone.trim()) e.phone2="لا يصح أن يكون نفس الرقم الأول";
+    }
     if(!form.address.trim() || form.address.trim().length < 10) e.address="العنوان مطلوب (١٠ أحرف على الأقل)";
     if(!form.city) e.city="المحافظة مطلوبة";
     setErrors(e);
@@ -2518,22 +2523,39 @@ const grand = total + shipping;
     try {
       const code = mkCode();
       const orderId = uid();
-      await sb("orders", {
-        method:"POST", prefer:"return=minimal",
-        body: JSON.stringify({
-  id: orderId,
-  code, customer_name:form.name, phone:form.phone,
-  ship_code:"",
-  address: `${form.city} - ${form.address}`,
-  city: form.city,
-  notes: form.notes || "",
-  allow_open: form.allowOpen,
-  products: cart.map(i=>{ const dbP=products.find(p=>p.id===i.id); return {id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i),buy_price:parseFloat(dbP?.buy_price||0)}; }),
-  total:grand, status:"Processing",
-  date: new Date().toISOString().split("T")[0],
-  est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
-}),
-      });
+      const phone2Trim = (form.phone2 || '').trim();
+      const orderPayload = {
+        id: orderId,
+        code, customer_name:form.name, phone:form.phone,
+        ship_code:"",
+        address: `${form.city} - ${form.address}`,
+        city: form.city,
+        notes: form.notes || "",
+        allow_open: form.allowOpen,
+        products: cart.map(i=>{ const dbP=products.find(p=>p.id===i.id); return {id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i),buy_price:parseFloat(dbP?.buy_price||0)}; }),
+        total:grand, status:"Processing",
+        date: new Date().toISOString().split("T")[0],
+        est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
+      };
+      if (phone2Trim) orderPayload.second_phone = phone2Trim;
+      try {
+        await sb("orders", {
+          method:"POST", prefer:"return=minimal",
+          body: JSON.stringify(orderPayload),
+        });
+      } catch (err) {
+        // Fallback: if the `second_phone` column doesn't exist yet in Supabase
+        // the insert will fail with "Could not find the 'second_phone' column".
+        // Retry without it so the order still saves — Bosta still gets the
+        // second number because /api/bosta reads it from the body separately.
+        if (phone2Trim && /second_phone/i.test(String(err?.message || err))) {
+          const { second_phone: _drop, ...fallback } = orderPayload;
+          await sb("orders", {
+            method:"POST", prefer:"return=minimal",
+            body: JSON.stringify(fallback),
+          });
+        } else { throw err; }
+      }
 
       // Redeem the promo code (mark it used — single-use, enforced atomically
       // server-side). Best-effort: the order is already saved, so this never blocks.
@@ -2552,6 +2574,7 @@ const grand = total + shipping;
           orderId,
           customerName: form.name,
           phone:        form.phone,
+          secondPhone:  phone2Trim || undefined,
           city:         form.city,
           address:      form.address,
           notes:        form.notes || '',
@@ -2626,7 +2649,15 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             <h3><span className="step-num">١</span> بيانات التواصل</h3>
             <div className="form-row">
               <div className="form-group"><label>الاسم الكامل *</label><input {...inp("name")} placeholder="محمد أحمد"/>{errors.name&&<span className="form-err">{errors.name}</span>}</div>
-              <div className="form-group"><label>رقم الهاتف *</label><input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr"/>{errors.phone&&<span className="form-err">{errors.phone}</span>}</div>
+              <div className="form-group"><label>رقم الهاتف *</label><input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr" inputMode="tel"/>{errors.phone&&<span className="form-err">{errors.phone}</span>}</div>
+            </div>
+            <div className="form-group" style={{marginTop:12}}>
+              <label>رقم هاتف احتياطي (اختياري)</label>
+              <input {...inp("phone2")} placeholder="01XXXXXXXXX" dir="ltr" inputMode="tel"/>
+              <div style={{fontSize:"0.72rem",color:"var(--ink-3)",marginTop:4,lineHeight:1.5}}>
+                رقم إضافي يستخدمه مندوب التوصيل لو ما قدرش يتواصل على الرقم الأساسي.
+              </div>
+              {errors.phone2&&<span className="form-err">{errors.phone2}</span>}
             </div>
           </div>
           <div className="checkout-section">
