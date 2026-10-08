@@ -3333,7 +3333,11 @@ export default function App() {
   };
 
   useEffect(() => {
-    sb("products?select=*&is_published=eq.true&order=sort_order.asc,id.asc").then(d=>setProducts(d||[])).catch(()=>{});
+    // Reads the cost-free public view (store_products = all product columns
+    // except buy_price, published-only). The real `products` table is hidden
+    // from the public key so buying prices never leave the server. The view
+    // already filters to published, so no is_published filter is needed.
+    sb("store_products?select=*&order=sort_order.asc,id.asc").then(d=>setProducts(d||[])).catch(()=>{});
     sb("site_settings?select=*").then(rows=>{ if(!rows) return; const map={}; rows.forEach(r=>{map[r.key]=r;}); setSettings(map); }).catch(()=>{});
     // Skip the Supabase JPG override — JPGs have no alpha channel so they
     // always carry a solid background. The local transparent SVG set as the
