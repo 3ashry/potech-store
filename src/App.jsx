@@ -2527,7 +2527,13 @@ const grand = total + shipping;
         city: form.city,
         notes: form.notes || "",
         allow_open: form.allowOpen,
-        products: cart.map(i=>{ const dbP=products.find(p=>p.id===i.id); return {id:i.id,code:i.code,name:i.name,qty:i.qty,price:getPrice(i),buy_price:parseFloat(dbP?.buy_price||0)}; }),
+        // Do NOT snapshot buy_price here: the storefront must not read cost
+        // columns (they're locked from the public key for security), and the
+        // admin resolves each line's cost from the product/invoice anyway
+        // (lineBuyPrice falls back to the product's current buy_price when a
+        // line carries none). Including it here would save 0 once the column
+        // is hidden, which is worse than leaving it absent.
+        products: cart.map(i=>({ id:i.id, code:i.code, name:i.name, qty:i.qty, price:getPrice(i) })),
         total:grand, status:"Processing",
         date: new Date().toISOString().split("T")[0],
         est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
