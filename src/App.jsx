@@ -2653,9 +2653,9 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
               <div className="form-group">
                 <label>رقم الهاتف *</label>
                 <input {...inp("phone")} placeholder="01XXXXXXXXX" dir="ltr" inputMode="tel"/>
-                <div style={{fontSize:"0.72rem",color:"var(--ink-3)",marginTop:4,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
-                  <span style={{color:"#25D366",fontSize:"0.85rem",lineHeight:1}} aria-hidden="true">💬</span>
-                  <span>يُفضَّل أن يكون هذا الرقم متاحًا على واتساب حتى نرسل لك تفاصيل الطلب ورابط التتبع.</span>
+                <div style={{marginTop:6,padding:"8px 11px",background:"rgba(37,211,102,0.10)",border:"1px solid rgba(37,211,102,0.40)",borderRadius:9,fontSize:"0.82rem",color:"var(--ink-1)",lineHeight:1.65,display:"flex",alignItems:"flex-start",gap:7}}>
+                  <span style={{fontSize:"1.05rem",lineHeight:1.2}} aria-hidden="true">💬</span>
+                  <span><b style={{color:"#128C4B"}}>مهم:</b> اكتب رقم شغّال عليه واتساب — هنبعتلك عليه تأكيد الطلب وتفاصيله ورابط تتبع الشحنة. لو الرقم مش عليه واتساب الرسايل مش هتوصلك.</span>
                 </div>
                 {errors.phone&&<span className="form-err">{errors.phone}</span>}
               </div>
@@ -2663,8 +2663,8 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             <div className="form-group" style={{marginTop:12}}>
               <label>رقم هاتف احتياطي (اختياري)</label>
               <input {...inp("phone2")} placeholder="01XXXXXXXXX" dir="ltr" inputMode="tel"/>
-              <div style={{fontSize:"0.72rem",color:"var(--ink-3)",marginTop:4,lineHeight:1.5}}>
-                رقم إضافي يستخدمه مندوب التوصيل لو ما قدرش يتواصل على الرقم الأساسي.
+              <div style={{fontSize:"0.78rem",color:"var(--ink-2)",marginTop:5,lineHeight:1.6}}>
+                رقم إضافي يستخدمه مندوب التوصيل للاتصال بس لو ما قدرش يوصلك على الرقم الأساسي — مش لازم يكون عليه واتساب.
               </div>
               {errors.phone2&&<span className="form-err">{errors.phone2}</span>}
             </div>
