@@ -2563,14 +2563,24 @@ const grand = total + shipping;
       if (promoApplied && promoCode) {
         fetch('https://protech-stores.vercel.app/api/promo', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
+          // keepalive: finish the request even though we navigate to the confirmation
+          // page a few ms later — without it the browser aborts the in-flight fetch
+          // and the promo never gets marked used.
+          keepalive: true,
           body: JSON.stringify({ code: promoCode, action: 'redeem', orderId, phone: form.phone }),
         }).catch(err => console.warn('promo redeem failed (order still saved):', err));
       }
 
-      // Fire Bosta shipment (non-blocking)
+      // Fire Bosta shipment (non-blocking). keepalive: true is CRITICAL — this
+      // fetch is dispatched a few ms before we navigate() to the confirmation
+      // page, and without keepalive the browser aborts the in-flight request on
+      // unmount. That bug meant /api/bosta never ran (so no shipment, no stock
+      // decrement, no WhatsApp confirmation message), even though the order row
+      // saved cleanly. keepalive tells the browser to finish the POST regardless.
       fetch('https://protech-stores.vercel.app/api/bosta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
         body: JSON.stringify({
           orderId,
           customerName: form.name,
