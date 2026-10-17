@@ -116,12 +116,19 @@ const sb = async (path, opts = {}) => {
   return res.json().catch(() => null);
 };
 
+// Uploads are admin-only (storage RLS checks is_admin()), so they need the admin
+// session from edit mode. If it has expired, refresh it once and retry.
 const sbUpload = async (bucket, path, file) => {
-  const res = await fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`, {
+  const send = () => fetch(`${SB_URL}/storage/v1/object/${bucket}/${path}`, {
     method: "POST",
     headers: { apikey: SB_KEY, Authorization: `Bearer ${adminToken || SB_KEY}`, "Content-Type": file.type, "x-upsert": "true" },
     body: file,
   });
+  let res = await send();
+  if (!res.ok && [400, 401, 403].includes(res.status)) {
+    const txt = await res.clone().text().catch(() => "");
+    if (/jwt|expired|unauthori|invalid.*token/i.test(txt) && await adminRefresh()) res = await send();
+  }
   if (!res.ok) throw new Error(await res.text());
   return `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
 };
@@ -183,7 +190,9 @@ const CATS = [
   { id: "new",       ar: "وصل حديثاً",        en: "New Arrivals",        icon: "star" },
   { id: "offers",    ar: "عروض اليوم",        en: "Daily Offers",        icon: "tag" },
 ];
-const PINNED_TOP_SELLING = ['thkthp41667','tidli426981','thkthp41487','thkthp90076','tws10501','tpwli20362','web1520','th118366'];
+// "Top selling this month": these always come first, in this order; the rest
+// follow by pieces sold (ranking from the top_selling_codes() DB function).
+const PINNED_TOP_SELLING = ['thkthp41667','tckli20595','tckli202598','tckli20358','tckli20273','tckli20256','tidli20558','tidli20668','tdli12456'];
 const PINNED_BATTERY = ['tagli271532','trhli202689','th2130016','wcdp522'];
 const PINNED_ELECTRIC = ['td45658','tg10711556','tg10911576','tws10501','th118366'];
 // Featured combos — appear first in the Home Combos carousel AND at the top
@@ -450,6 +459,18 @@ const BundleRow = ({ product, companions, onAdd }) => {
       </div>
     </div>
   );
+};
+
+// Pinned codes first (in the given order), then by the sales ranking, then the rest.
+const sortTopSelling = (items, pinnedCodes, rankedCodes) => {
+  const key = p => String(p.code || '').toLowerCase();
+  const rank = new Map((rankedCodes || []).map((c, i) => [String(c).toLowerCase(), i]));
+  const pinned = pinnedCodes.map(c => items.find(p => key(p) === c)).filter(Boolean);
+  const pinnedSet = new Set(pinned);
+  const rest = items.filter(p => !pinnedSet.has(p));
+  const ranked = rest.filter(p => rank.has(key(p))).sort((a, b) => rank.get(key(a)) - rank.get(key(b)));
+  const others = rest.filter(p => !rank.has(key(p)));
+  return [...pinned, ...ranked, ...others];
 };
 
 const sortPinned = (items, pinnedCodes) => {
@@ -1522,6 +1543,12 @@ const Section = ({ id, num, eyebrow, title, children, cta }) => (
 
 const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
   const [filter, setFilter] = useState("all");
+  const [ranked, setRanked] = useState([]);
+  useEffect(() => {
+    sb('rpc/top_selling_codes', { method: 'POST', body: JSON.stringify({ p_limit: 40 }) })
+      .then(rows => setRanked(Array.isArray(rows) ? rows.map(r => r.code) : []))
+      .catch(() => {});
+  }, []);
   const tabs = [{ id:"all",label:"الكل" }, ...CATS.filter(c=>!["new","offers"].includes(c.id)).slice(0,5).map(c=>({ id:c.id, label:c.ar.replace("أدوات ","").replace("عدد ","").replace("اطقم ","طقم ") }))];
   const items = products.filter(p => {
     if (filter==="all") return true;
@@ -1537,7 +1564,7 @@ const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
       </div>
       {items.length===0
         ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>لا توجد منتجات بعد.</div>
-        : <Carousel>{sortPinned(items, PINNED_TOP_SELLING).slice(0,8).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</Carousel>
+        : <Carousel>{sortTopSelling(items, PINNED_TOP_SELLING, ranked).slice(0,12).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</Carousel>
       }
     </Section>
   );
@@ -2616,11 +2643,8 @@ const grand = total + shipping;
       // until Bosta has assigned the ship code so the customer gets the real tracking
       // number. Sending here at checkout time would fire before the code exists.
 
-      // This phone's cart converted — clear any open rows for this phone from follow-ups.
-      sb(`abandoned_carts?phone=eq.${encodeURIComponent(form.phone)}&status=eq.open`, {
-        method: 'PATCH', prefer: 'return=minimal',
-        body: JSON.stringify({ status: 'converted', updated_at: new Date().toISOString() }),
-      }).catch(()=>{});
+      // This phone's open abandoned carts are marked "converted" by a database
+      // trigger when the order row is inserted — visitors can't edit carts.
 
       // Stock decrement happens SERVER-SIDE in /api/bosta (uses service_role key
       // so RLS can't block it, and is idempotent via the ship_code guard). We used
