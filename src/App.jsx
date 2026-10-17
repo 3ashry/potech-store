@@ -295,6 +295,13 @@ function accessoriesFor(items, allProducts) {
      4. Same category as context items
    Filters out: out-of-stock, unpublished, current product, already-in-cart.
    Within each tier, cheaper products come first (easier add-on). */
+/* A product can be ordered when it's in stock, or when the admin switched on
+   "available on order" for it (Elashry supplies it on demand). Every other
+   product at 0 stock stays out of stock. */
+const canOrder = p => !!p && (Number(p.qty || 0) > 0 || p.on_order === true);
+const isOnOrderOnly = p => !!p && Number(p.qty || 0) <= 0 && p.on_order === true;
+const ON_ORDER_NOTE = "متوفر بالطلب – يُشحن خلال ٢–٣ أيام";
+
 function smartSuggestions(contextItems, allProducts, { limit = 4, excludeIds = [] } = {}) {
   if (!Array.isArray(allProducts) || !allProducts.length) return [];
   const ctx = Array.isArray(contextItems) ? contextItems : [contextItems];
@@ -308,7 +315,7 @@ function smartSuggestions(contextItems, allProducts, { limit = 4, excludeIds = [
   const eligible = allProducts.filter(p =>
     p && !excl.has(p.id)
     && (p.is_published !== false)
-    && (Number(p.qty || 0) > 0)
+    && canOrder(p)
   );
   const priceOf = p => Number(p.is_offer && p.offer_price ? p.offer_price : p.price) || 0;
   const cheapFirst = arr => arr.sort((a, b) => priceOf(a) - priceOf(b));
@@ -345,7 +352,7 @@ function bundleCompanions(product, allProducts) {
     if (!p) continue;
     if (p.id === product.id) continue;
     if (p.is_published === false) continue;
-    if ((Number(p.qty || 0) <= 0)) continue;
+    if (!canOrder(p)) continue;
     out.push(p);
   }
   return out.slice(0, 3);
@@ -362,7 +369,7 @@ function relatedAccessories(product, allProducts) {
   const codes = Array.isArray(raw) ? raw : (typeof raw === 'string' ? raw.split(/[,\s]+/) : []);
   const clean = codes.map(c => String(c || '').trim().toUpperCase()).filter(Boolean);
   const byCode = new Map(allProducts.map(p => [String(p.code || '').toUpperCase(), p]));
-  const isEligible = p => p && p.id !== product.id && (p.is_published !== false) && (Number(p.qty || 0) > 0);
+  const isEligible = p => p && p.id !== product.id && (p.is_published !== false) && canOrder(p);
   if (clean.length) {
     const out = [];
     const seen = new Set();
@@ -1147,9 +1154,9 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
         </div>
         <div className="card-foot">
           <div className="card-stock">
-            {p.qty > 0 ? <><span className="dot-green" />متوفر</> : <span style={{color:"var(--red)"}}>نفذ</span>}
+            {p.qty > 0 ? <><span className="dot-green" />متوفر</> : isOnOrderOnly(p) ? <span style={{color:"var(--brand)"}}>متوفر بالطلب</span> : <span style={{color:"var(--red)"}}>نفذ</span>}
           </div>
-          <button className="add" disabled={p.qty <= 0} onClick={e => { e.stopPropagation(); onAdd?.(p); }}>
+          <button className="add" disabled={!canOrder(p)} onClick={e => { e.stopPropagation(); onAdd?.(p); }}>
             <Icon name="plus" size={13} /> أضف للسلة
           </button>
         </div>
@@ -2143,7 +2150,7 @@ function applyProductSeo(product){
   let canon=document.head.querySelector('link[rel="canonical"][data-pseo]');
   if(!canon){canon=document.createElement('link');canon.rel='canonical';canon.setAttribute('data-pseo','1');document.head.appendChild(canon);}
   canon.href=url;
-  const ld={ '@context':'https://schema.org','@type':'Product',name:product.name,sku:code,mpn:code,image:imgs.length?imgs:[img],description:desc,brand:{'@type':'Brand',name:brand},offers:{'@type':'Offer',url,priceCurrency:'EGP',price:String(price),availability:product.qty>0?'https://schema.org/InStock':'https://schema.org/OutOfStock',itemCondition:'https://schema.org/NewCondition'} };
+  const ld={ '@context':'https://schema.org','@type':'Product',name:product.name,sku:code,mpn:code,image:imgs.length?imgs:[img],description:desc,brand:{'@type':'Brand',name:brand},offers:{'@type':'Offer',url,priceCurrency:'EGP',price:String(price),availability:product.qty>0?'https://schema.org/InStock':(isOnOrderOnly(product)?'https://schema.org/BackOrder':'https://schema.org/OutOfStock'),itemCondition:'https://schema.org/NewCondition'} };
   let s=document.getElementById('pseo-ld'); if(!s){s=document.createElement('script');s.type='application/ld+json';s.id='pseo-ld';document.head.appendChild(s);} s.textContent=JSON.stringify(ld);
   return ()=>{ document.title=PSEO_DEFAULT_TITLE; document.head.querySelectorAll('[data-pseo]').forEach(e=>e.remove()); const x=document.getElementById('pseo-ld'); if(x) x.remove(); };
 }
@@ -2269,6 +2276,8 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
                 ? `${viewersCount} أشخاص يشاهدون هذا المنتج الآن`
                 : `${viewersCount} شخصًا يشاهدون هذا المنتج الآن`}
             </div>
+          ) : isOnOrderOnly(product) ? (
+            <div style={{color:"var(--brand)",fontWeight:700,fontSize:"0.9rem"}}>📦 {ON_ORDER_NOTE}</div>
           ) : (
             <div style={{color:"var(--red)",fontWeight:700,fontSize:"0.85rem"}}>✗ نفذ المخزون</div>
           )}
@@ -2289,14 +2298,14 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
               </div>
             </div>
           )}
-          {product.qty>0 && (
+          {canOrder(product) && (
             <>
               <div className="qty-row">
                 <span style={{fontWeight:700,fontSize:"0.9rem"}}>الكمية:</span>
                 <div className="qty-ctrl">
                   <button onClick={()=>setQty(q=>Math.max(1,q-1))}>−</button>
                   <span>{qty}</span>
-                  <button onClick={()=>setQty(q=>Math.min(product.qty,q+1))}>+</button>
+                  <button onClick={()=>setQty(q=>Math.min(Number(product.qty||0)>0 ? product.qty : 20,q+1))}>+</button>
                 </div>
               </div>
               <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
@@ -2337,7 +2346,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
           </Carousel>
         </div>
       )}
-      {product.qty>0 && (
+      {canOrder(product) && (
         <div className="product-sticky-bar">
           <button className="btn btn-primary lg" onClick={()=>onAdd(cartItem)}>+ أضف للسلة</button>
           <button className="btn btn-dark lg" onClick={()=>{onAdd(cartItem);navigate("checkout");}}>اشترِ الآن</button>
@@ -3208,7 +3217,7 @@ const FlashOffersPage = ({ products, settings, onAdd, navigate, onWish, isWished
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [endMs]);
-  const flashProducts = (products || []).filter(p => p.is_flash_offer === true && (p.is_published !== false) && (Number(p.qty || 0) > 0));
+  const flashProducts = (products || []).filter(p => p.is_flash_offer === true && (p.is_published !== false) && canOrder(p));
   const remaining = Math.max(0, endMs - now);
   const s = Math.floor(remaining / 1000);
   const h = Math.floor(s / 3600);
