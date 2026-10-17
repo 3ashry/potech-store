@@ -679,12 +679,12 @@ input,select,textarea{font-family:inherit;}
 .card-body{padding:12px 14px;display:flex;flex-direction:column;gap:7px;flex:1;}
 .card-sku{display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;}
 .sku-mono{font-family:var(--f-mono);color:var(--ink-3);letter-spacing:0.04em;}
-.card-name{margin:0;font-size:0.92rem;font-weight:700;line-height:1.4;min-height:2.6em;}
+.card-name{margin:0;font-size:0.92rem;font-weight:700;line-height:1.4;height:2.8em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;}
 .card-price-row{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;}
 .card-price{display:inline-flex;align-items:baseline;gap:6px;}
 .card-price .cur{font-size:0.72rem;color:var(--ink-3);font-weight:600;}.card-price .amt{font-size:1.2rem;font-weight:900;font-family:var(--f-mono);}.card-price .retail{text-decoration:line-through;color:var(--ink-3);font-size:0.78rem;}
 .card-price .offer-price{color:var(--red);font-size:1.2rem;font-weight:900;font-family:var(--f-mono);}
-.card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--line);padding-top:8px;margin-top:auto;}
+.card-foot{display:flex;justify-content:space-between;align-items:center;gap:6px;border-top:1px dashed var(--line);padding-top:8px;margin-top:auto;}
 .card-stock{font-size:0.75rem;color:var(--ink-3);display:inline-flex;align-items:center;gap:5px;}
 .dot-green{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;flex-shrink:0;}
 .live-dot{width:8px;height:8px;background:#e11d48;border-radius:50%;display:inline-block;flex-shrink:0;box-shadow:0 0 0 0 rgba(225,29,72,0.6);animation:live-pulse 1.6s ease-in-out infinite;}
@@ -1022,12 +1022,12 @@ input,select,textarea{font-family:inherit;}
   .shop-sidebar details > .drawer-body h4{display:none;}
   .shop-sidebar .cat-current{font-family:var(--f-ar);font-weight:600;color:var(--brand);font-size:0.82rem;margin-inline-end:6px;}
 }
-.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:flex-start;}
+.cat-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;-webkit-overflow-scrolling:touch;align-items:stretch;}
 .cat-carousel::-webkit-scrollbar{height:4px;}
 .cat-carousel::-webkit-scrollbar-track{background:var(--bg-3);border-radius:99px;}
 .cat-carousel::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px;}
-.cat-carousel .card{min-width:160px;max-width:220px;scroll-snap-align:start;flex-shrink:0;}
-@media(min-width:768px){.cat-carousel .card{min-width:260px;max-width:260px;}}
+.cat-carousel .card{flex:0 0 190px;width:190px;min-width:0;scroll-snap-align:start;}
+@media(min-width:768px){.cat-carousel .card{flex-basis:250px;width:250px;}}
 /* ── Desktop arrow controls for horizontal product rails ── */
 .carousel-wrap{position:relative;}
 .carousel-arrow{display:none;position:absolute;top:calc(50% - 22px);transform:translateY(-50%);z-index:6;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,0.96);color:var(--ink);align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.14);transition:transform .15s,background .15s;padding:0;font-size:22px;font-weight:900;line-height:1;font-family:inherit;}
@@ -1164,7 +1164,7 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
       <div className="card-body">
         <div className="card-sku"><span className="sku-mono">{p.code}</span></div>
         <h3 className="card-name">{p.name}</h3>
-        {p.brand && <div style={{ fontSize:"0.72rem", color:"var(--ink-3)", fontFamily:"var(--f-mono)" }}>{p.brand.toUpperCase()}</div>}
+        <div style={{ fontSize:"0.72rem", color:"var(--ink-3)", fontFamily:"var(--f-mono)", minHeight:"1.2em" }}>{(p.brand || "").toUpperCase()}</div>
         <div className="card-price-row">
           <div className="card-price">
             <span className="cur">ج.م</span>
