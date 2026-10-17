@@ -295,12 +295,11 @@ function accessoriesFor(items, allProducts) {
      4. Same category as context items
    Filters out: out-of-stock, unpublished, current product, already-in-cart.
    Within each tier, cheaper products come first (easier add-on). */
-/* A product can be ordered when it's in stock, or when the admin switched on
-   "available on order" for it (Elashry supplies it on demand). Every other
+/* A product is available when it's in stock, or when the admin switched on
+   "available on order" for it (kept at Elashry's warehouse). Customers see
+   both exactly the same; only the dashboard tells them apart. Every other
    product at 0 stock stays out of stock. */
 const canOrder = p => !!p && (Number(p.qty || 0) > 0 || p.on_order === true);
-const isOnOrderOnly = p => !!p && Number(p.qty || 0) <= 0 && p.on_order === true;
-const ON_ORDER_NOTE = "متوفر بالطلب – يُشحن خلال ٢–٣ أيام";
 
 function smartSuggestions(contextItems, allProducts, { limit = 4, excludeIds = [] } = {}) {
   if (!Array.isArray(allProducts) || !allProducts.length) return [];
@@ -1154,7 +1153,7 @@ const ProductCard = ({ p, onAdd, onNavigate, onWish, isWished }) => {
         </div>
         <div className="card-foot">
           <div className="card-stock">
-            {p.qty > 0 ? <><span className="dot-green" />متوفر</> : isOnOrderOnly(p) ? <span style={{color:"var(--brand)"}}>متوفر بالطلب</span> : <span style={{color:"var(--red)"}}>نفذ</span>}
+            {canOrder(p) ? <><span className="dot-green" />متوفر</> : <span style={{color:"var(--red)"}}>نفذ</span>}
           </div>
           <button className="add" disabled={!canOrder(p)} onClick={e => { e.stopPropagation(); onAdd?.(p); }}>
             <Icon name="plus" size={13} /> أضف للسلة
@@ -2150,7 +2149,7 @@ function applyProductSeo(product){
   let canon=document.head.querySelector('link[rel="canonical"][data-pseo]');
   if(!canon){canon=document.createElement('link');canon.rel='canonical';canon.setAttribute('data-pseo','1');document.head.appendChild(canon);}
   canon.href=url;
-  const ld={ '@context':'https://schema.org','@type':'Product',name:product.name,sku:code,mpn:code,image:imgs.length?imgs:[img],description:desc,brand:{'@type':'Brand',name:brand},offers:{'@type':'Offer',url,priceCurrency:'EGP',price:String(price),availability:product.qty>0?'https://schema.org/InStock':(isOnOrderOnly(product)?'https://schema.org/BackOrder':'https://schema.org/OutOfStock'),itemCondition:'https://schema.org/NewCondition'} };
+  const ld={ '@context':'https://schema.org','@type':'Product',name:product.name,sku:code,mpn:code,image:imgs.length?imgs:[img],description:desc,brand:{'@type':'Brand',name:brand},offers:{'@type':'Offer',url,priceCurrency:'EGP',price:String(price),availability:canOrder(product)?'https://schema.org/InStock':'https://schema.org/OutOfStock',itemCondition:'https://schema.org/NewCondition'} };
   let s=document.getElementById('pseo-ld'); if(!s){s=document.createElement('script');s.type='application/ld+json';s.id='pseo-ld';document.head.appendChild(s);} s.textContent=JSON.stringify(ld);
   return ()=>{ document.title=PSEO_DEFAULT_TITLE; document.head.querySelectorAll('[data-pseo]').forEach(e=>e.remove()); const x=document.getElementById('pseo-ld'); if(x) x.remove(); };
 }
@@ -2265,7 +2264,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
             {discount>0 && <span style={{textDecoration:"line-through",color:"var(--ink-3)",fontSize:"1rem"}}>{fmtEGP(product.price)} ج.م</span>}
             {discount>0 && <span className="badge badge-offer" style={{position:"static"}}>خصم {discount}٪</span>}
           </div>
-          {product.qty>0 ? (
+          {canOrder(product) ? (
             <div style={{color:"var(--brand)",fontWeight:700,fontSize:"0.9rem",display:"flex",alignItems:"center",gap:8}}>
               <span className="live-dot" aria-hidden="true"></span>
               {viewersCount === 1
@@ -2276,8 +2275,6 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
                 ? `${viewersCount} أشخاص يشاهدون هذا المنتج الآن`
                 : `${viewersCount} شخصًا يشاهدون هذا المنتج الآن`}
             </div>
-          ) : isOnOrderOnly(product) ? (
-            <div style={{color:"var(--brand)",fontWeight:700,fontSize:"0.9rem"}}>📦 {ON_ORDER_NOTE}</div>
           ) : (
             <div style={{color:"var(--red)",fontWeight:700,fontSize:"0.85rem"}}>✗ نفذ المخزون</div>
           )}
