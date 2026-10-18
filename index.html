@@ -3,6 +3,19 @@
   <head>
     <!-- Meta Pixel Code -->
     <script>
+    // Owner / test devices don't report to Meta, so test orders never count as
+    // Purchases. A device is a test device once it has logged in to the store
+    // admin, or after opening the site once with ?testdevice=1 (?testdevice=0 undoes it).
+    (function(){
+      var test = false;
+      try {
+        var m = /[?&]testdevice=([01])/.exec(location.search);
+        if (m) { if (m[1] === '1') localStorage.setItem('protech_test_device', '1'); else localStorage.removeItem('protech_test_device'); }
+        test = localStorage.getItem('protech_test_device') === '1' || !!localStorage.getItem('protech_admin_refresh');
+      } catch (e) {}
+      window.__protechTestDevice = test;
+    })();
+    if (!window.__protechTestDevice)
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -15,9 +28,11 @@
     // scrapes pages (e.g. the order-confirmation page with its total + code) and
     // auto-fires a second Purchase on top of the one we send in code, doubling
     // every order. We only want the events we explicitly track.
-    fbq('set', 'autoConfig', false, '1876792236325466');
-    fbq('init', '1876792236325466');
-    fbq('track', 'PageView');
+    if (window.fbq) {
+      fbq('set', 'autoConfig', false, '1876792236325466');
+      fbq('init', '1876792236325466');
+      fbq('track', 'PageView');
+    }
     </script>
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1876792236325466&ev=PageView&noscript=1"
