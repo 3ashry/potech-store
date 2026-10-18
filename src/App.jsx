@@ -1200,7 +1200,7 @@ const SiteHeader = ({ cartCount, cartTotal, onCart, dark, setDark, navigate, log
       <div className="topbar">
         <div className="wrap topbar-inner">
           <div className="tb-left">
-            <span className="tb-item"><Icon name="pin" size={13} /> التوصيل ٣-٤ أيام لكل المحافظات</span>
+            <span className="tb-item"><Icon name="pin" size={13} /> التوصيل خلال يومين للقاهرة والجيزة والإسكندرية • ٣-٤ أيام لباقي المحافظات</span>
             <span className="tb-sep" />
             <span className="tb-item"><Icon name="shield" size={13} /> وكيل رسمي Total و Wadfow</span>
           </div>
@@ -1340,7 +1340,7 @@ const HeroTicker = () => (
       {[0,1].map(i => (
         <div className="ticker-group" key={i}>
           {[
-            ["truck","توصيل سريع ٣-٤ أيام لكل المحافظات"],
+            ["truck","توصيل خلال يومين للقاهرة والجيزة والإسكندرية و٣-٤ أيام لباقي المحافظات"],
             ["shield","وكيل رسمي Total و Wadfow"],
             ["tag","بطاقة ولاء مجانية مع كل طلب — خصم ١٠٠ ج.م على طلبك التاني"],
             ["chat","استشارة فنية مجانية"],
@@ -1376,7 +1376,7 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
               <span style={{color:"var(--brand)"}}>والعدة علينا.</span>
             </h1>
             <p style={{fontSize:"1rem",color:"var(--ink-2)",margin:"0 0 28px",lineHeight:1.7}}>
-              متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل لكل المحافظات خلال ٣-٤ أيام.
+              متجرك الإلكتروني لأدوات البناء والصيانة في مصر — الوكيل الرسمي لـ Total و Wadfow، توصيل خلال يومين للقاهرة والجيزة والإسكندرية و٣-٤ أيام لباقي المحافظات.
             </p>
             <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:32}}>
               <button className="btn btn-primary" onClick={() => navigate("shop")}>ابدأ التسوق <Icon name="arrow" size={15} /></button>
@@ -1388,8 +1388,8 @@ const HeroA = ({ settings, navigate, onUpdateSettings, showToast, editMode }) =>
                 <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>منتجات أصلية</small>
               </div>
               <div style={{padding:"8px 0",borderRight:"1px solid var(--line)",borderLeft:"1px solid var(--line)"}}>
-                <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٣-٤ أيام</b>
-                <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>توصيل لكل المحافظات</small>
+                <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٢-٤ أيام</b>
+                <small style={{fontSize:"0.78rem",color:"var(--ink-3)"}}>يومين للقاهرة والجيزة والإسكندرية</small>
               </div>
               <div style={{padding:"8px 0"}}>
                 <b style={{display:"block",fontSize:"1.5rem",fontWeight:900,fontFamily:"var(--f-mono)",color:"var(--brand)"}}>٢٤/٧</b>
@@ -1832,7 +1832,7 @@ const ReviewsSection = () => (
       <div><b>٤.٨ / ٥</b><small>متوسط التقييم</small></div><span className="vr"/>
       <div><b>١٨٬٤٠٠+</b><small>مراجعة موثقة</small></div><span className="vr"/>
       <div><b>٩٤٪</b><small>يوصون بالمتجر</small></div><span className="vr"/>
-      <div><b>٣-٤ أيام</b><small>متوسط التوصيل</small></div>
+      <div><b>٢-٤ أيام</b><small>متوسط التوصيل</small></div>
     </div>
   </Section>
 );
@@ -1843,7 +1843,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
     <div className="wrap foot-top">
       <div className="foot-brand">
         <div className="foot-logo">{logoSrc && <img src={logoSrc} alt="Protech"/>}</div>
-        <p>بروتيك — متجر إلكتروني للأدوات والمعدات في مصر. الوكيل الرسمي لـ Total و Wadfow. توصيل لكل المحافظات خلال ٣-٤ أيام.</p>
+        <p>بروتيك — متجر إلكتروني للأدوات والمعدات في مصر. الوكيل الرسمي لـ Total و Wadfow. توصيل خلال يومين للقاهرة والجيزة والإسكندرية و٣-٤ أيام لباقي المحافظات.</p>
         <div className="foot-contact">
           <span><Icon name="phone" size={13}/> ٠١٠٣٤٤٨٢٠٧١</span>
           <span><Icon name="chat" size={13}/> واتساب ٢٤/٧</span>
@@ -2343,7 +2343,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
             </>
           )}
           <div style={{background:"var(--bg-2)",borderRadius:"var(--radius)",padding:"14px 16px",display:"flex",gap:20,flexWrap:"wrap"}}>
-            {[["🚚","شحن ٣-٤ أيام"],["🔒","منتج أصلي"],["🔧","ضمان ٦ أشهر"],["↩️","استبدال ٧ أيام"]].map(([ic,t])=>(
+            {[["🚚","شحن ٢-٤ أيام"],["🔒","منتج أصلي"],["🔧","ضمان ٦ أشهر"],["↩️","استبدال ٧ أيام"]].map(([ic,t])=>(
               <span key={t} style={{fontSize:"0.8rem",color:"var(--ink-2)",display:"flex",alignItems:"center",gap:5}}><span>{ic}</span>{t}</span>
             ))}
           </div>
@@ -2665,8 +2665,8 @@ const grand = total + shipping;
       }, { eventID: code });
       logAnalytics('order_confirmed');
       setCart([]);
-      sessionStorage.setItem("protech_order", JSON.stringify({orderCode:code,customerName:form.name,phone:form.phone,total:grand}));
-navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand});
+      sessionStorage.setItem("protech_order", JSON.stringify({orderCode:code,customerName:form.name,phone:form.phone,total:grand,city:form.city}));
+navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand,city:form.city});
     } catch(e) {
       console.error('order submit failed:', e);
       const detail = e?.message ? String(e.message).replace(/\s+/g,' ').slice(0,200) : '';
@@ -2719,7 +2719,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
               {errors.city&&<span className="form-err">{errors.city}</span>}
               {form.city && (
                 <div style={{fontSize:"0.78rem",color:"var(--brand)",marginTop:4,fontWeight:600}}>
-                  تكلفة الشحن إلى {form.city}: {fmtEGP(shipping)} ج.م
+                  تكلفة الشحن إلى {form.city}: {fmtEGP(shipping)} ج.م • التوصيل خلال {deliveryEta(form.city)}
                 </div>
               )}
             </div>
@@ -2857,9 +2857,14 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
 };
 
 /* ─── Confirmation ───────────────────────────────────────────────────────── */
+// Delivery time by governorate: Cairo, Giza and Alexandria arrive in two
+// days, every other governorate in 3-4 days.
+const FAST_DELIVERY_CITIES = ["القاهرة","الجيزة","الإسكندرية"];
+const deliveryEta = (city) => FAST_DELIVERY_CITIES.includes(city) ? "يومين" : "٣ - ٤ أيام";
+
 const ConfirmationPage = ({ pageData, navigate }) => {
   const saved = (() => { try { return JSON.parse(sessionStorage.getItem("protech_order")); } catch { return null; } })();
-  const { orderCode, customerName, phone, total } = pageData || saved || {};
+  const { orderCode, customerName, phone, total, city } = pageData || saved || {};
   return (
     <div className="confirm-wrap">
       <div className="confirm-card">
@@ -2870,7 +2875,7 @@ const ConfirmationPage = ({ pageData, navigate }) => {
         <div className="confirm-meta">
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>إجمالي الطلب</span><b>{fmtEGP(total)} ج.م</b></div>
           <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>طريقة الدفع</span><b>الدفع عند الاستلام</b></div>
-          <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>التوصيل المتوقع</span><b style={{color:"var(--green)"}}>٣ - ٤ أيام</b></div>
+          <div className="confirm-meta-row"><span style={{color:"var(--ink-3)"}}>التوصيل المتوقع</span><b style={{color:"var(--green)"}}>{city ? deliveryEta(city) : "يومين للقاهرة والجيزة والإسكندرية • ٣-٤ أيام لباقي المحافظات"}</b></div>
         </div>
         <div style={{background:"var(--brand-soft)",border:"1.5px solid var(--brand)",borderRadius:"var(--radius-md)",padding:"18px",marginBottom:20,textAlign:"right"}}>
           <div style={{fontWeight:800,fontSize:"0.95rem",marginBottom:8,display:"flex",alignItems:"center",gap:8,color:"var(--brand-ink)"}}>
