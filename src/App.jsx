@@ -2382,7 +2382,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
 
 /* ─── Checkout ───────────────────────────────────────────────────────────── */
 const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToast }) => {
-  const [form, setForm] = useState({ name:"", phone:"", phone2:"", address:"", city:"", notes:"", allowOpen:false });
+  const [form, setForm] = useState({ name:"", phone:"", phone2:"", address:"", city:"", notes:"", allowOpen:true });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
@@ -2414,6 +2414,8 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     // Merchant subsidizes 10 EGP per order; customer pays the rest.
     return Math.max(0, shipping - 10);
   };
+  // Every order can be opened and inspected before paying (no longer a
+  // checkbox); Bosta's open-package fee is part of every shipping price.
   const OPEN_PACKAGE_FEE = 7;
   // Some products (e.g. big combos) grant free shipping automatically to any
   // order that contains them — checked at checkout so it's tamper-proof, no
@@ -2423,7 +2425,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     const dbP = products.find(p => p.id === i.id);
     return dbP && dbP.free_shipping === true;
   });
-  const baseShipping = (form.city ? getShipping(form.city) : 0) + (form.allowOpen ? OPEN_PACKAGE_FEE : 0);
+  const baseShipping = form.city ? getShipping(form.city) + OPEN_PACKAGE_FEE : 0;
   // Free shipping if: promo code applied, OR the cart contains a free-shipping product.
   const shipping = (promoApplied || cartHasFreeShippingItem) ? 0 : baseShipping;
 const grand = total + shipping;
@@ -2725,12 +2727,9 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             </div>
             <div className="form-group"><label>العنوان بالتفصيل *</label><input {...inp("address")} placeholder="الشارع، الحي، المدينة"/>{errors.address&&<span className="form-err">{errors.address}</span>}</div>
             <div className="form-group"><label>ملاحظات (اختياري)</label><textarea className="form-input" style={{height:72,resize:"none"}} value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))} placeholder="أي تعليمات خاصة بالتوصيل…"/></div>
-            <label className="form-group" htmlFor="allow-open" style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",background:"var(--bg-2)",border:"1px solid var(--line)",borderRadius:"var(--radius)",padding:"12px 14px",margin:0}}>
-              <input type="checkbox" id="allow-open" checked={form.allowOpen} onChange={e=>setForm(x=>({...x,allowOpen:e.target.checked}))} style={{marginTop:2,width:18,height:18,accentColor:"var(--brand)",flexShrink:0}}/>
-              <span style={{fontSize:"0.9rem",fontWeight:600}}>أريد فتح الشحنة قبل الاستلام
-                <span style={{display:"block",fontSize:"0.75rem",color:"var(--ink-3)",fontWeight:400,marginTop:2}}>عند تفعيل هذا الخيار تزيد رسوم الشحن ٧ ج.م</span>
-              </span>
-            </label>
+            <div style={{display:"flex",alignItems:"center",gap:10,background:"var(--bg-2)",border:"1px solid var(--line)",borderRadius:"var(--radius)",padding:"12px 14px",fontSize:"0.9rem",fontWeight:600}}>
+              <span style={{fontSize:18}}>📦</span>تقدر تفتح الشحنة وتعاينها قبل الدفع
+            </div>
           </div>
           <div className="checkout-section" style={{borderColor:"var(--brand)",borderWidth:2}}>
             <h3><span className="step-num">٣</span> طريقة الدفع</h3>
