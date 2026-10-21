@@ -2181,6 +2181,9 @@ function applyProductSeo(product){
 }
 
 /* ─── Product Detail ─────────────────────────────────────────────────────── */
+// Arabic count of pieces: 1 قطعة واحدة, 2 قطعتان, 3–10 قطع, 11+ قطعة.
+const stockLabel = (n) => n === 1 ? "قطعة واحدة" : n === 2 ? "قطعتان" : n <= 10 ? `${n} قطع` : `${n} قطعة`;
+
 const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWished }) => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -2193,7 +2196,6 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
   useEffect(() => setVariantIdx(0), [product.id]);
   const selectedVariant = hasVariants ? variants[variantIdx] : null;
   useEffect(() => applyProductSeo(product), [product.id]);
-  const [viewersCount, setViewersCount] = useState(1);
   useEffect(() => {
     window.fbq?.('track', 'ViewContent', {
       content_ids: [product.id],
@@ -2212,28 +2214,9 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
     };
     beat();
     const beatId = setInterval(beat, 20000);
-    // Poll live viewer count every 15s — distinct session_ids on
-    // analytics_events for this product in the last 45 seconds.
-    const fetchViewers = async () => {
-      try {
-        const since = new Date(Date.now() - 45000).toISOString();
-        const url = `${SB_URL}/rest/v1/analytics_events?event_type=eq.product_view`
-          + `&product_code=eq.${encodeURIComponent(product.code)}`
-          + `&created_at=gte.${encodeURIComponent(since)}`
-          + `&select=session_id`;
-        const res = await fetch(url, { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
-        if (!res.ok) return;
-        const rows = await res.json();
-        const uniq = new Set(rows.map(r => r.session_id).filter(Boolean));
-        // Always include self so a lone visitor still sees "1 person".
-        uniq.add(getSessionId());
-        setViewersCount(uniq.size);
-      } catch {}
-    };
-    fetchViewers();
-    const pollId = setInterval(fetchViewers, 15000);
-    return () => { clearInterval(beatId); clearInterval(pollId); };
+    return () => clearInterval(beatId);
   }, [product.id, product.code]);
+  const stockQty = parseInt(product.qty || 0) || 0;
   const imgs = Array.isArray(product.images) ? product.images : [];
   const bundleWith = bundleCompanions(product, products);
   const accessoriesRail = relatedAccessories(product, products);
@@ -2291,15 +2274,11 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
             {discount>0 && <span className="badge badge-offer" style={{position:"static"}}>خصم {discount}٪</span>}
           </div>
           {canOrder(product) ? (
-            <div style={{color:"var(--brand)",fontWeight:700,fontSize:"0.9rem",display:"flex",alignItems:"center",gap:8}}>
-              <span className="live-dot" aria-hidden="true"></span>
-              {viewersCount === 1
-                ? "شخص واحد يشاهد هذا المنتج الآن"
-                : viewersCount === 2
-                ? "شخصان يشاهدان هذا المنتج الآن"
-                : (viewersCount >= 3 && viewersCount <= 10)
-                ? `${viewersCount} أشخاص يشاهدون هذا المنتج الآن`
-                : `${viewersCount} شخصًا يشاهدون هذا المنتج الآن`}
+            <div style={{color:stockQty > 0 && stockQty <= 3 ? "var(--red)" : "var(--green)",fontWeight:700,fontSize:"0.9rem",display:"flex",alignItems:"center",gap:8}}>
+              <span className="dot-green" aria-hidden="true"></span>
+              {stockQty <= 0 ? "متوفر"
+                : stockQty <= 3 ? `باقي ${stockLabel(stockQty)} فقط في المخزن`
+                : `متوفر في المخزن: ${stockLabel(stockQty)}`}
             </div>
           ) : (
             <div style={{color:"var(--red)",fontWeight:700,fontSize:"0.85rem"}}>✗ نفذ المخزون</div>
