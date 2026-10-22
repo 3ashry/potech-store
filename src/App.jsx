@@ -2370,6 +2370,8 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState("");
   const [promoChecking, setPromoChecking] = useState(false);
+  // 0 = free-shipping code; >0 = that many EGP off shipping (e.g. ASHRY100).
+  const [promoShipOff, setPromoShipOff] = useState(0);
 
   const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
   const total = cart.reduce((s,it)=>s+getPrice(it)*it.qty,0);
@@ -2404,8 +2406,11 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     return dbP && dbP.free_shipping === true;
   });
   const baseShipping = form.city ? getShipping(form.city) + OPEN_PACKAGE_FEE : 0;
-  // Free shipping if: promo code applied, OR the cart contains a free-shipping product.
-  const shipping = (promoApplied || cartHasFreeShippingItem) ? 0 : baseShipping;
+  // Free shipping if: free-shipping promo applied, OR the cart contains a free-shipping
+  // product. A "ship_off" promo takes a fixed amount off shipping (never below 0).
+  const shipping = cartHasFreeShippingItem ? 0
+    : promoApplied ? (promoShipOff > 0 ? Math.max(0, baseShipping - promoShipOff) : 0)
+    : baseShipping;
 const grand = total + shipping;
 
   // Check a promo code with the server (does NOT consume it — that happens on order
@@ -2421,10 +2426,11 @@ const grand = total + shipping;
       });
       const d = await r.json();
       if (d.valid) {
-        setPromoApplied(true); setPromoCode(d.code || c);
-        setPromoMsg("✓ تم تفعيل الكود — شحن مجاني 🎉");
+        const off = Number(d.shippingOff) || 0;
+        setPromoApplied(true); setPromoCode(d.code || c); setPromoShipOff(off);
+        setPromoMsg(off > 0 ? `✓ تم تفعيل الكود — خصم ${off} ج.م على الشحن 🎉` : "✓ تم تفعيل الكود — شحن مجاني 🎉");
       } else {
-        setPromoApplied(false); setPromoCode("");
+        setPromoApplied(false); setPromoCode(""); setPromoShipOff(0);
         setPromoMsg(d.reason || "كود غير صالح أو مستخدم من قبل");
       }
     } catch (e) {
@@ -2433,7 +2439,7 @@ const grand = total + shipping;
     }
     setPromoChecking(false);
   };
-  const clearPromo = () => { setPromoApplied(false); setPromoCode(""); setPromo(""); setPromoMsg(""); };
+  const clearPromo = () => { setPromoApplied(false); setPromoCode(""); setPromo(""); setPromoMsg(""); setPromoShipOff(0); };
 
   // Abandoned-cart capture: save the cart with a PLAIN insert (once per checkout session)
   // so the dashboard can follow up if they don't finish. A plain insert avoids the RLS
@@ -2733,8 +2739,8 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <div className="summary-row">
             <span style={{color:"var(--ink-3)"}}>الشحن {form.city ? `(${form.city})` : ""}</span>
             <b style={{color:shipping===0?"var(--green)":undefined}}>
-              {promoApplied ? "مجاني 🎉 (كود خصم)"
-                : cartHasFreeShippingItem ? "مجاني 🎉 (شحن مجاني)"
+              {cartHasFreeShippingItem ? "مجاني 🎉 (شحن مجاني)"
+                : promoApplied && promoShipOff === 0 ? "مجاني 🎉 (كود خصم)"
                 : !form.city ? "اختر المحافظة"
                 : shipping===0 ? "مجاني 🎉"
                 : `${fmtEGP(shipping)} ج.م`}
