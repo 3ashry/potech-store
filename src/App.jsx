@@ -4,6 +4,8 @@ const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201034482071";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
+// Contact page details. Leave CONTACT_EMAIL empty to hide the email card.
+const CONTACT_EMAIL = "";
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        102,
   'القاهره':        102,
@@ -966,6 +968,15 @@ input,select,textarea{font-family:inherit;}
 .info-section p,.info-section li{font-size:0.95rem;line-height:1.8;color:var(--ink-2);}
 .info-section ul{padding-inline-start:20px;margin:8px 0;}
 .info-section li{margin-bottom:6px;}
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:8px;}
+.contact-card{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-md);padding:20px;display:flex;flex-direction:column;gap:8px;}
+.contact-card .cc-ico{width:42px;height:42px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;}
+.contact-card h3{margin:0;font-size:1rem;font-weight:800;}
+.contact-card h3 small{display:block;font-size:0.78rem;font-weight:600;color:var(--ink-3);font-family:var(--f-mono);}
+.contact-card .cc-val{font-size:1.05rem;font-weight:800;color:var(--ink);text-decoration:none;word-break:break-word;}
+.contact-card .cc-en{font-size:0.85rem;color:var(--ink-3);direction:ltr;text-align:right;}
+.contact-card .cc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.contact-card .cc-actions a{font-size:0.82rem;font-weight:700;color:var(--brand);text-decoration:none;border:1.5px solid var(--brand);border-radius:var(--radius);padding:6px 12px;}
 .info-highlight{background:var(--brand-soft);border-right:3px solid var(--brand);padding:14px 18px;border-radius:var(--radius);margin-bottom:16px;font-size:0.92rem;color:var(--ink-2);}
 
 /* ORDERS PAGE */
@@ -1067,6 +1078,7 @@ const Icon = ({ name, size = 20, stroke = 1.75 }) => {
     case "minus":    return <svg {...p}><path d="M5 12h14"/></svg>;
     case "star":     return <svg {...p} fill="currentColor" stroke="none"><path d="M12 2 15 9l7 .6-5.3 4.7L18.2 22 12 18 5.8 22l1.5-7.7L2 9.6 9 9z"/></svg>;
     case "check":    return <svg {...p}><path d="m5 12 4 4L19 6"/></svg>;
+    case "mail":     return <svg {...p}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>;
     case "pin":      return <svg {...p}><path d="M12 22s8-8.1 8-13a8 8 0 0 0-16 0c0 4.9 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>;
     case "sun":      return <svg {...p}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>;
     case "moon":     return <svg {...p}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>;
@@ -1846,6 +1858,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <div className="foot-contact">
           <span><Icon name="phone" size={13}/> ٠١٠٣٤٤٨٢٠٧١</span>
           <span><Icon name="chat" size={13}/> واتساب ٢٤/٧</span>
+          <span><Icon name="pin" size={13}/> الإسكندرية، مصر</span>
         </div>
       </div>
       <div className="foot-col">
@@ -1867,6 +1880,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
       <div className="foot-col">
         <h5>الدعم</h5>
         <ul>
+          <li onClick={()=>navigate("contact")}>تواصل معنا</li>
           <li onClick={()=>navigate("info","loyalty")}>بطاقة الولاء 🎁</li>
           <li onClick={()=>navigate("info","shipping")}>الشحن والتوصيل</li>
           <li onClick={()=>navigate("info","returns")}>الاستبدال والاسترجاع</li>
@@ -1887,6 +1901,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <span onClick={()=>navigate("info","privacy")}>سياسة الخصوصية</span>
         <span onClick={()=>navigate("info","terms")}>الشروط والأحكام</span>
         <span onClick={()=>navigate("info","returns")}>سياسة الإرجاع</span>
+        <span onClick={()=>navigate("contact")}>تواصل معنا</span>
       </span>
     </div></div>
   </footer>
@@ -3089,6 +3104,43 @@ const INFO_PAGES = {
   },
 };
 
+/* ─── Contact Us ─────────────────────────────────────────────────────────── */
+const ContactPage = ({ navigate }) => (
+  <div className="info-page">
+    <button onClick={()=>navigate("home")} style={{border:0,background:"none",color:"var(--brand)",cursor:"pointer",fontFamily:"var(--f-ar)",fontSize:"0.85rem",marginBottom:20,display:"flex",alignItems:"center",gap:6}}>
+      <Icon name="back" size={15}/> العودة للرئيسية
+    </button>
+    <h1>تواصل معنا</h1>
+    <div className="info-sub">Contact Us — يسعدنا الرد على استفساراتك عن المنتجات والطلبات والضمان.</div>
+    <div className="contact-grid">
+      <div className="contact-card">
+        <div className="cc-ico"><Icon name="phone" size={20}/></div>
+        <h3>الهاتف وواتساب<small>Phone & WhatsApp</small></h3>
+        <a className="cc-val" href={`tel:+${WHATSAPP_NUMBER}`}>٠١٠٣٤٤٨٢٠٧١</a>
+        <div className="cc-en">+20 103 448 2071</div>
+        <div className="cc-actions">
+          <a href={`tel:+${WHATSAPP_NUMBER}`}>اتصل بنا · Call</a>
+          <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer">واتساب · WhatsApp</a>
+        </div>
+      </div>
+      {CONTACT_EMAIL && (
+        <div className="contact-card">
+          <div className="cc-ico"><Icon name="mail" size={20}/></div>
+          <h3>البريد الإلكتروني<small>Email</small></h3>
+          <a className="cc-val" href={`mailto:${CONTACT_EMAIL}`} style={{direction:"ltr",textAlign:"right"}}>{CONTACT_EMAIL}</a>
+          <div className="cc-actions"><a href={`mailto:${CONTACT_EMAIL}`}>راسلنا · Email us</a></div>
+        </div>
+      )}
+      <div className="contact-card">
+        <div className="cc-ico"><Icon name="pin" size={20}/></div>
+        <h3>العنوان<small>Location</small></h3>
+        <div className="cc-val">الإسكندرية، مصر</div>
+        <div className="cc-en">Alexandria, Egypt</div>
+      </div>
+    </div>
+  </div>
+);
+
 const InfoPage = ({ pageKey, navigate }) => {
   const page = INFO_PAGES[pageKey];
   if(!page) return null;
@@ -3279,6 +3331,7 @@ const buildUrl = (p, data) => {
     case "orders": return "/orders";
     case "flash": return "/flash-offers";
     case "info": return `/info/${data || ""}`;
+    case "contact": return "/contact";
     default: return "/";
   }
 };
@@ -3299,6 +3352,7 @@ const parseUrl = (pathname, search, products) => {
   if (pathname === "/confirmation") return { page: "confirmation", data: null };
   if (pathname === "/orders") return { page: "orders", data: null };
   if (pathname === "/flash-offers") return { page: "flash", data: null };
+  if (pathname === "/contact") return { page: "contact", data: null };
   if (pathname.startsWith("/info/")) {
     const key = pathname.split("/info/")[1];
     return { page: "info", data: key };
@@ -3520,6 +3574,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       {page==="orders" && <OrdersPage navigate={navigate}/>}
       {page==="flash" && <FlashOffersPage products={products} settings={settings} onAdd={addToCart} navigate={navigate} onWish={toggleWish} isWished={isWished}/>}
       {page==="info" && <InfoPage pageKey={pageData} navigate={navigate}/>}
+      {page==="contact" && <ContactPage navigate={navigate}/>}
 
       <SiteFooter logoSrc={logoSrc} navigate={navigate}/>
 
