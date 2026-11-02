@@ -5,7 +5,7 @@ const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201034482071";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
 // Contact page details. Leave CONTACT_EMAIL empty to hide the email card.
-const CONTACT_EMAIL = "";
+const CONTACT_EMAIL = "support@protechstores.com";
 const BOSTA_SHIPPING_RATES = {
   'القاهرة':        102,
   'القاهره':        102,
@@ -1858,6 +1858,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <div className="foot-contact">
           <span><Icon name="phone" size={13}/> ٠١٠٣٤٤٨٢٠٧١</span>
           <span><Icon name="chat" size={13}/> واتساب ٢٤/٧</span>
+          <a href={`mailto:${CONTACT_EMAIL}`} style={{color:"inherit",textDecoration:"none",direction:"ltr"}}><Icon name="mail" size={13}/> {CONTACT_EMAIL}</a>
           <span><Icon name="pin" size={13}/> الإسكندرية، مصر</span>
         </div>
       </div>
