@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   const urls = [
     { loc: `${SITE}/`, pri: '1.0', freq: 'daily' },
     { loc: `${SITE}/shop`, pri: '0.9', freq: 'daily' },
+    { loc: `${SITE}/contact`, pri: '0.5', freq: 'monthly' },
     ...CATS.map(c => ({ loc: `${SITE}/shop?category=${c}`, pri: '0.7', freq: 'weekly' })),
   ];
   try {
