@@ -26,6 +26,9 @@ const ARAMEX_ZONE = {
 // EGP before fuel and VAT: [≤5kg, ≤10kg, ≤15kg, ≤25kg, each kg over 25].
 const ARAMEX_RATES = {1:[55,65,75,85,4],2:[60,70,80,90,4],3:[65,75,85,95,4],4:[75,85,95,105,5],5:[85,95,105,115,5],6:[110,120,130,140,5]};
 const ARAMEX_FUEL = 0.38, ARAMEX_VAT = 0.14, ARAMEX_COD_PCT = 0.005, ARAMEX_COD_FROM = 4000;
+// "Open the shipment upon delivery" service: 5 EGP per shipment, subject to
+// fuel and VAT like the rate itself. Every order allows opening.
+const ARAMEX_OPEN_FEE = 5;
 // Chargeable weight of a cart: the higher of total real weight and total
 // volumetric weight (total cm³ ÷ 3000), rounded up to the next whole kg.
 const cartChargeableKg = (cart, products) => {
@@ -37,13 +40,14 @@ const cartChargeableKg = (cart, products) => {
   }
   return Math.max(1, Math.ceil(Math.max(kg, cm3 / 3000)));
 };
-// Aramex price for one COD shipment: zone rate by weight + 38% fuel, a 0.5%
+// Aramex price for one COD shipment: zone rate by weight + 5 EGP open-shipment
+// fee, + 38% fuel, a 0.5%
 // COD fee when the collected amount (subtotal + shipping) is over 4,000, all
 // + 14% VAT. Solved for shipping so the COD fee includes the shipping itself.
 const aramexShipping = (city, kg, subtotal) => {
   const r = ARAMEX_RATES[ARAMEX_ZONE[city] || 3];
   const base = kg <= 5 ? r[0] : kg <= 10 ? r[1] : kg <= 15 ? r[2] : kg <= 25 ? r[3] : r[3] + (kg - 25) * r[4];
-  const noCod = base * (1 + ARAMEX_FUEL) * (1 + ARAMEX_VAT);
+  const noCod = (base + ARAMEX_OPEN_FEE) * (1 + ARAMEX_FUEL) * (1 + ARAMEX_VAT);
   if (subtotal + noCod <= ARAMEX_COD_FROM) return Math.ceil(noCod);
   const k = ARAMEX_COD_PCT * (1 + ARAMEX_VAT);
   return Math.ceil((noCod + k * subtotal) / (1 - k));
