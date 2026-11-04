@@ -10,50 +10,43 @@ const TRACK_URL = (awb) => awb
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
 // Contact page details. Leave CONTACT_EMAIL empty to hide the email card.
 const CONTACT_EMAIL = "support@protechstores.com";
-const BOSTA_SHIPPING_RATES = {
-  'القاهرة':        102,
-  'القاهره':        102,
-  'الجيزة':         102,
-  'الجيزه':         102,
-  'الإسكندرية':    107,
-  'الاسكندريه':    107,
-  'الإسكندريه':    107,
-  'البحيرة':        107,
-  'البحيره':        107,
-  'الدقهلية':       115,
-  'الدقهليه':       115,
-  'القليوبية':      115,
-  'القليوبيه':      115,
-  'الغربية':        115,
-  'الغربيه':        115,
-  'كفر الشيخ':      115,
-  'المنوفية':       115,
-  'المنوفيه':       115,
-  'الشرقية':        115,
-  'الشرقيه':        115,
-  'الإسماعيلية':    115,
-  'الاسماعيليه':    115,
-  'السويس':         115,
-  'بورسعيد':        115,
-  'بور سعيد':       115,
-  'دمياط':          115,
-  'الفيوم':         129,
-  'بني سويف':       129,
-  'المنيا':         129,
-  'أسيوط':          129,
-  'اسيوط':          129,
-  'سوهاج':          129,
-  'قنا':            145,
-  'الأقصر':         145,
-  'الاقصر':         145,
-  'أسوان':          145,
-  'اسوان':          145,
-  'البحر الأحمر':   145,
-  'مرسي مطروح':     145,
-  'مطروح':          145,
-  'الساحل الشمالي': 149,
-  'جنوب سيناء':     165,
-  'الوادي الجديد':  165,
+// ─── Aramex shipping price (E-commerce Domestic price list, CAI) ──────────
+// Zone per governorate.
+const ARAMEX_ZONE = {
+  'القاهرة':1,'القاهره':1,'الجيزة':1,'الجيزه':1,
+  'الإسكندرية':2,'الاسكندريه':2,'الإسكندريه':2,'الاسكندرية':2,'بورسعيد':2,'بور سعيد':2,
+  'الإسماعيلية':2,'الاسماعيليه':2,'الإسماعيليه':2,'الاسماعيلية':2,'السويس':2,
+  'القليوبية':3,'القليوبيه':3,'المنوفية':3,'المنوفيه':3,'الشرقية':3,'الشرقيه':3,'الغربية':3,'الغربيه':3,
+  'الدقهلية':3,'الدقهليه':3,'البحيرة':3,'البحيره':3,'دمياط':3,'كفر الشيخ':3,
+  'الفيوم':4,'بني سويف':4,'المنيا':4,'أسيوط':4,'اسيوط':4,'سوهاج':4,
+  'قنا':5,'الأقصر':5,'الاقصر':5,'أسوان':5,'اسوان':5,'البحر الأحمر':5,'البحر الاحمر':5,
+  'جنوب سيناء':5,'الساحل الشمالي':5,'مرسي مطروح':5,'مطروح':5,
+  'الوادي الجديد':6,
+};
+// EGP before fuel and VAT: [≤5kg, ≤10kg, ≤15kg, ≤25kg, each kg over 25].
+const ARAMEX_RATES = {1:[55,65,75,85,4],2:[60,70,80,90,4],3:[65,75,85,95,4],4:[75,85,95,105,5],5:[85,95,105,115,5],6:[110,120,130,140,5]};
+const ARAMEX_FUEL = 0.38, ARAMEX_VAT = 0.14, ARAMEX_COD_PCT = 0.005, ARAMEX_COD_FROM = 4000;
+// Chargeable weight of a cart: the higher of total real weight and total
+// volumetric weight (total cm³ ÷ 3000), rounded up to the next whole kg.
+const cartChargeableKg = (cart, products) => {
+  let kg = 0, cm3 = 0;
+  for (const it of cart) {
+    const p = products.find(x => x.id === it.id) || it;
+    kg += (parseFloat(p.unit_weight_kg) || 0) * (it.qty || 1);
+    cm3 += (parseFloat(p.unit_volume_cm3) || 0) * (it.qty || 1);
+  }
+  return Math.max(1, Math.ceil(Math.max(kg, cm3 / 3000)));
+};
+// Aramex price for one COD shipment: zone rate by weight + 38% fuel, a 0.5%
+// COD fee when the collected amount (subtotal + shipping) is over 4,000, all
+// + 14% VAT. Solved for shipping so the COD fee includes the shipping itself.
+const aramexShipping = (city, kg, subtotal) => {
+  const r = ARAMEX_RATES[ARAMEX_ZONE[city] || 3];
+  const base = kg <= 5 ? r[0] : kg <= 10 ? r[1] : kg <= 15 ? r[2] : kg <= 25 ? r[3] : r[3] + (kg - 25) * r[4];
+  const noCod = base * (1 + ARAMEX_FUEL) * (1 + ARAMEX_VAT);
+  if (subtotal + noCod <= ARAMEX_COD_FROM) return Math.ceil(noCod);
+  const k = ARAMEX_COD_PCT * (1 + ARAMEX_VAT);
+  return Math.ceil((noCod + k * subtotal) / (1 - k));
 };
 // Admin's Supabase Auth access token (set after login). Public reads/inserts use the
 // publishable key; admin writes use this JWT so RLS can require an authenticated user.
@@ -2394,27 +2387,10 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const getPrice = (it) => it.is_offer && it.offer_price ? it.offer_price : it.price;
   const total = cart.reduce((s,it)=>s+getPrice(it)*it.qty,0);
 
-  // Calculate shipping based on selected city
-  // Real Bosta formula — matches dashboard breakdown within ~0.3 EGP:
-  //   COD = subtotal + base_rate
-  //   cod_fee = max(0, COD - 2000) × 0.01
-  //   vat = (base_rate + cod_fee) × 0.14
-  //   shipping = base_rate + cod_fee + vat
-  const getShipping = (city) => {
-    if (!city) return 0;
-    const baseRate = BOSTA_SHIPPING_RATES[city] || 115;
-    let shipping;
-    if (total + 1.14 * baseRate >= 2000) {
-      shipping = Math.ceil((1.14 * baseRate + 0.0114 * total - 22.8) / 0.9886);
-    } else {
-      shipping = Math.ceil(1.14 * baseRate);
-    }
-    // Merchant subsidizes 10 EGP per order; customer pays the rest.
-    return Math.max(0, shipping - 10);
-  };
-  // Every order can be opened and inspected before paying (no longer a
-  // checkbox); Bosta's open-package fee is part of every shipping price.
-  const OPEN_PACKAGE_FEE = 7;
+  // Shipping = Aramex's price for this cart (zone of the governorate, the
+  // cart's weight/volume from each product's Shipping specs, COD fee).
+  const shipKg = cartChargeableKg(cart, products);
+  const getShipping = (city) => city ? aramexShipping(city, shipKg, total) : 0;
   // Some products (e.g. big combos) grant free shipping automatically to any
   // order that contains them — checked at checkout so it's tamper-proof, no
   // promo code needed. We resolve against the live products list so the flag
@@ -2423,7 +2399,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     const dbP = products.find(p => p.id === i.id);
     return dbP && dbP.free_shipping === true;
   });
-  const baseShipping = form.city ? getShipping(form.city) + OPEN_PACKAGE_FEE : 0;
+  const baseShipping = form.city ? getShipping(form.city) : 0;
   // Free shipping if: promo code applied, OR the cart contains a free-shipping product.
   const shipping = (promoApplied || cartHasFreeShippingItem) ? 0 : baseShipping;
 const grand = total + shipping;
