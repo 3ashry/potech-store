@@ -3,6 +3,10 @@ import { useState, useEffect, useRef, Fragment } from "react";
 const SB_URL = "https://wljxplbcfoorqpoflcdz.supabase.co";
 const SB_KEY = "sb_publishable_zsHh-eOarHI7BSGtuP6WWQ_PQ4ACoHG";
 const WHATSAPP_NUMBER = "201034482071";
+// Courier tracking page (Aramex). With a tracking number it opens that parcel.
+const TRACK_URL = (awb) => awb
+  ? `https://www.aramex.com/eg/ar/track/results?ShipmentNumber=${encodeURIComponent(awb)}`
+  : "https://www.aramex.com/eg/ar/track/shipments";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
 // Contact page details. Leave CONTACT_EMAIL empty to hide the email card.
 const CONTACT_EMAIL = "support@protechstores.com";
@@ -1875,7 +1879,7 @@ const SiteFooter = ({ logoSrc, navigate }) => (
         <h5>طلباتي</h5>
         <ul>
           <li onClick={()=>navigate("orders")}>تتبع طلبي</li>
-          <li onClick={()=>window.open("https://bosta.co/en-eg/tracking-shipments","_blank")}>تتبع الشحنة</li>
+          <li onClick={()=>window.open(TRACK_URL(),"_blank")}>تتبع الشحنة</li>
         </ul>
       </div>
       <div className="foot-col">
@@ -2625,13 +2629,13 @@ const grand = total + shipping;
       .then(r => r.json())
       .then(data => {
         if (data.success) {
-          console.log('✅ Bosta shipment created:', data.trackingNumber);
+          console.log('✅ Aramex shipment created:', data.trackingNumber);
         } else {
-          console.warn('⚠️ Bosta returned error:', data);
+          console.warn('⚠️ Aramex shipment not created:', data);
         }
       })
       .catch(err => {
-        console.warn('⚠️ Bosta fetch failed (order still saved):', err);
+        console.warn('⚠️ Shipment request failed (order still saved):', err);
       });
 
       // NOTE: the order-confirmation WhatsApp message is NOT sent here. It is sent
@@ -2952,8 +2956,8 @@ const OrdersPage = ({ navigate }) => {
                       <div style={{fontSize:"0.85rem",color:"var(--ink-3)"}}>الإجمالي</div>
                       <div style={{fontWeight:900,fontSize:"1.1rem",fontFamily:"var(--f-mono)",color:"var(--brand)"}}>{fmtEGP(order.total)} ج.م</div>
                     </div>
-                    {order.status==="Shipped" && (
-                      <button className="btn btn-ghost btn-block sm" style={{marginTop:12}} onClick={()=>window.open("https://bosta.co/en-eg/tracking-shipments","_blank")}>
+                    {order.ship_code && !["Delivered","Returned","Cancelled"].includes(order.status) && (
+                      <button className="btn btn-ghost btn-block sm" style={{marginTop:12}} onClick={()=>window.open(TRACK_URL(order.courier==="aramex" ? order.ship_code : ""),"_blank")}>
                         <Icon name="truck" size={14}/> تتبع الشحنة
                       </button>
                     )}
@@ -3017,7 +3021,7 @@ const INFO_PAGES = {
         </div>
         <div className="info-section">
           <h2>شريك التوصيل</h2>
-          <p>نعمل مع شركة <b>Bosta</b> للشحن. يمكنك تتبع شحنتك من خلال الرابط: <a href="https://bosta.co/en-eg/tracking-shipments" target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>bosta.co</a></p>
+          <p>نعمل مع شركة <b>أرامكس (Aramex)</b> للشحن. هيوصلك رقم الشحنة على واتساب، وتقدر تتابعها من هنا: <a href={TRACK_URL()} target="_blank" rel="noreferrer" style={{color:"var(--brand)"}}>aramex.com</a></p>
         </div>
         <div className="info-section">
           <h2>ملاحظات التوصيل</h2>
