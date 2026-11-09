@@ -2211,7 +2211,11 @@ const ProductDescription = ({ text }) => {
   const long = lines.length > DESC_COLLAPSE_AFTER;
   const shown = long && !open ? lines.slice(0, DESC_PREVIEW_LINES).join('\n').trimEnd() : text;
   return (
-    <div>
+    <div style={{borderTop:"1px solid var(--line, #e5e5e5)",paddingTop:12}}>
+      <h2 style={{margin:"0 0 8px",fontSize:"1rem",fontWeight:800,color:"var(--ink)",display:"flex",alignItems:"center",gap:8}}>
+        <span style={{width:4,height:16,borderRadius:2,background:"var(--brand)",display:"inline-block"}}/>
+        تفاصيل ومواصفات المنتج
+      </h2>
       <p style={{color:"var(--ink-2)",lineHeight:1.7,fontSize:"0.92rem",margin:0,whiteSpace:"pre-line"}}>{shown}{long && !open ? '…' : ''}</p>
       {long && (
         <button type="button" onClick={()=>setOpen(o=>!o)}
