@@ -2201,6 +2201,28 @@ function applyProductSeo(product){
 // Arabic count of pieces: 1 قطعة واحدة, 2 قطعتان, 3–10 قطع, 11+ قطعة.
 const stockLabel = (n) => n === 1 ? "قطعة واحدة" : n === 2 ? "قطعتان" : n <= 10 ? `${n} قطع` : `${n} قطعة`;
 
+/* Long descriptions (kits, combos) collapse to the first few lines with a
+   "عرض الكل" toggle, so the price and add-to-cart stay near the top. */
+const DESC_PREVIEW_LINES = 6;
+const DESC_COLLAPSE_AFTER = 9;
+const ProductDescription = ({ text }) => {
+  const [open, setOpen] = useState(false);
+  const lines = text.split('\n');
+  const long = lines.length > DESC_COLLAPSE_AFTER;
+  const shown = long && !open ? lines.slice(0, DESC_PREVIEW_LINES).join('\n').trimEnd() : text;
+  return (
+    <div>
+      <p style={{color:"var(--ink-2)",lineHeight:1.7,fontSize:"0.92rem",margin:0,whiteSpace:"pre-line"}}>{shown}{long && !open ? '…' : ''}</p>
+      {long && (
+        <button type="button" onClick={()=>setOpen(o=>!o)}
+          style={{marginTop:6,padding:0,background:"none",border:"none",color:"var(--brand)",fontWeight:700,fontSize:"0.88rem",cursor:"pointer",fontFamily:"inherit"}}>
+          {open ? 'عرض أقل ▲' : `عرض الكل (${lines.filter(l=>l.trim()).length} سطر) ▼`}
+        </button>
+      )}
+    </div>
+  );
+};
+
 const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWished }) => {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -2283,7 +2305,7 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
           <div style={{fontFamily:"var(--f-mono)",fontSize:"0.72rem",color:"var(--ink-3)"}}>{product.code}</div>
           <h1 style={{margin:0,fontSize:"1.6rem",fontWeight:900,lineHeight:1.3}}>{product.name}</h1>
           {product.brand && <div style={{fontSize:"0.78rem",fontFamily:"var(--f-mono)",color:"var(--brand)",fontWeight:700}}>{product.brand.toUpperCase()}</div>}
-          {product.description && <p style={{color:"var(--ink-2)",lineHeight:1.7,fontSize:"0.92rem",margin:0,whiteSpace:"pre-line"}}>{product.description}</p>}
+          {product.description && <ProductDescription key={product.id} text={product.description}/>}
           <div style={{display:"flex",alignItems:"baseline",gap:12}}>
             <span style={{fontSize:"2.2rem",fontWeight:900,fontFamily:"var(--f-mono)",color:hasOffer?"var(--red)":"var(--brand)"}}>{fmtEGP(displayPrice)}</span>
             <span style={{fontSize:"0.88rem",color:"var(--ink-3)"}}>ج.م</span>
