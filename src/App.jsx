@@ -653,6 +653,16 @@ input,select,textarea{font-family:inherit;}
 .tabs-filter{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border:1px solid var(--line);border-radius:var(--radius);font-size:0.8rem;font-weight:600;color:var(--ink-2);white-space:nowrap;}.tabs-filter:hover{border-color:var(--ink);}
 
 /* CATEGORIES */
+.dept-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.dept-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.dept-grid{grid-template-columns:repeat(2,1fr);gap:10px;}}
+.dept-tile{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;text-align:start;transition:border-color .15s,box-shadow .15s,transform .15s;font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;}
+.dept-tile:hover{border-color:var(--brand);box-shadow:0 4px 14px rgba(242,106,33,.15);transform:translateY(-1px);}
+.dept-ico{flex-shrink:0;width:44px;height:44px;display:grid;place-items:center;}
+.dept-txt{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.dept-txt b{color:var(--brand);font-weight:800;font-size:1rem;line-height:1.3;}
+.dept-txt small{color:var(--ink-3);font-size:0.75rem;}
+@media(max-width:640px){.dept-tile{padding:10px;gap:8px;min-height:68px;}.dept-ico{width:36px;height:36px;}.dept-ico svg{width:34px;height:34px;}.dept-txt b{font-size:0.88rem;}}
 .cats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
 @media(max-width:900px){.cats-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:480px){.cats-grid{grid-template-columns:repeat(2,1fr);}}
@@ -1595,71 +1605,51 @@ const OffersSection = ({ products, onAdd, navigate, onWish, isWished }) => {
   );
 };
 
-const CAT_BG_COLORS = {
-  electric: "linear-gradient(135deg,#1a1a2e,#16213e)",
-  battery:  "linear-gradient(135deg,#0f3460,#533483)",
-  hand:     "linear-gradient(135deg,#2d1b0e,#5c3317)",
-  measuring:"linear-gradient(135deg,#0d2137,#1a4a6b)",
-  safety:   "linear-gradient(135deg,#1a0a00,#7c2d00)",
-  car:      "linear-gradient(135deg,#0a1628,#1e3a5f)",
-  garden:   "linear-gradient(135deg,#0a2010,#1a4d2e)",
-  sets:     "linear-gradient(135deg,#1a1200,#4a3500)",
-  new:      "linear-gradient(135deg,#1a0d2e,#3d1a6e)",
+/* Two-tone department icons: outline in ink, accent in brand orange. */
+const DEPT_ICONS = {
+  electric: { ink:["M7 6h9.5a3 3 0 0 1 0 6H7z","M11 12l-1.2 6.5h4L15 12","M12 18.5c0 2 2.5 3 4.5 2.2S20 20 21 21.5","M10.6 14.2H9.4"],
+              acc:["M4 7.5h3v3H4z","M1.5 9H4","M15 8v2","M17.4 8v2"] },
+  battery:  { ink:["M7 6h9.5a3 3 0 0 1 0 6H7z","M11 12l-.8 5h4.6l.7-5","M4 7.5h3v3H4z","M1.5 9H4"],
+              acc:["M8.5 17h8a1 1 0 0 1 1 1v2.5a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1V18a1 1 0 0 1 1-1z","M10 19.3h1.5","M12.5 19.3H14"] },
+  hand:     { ink:["M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z","M3.5 3.5l9 9"],
+              acc:["M14.6 12.6l5.9 5.9a1.6 1.6 0 0 1-2.3 2.3l-5.9-5.9z"] },
+  measuring:{ ink:["M3 7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z","M16 14.5h6v3h-6"],
+              acc:["M9.5 8.5a3 3 0 1 1 0 6 3 3 0 0 1 0-6z","M18.2 14.5v1.4","M20.2 14.5v1.4","M22 14.5V19"] },
+  safety:   { ink:["M5 15a7 7 0 0 1 14 0","M2.5 15h19v2.5h-19z"],
+              acc:["M10.2 8.3h3.6V15h-3.6z","M7 19.5h10"] },
+  car:      { ink:["M4.5 16H3v-3.5l2.2-4.3A2 2 0 0 1 7 7h8.5a2 2 0 0 1 1.6.8L20 11.5l1.3.5a1 1 0 0 1 .7 1V16h-1.5","M8.5 16h7","M5.5 11.5h13","M11.5 7.5v4"],
+              acc:["M6.5 14a2 2 0 1 1 0 4 2 2 0 0 1 0-4z","M17.5 14a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"] },
+  garden:   { ink:["M6 12.5h12v2.2H6z","M7.2 14.7h9.6l-1.3 6.3H8.5z"],
+              acc:["M12 12.5V6.5","M12 9.5C9 9.5 7.3 7.6 7.3 5c3 0 4.7 1.7 4.7 4.5z","M12 8c2.6 0 4.6-1.6 4.6-4.2C14 3.8 12 5.3 12 8z"] },
+  sets:     { ink:["M3 10h18v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19z","M3 13.8h18","M9 10V7.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V10"],
+              acc:["M10.5 12.6h3v2.6h-3z"] },
+  accessories:{ ink:["M6 2.5v5","M12 2.5v4","M18 2.5v3","M3 21.5h18"],
+              acc:["M6 7.5l-1.3 1.8 2.6 2-2.6 2 2.6 2-2.6 2L6 19","M12 6.5l-1.3 1.8 2.6 2-2.6 2 2.6 2L12 17","M18 5.5l-1.3 1.8 2.6 2-2.6 2L18 15"] },
+};
+const DeptIcon = ({ id, size = 40 }) => {
+  const ic = DEPT_ICONS[id] || DEPT_ICONS.sets;
+  const p = { fill:"none", strokeWidth:1.4, strokeLinecap:"round", strokeLinejoin:"round" };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      {ic.ink.map((d,i)=><path key={"i"+i} d={d} stroke="var(--ink)" {...p}/>)}
+      {ic.acc.map((d,i)=><path key={"a"+i} d={d} stroke="var(--brand)" {...p}/>)}
+    </svg>
+  );
 };
 
-const CategoriesSection = ({ products, navigate, settings, onUpdateSettings, showToast, editMode }) => {
-  const catImages = settings.cat_images?.value || {};
+const CategoriesSection = ({ products, navigate }) => {
   const catsWithCount = CATS.filter(c=>!["new","offers"].includes(c.id)).map(c=>({ ...c, count:products.filter(p=>{
     const cats = Array.isArray(p.categories) ? p.categories : (p.category ? [p.category] : []);
     return cats.includes(c.id) || p.category === c.id;
   }).length }));
 
-  const updateCatImage = async (catId, url) => {
-    const next = { ...catImages, [catId]: url };
-    await sb(`site_settings?key=eq.cat_images`, { method:"PATCH", prefer:"return=minimal", body: JSON.stringify({ value: next }) });
-    onUpdateSettings("cat_images", next);
-  };
-
   return (
     <Section id="categories" num="05" eyebrow="ALL DEPARTMENTS" title="تسوق حسب القسم">
-      <div className="cats-grid">
-        {catsWithCount.map((c,i) => (
-          <button key={c.id} className="cat-tile" onClick={()=>navigate("shop",{category:c.id})} style={{border:"1px solid var(--line)",background:"var(--bg-2)",cursor:"pointer","--i":i}}>
-            <div className="cat-tile-media" style={{position:"relative"}}>
-              {catImages[c.id]
-                ? <img src={optimizeImg(catImages[c.id], 400)} alt={c.ar} style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0}} />
-                : <div style={{position:"absolute",inset:0,background:CAT_BG_COLORS[c.id]||"var(--bg-3)"}} />
-              }
-              <div className="cat-tile-stripes" style={{zIndex:1}} />
-              <div className="cat-tile-icon" style={{zIndex:2}}><Icon name={c.icon} size={32} stroke={1.4}/></div>
-              {editMode && (
-  <button style={{position:"absolute",top:8,insetInlineEnd:8,zIndex:10,background:"var(--brand)",border:0,borderRadius:"var(--radius)",width:34,height:34,display:"grid",placeItems:"center",color:"#fff",cursor:"pointer"}}
-    onClick={e => {
-      e.stopPropagation();
-      const inp = document.createElement("input");
-      inp.type = "file";
-      inp.accept = "image/*";
-      inp.onchange = async () => {
-        try {
-          const file = inp.files[0];
-          const url = await sbUpload("protech-media", "banners/" + uid() + "-garden-" + file.name.replace(/\s/g,"_"), file);
-          await sb('site_settings?key=eq.garden_banner', {method:"PATCH", prefer:"return=minimal", body:JSON.stringify({value:url})});
-          onUpdateSettings("garden_banner", url);
-          showToast("تم تحديث الصورة ✓");
-        } catch(err) {
-          showToast("فشل: " + err.message, "error");
-        }
-      };
-      inp.click();
-    }}>
-    <Icon name="image" size={15}/>
-  </button>
-)}
-            </div>
-            <div className="cat-tile-body">
-              <div className="cat-tile-title"><b>{c.ar}</b><small>{c.en}</small></div>
-              <div className="cat-tile-foot"><span>{c.count} منتج</span><Icon name="chev" size={13}/></div>
-            </div>
+      <div className="dept-grid">
+        {catsWithCount.map(c => (
+          <button key={c.id} className="dept-tile" onClick={()=>navigate("shop",{category:c.id})}>
+            <span className="dept-ico"><DeptIcon id={c.id}/></span>
+            <span className="dept-txt"><b>{c.ar}</b>{c.count>0 && <small>{c.count} منتج</small>}</span>
           </button>
         ))}
       </div>
