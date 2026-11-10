@@ -532,7 +532,7 @@ a{color:inherit;text-decoration:none;}
 button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit;}
 input,select,textarea{font-family:inherit;}
 .num{font-family:var(--f-mono);font-size:0.72rem;color:var(--brand);letter-spacing:0.04em;}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:var(--radius);font-weight:700;font-size:0.92rem;transition:all .15s;border:1.5px solid transparent;white-space:nowrap;}
+.btn{display:inline-flex;align-items:center;justify-content:center;text-align:center;gap:8px;padding:12px 20px;border-radius:var(--radius);font-weight:700;font-size:0.92rem;transition:all .15s;border:1.5px solid transparent;white-space:nowrap;}
 .btn.lg{padding:16px 28px;font-size:1rem;}.btn.sm{padding:8px 14px;font-size:0.82rem;}
 .btn-primary{background:var(--brand);color:#fff;border-color:var(--brand);}.btn-primary:hover{background:var(--brand-ink);}
 .btn-dark{background:var(--ink);color:var(--bg);}.btn-dark:hover{opacity:.85;}
