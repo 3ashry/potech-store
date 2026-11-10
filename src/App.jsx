@@ -842,8 +842,8 @@ input,select,textarea{font-family:inherit;}
 .foot-links span{margin:0 6px;cursor:pointer;}.foot-links span:hover{color:var(--brand);}
 
 /* DRAWER */
-.drawer-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80;}.drawer-scrim.on{opacity:1;pointer-events:auto;}
-.drawer{position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;height:100dvh;background:var(--bg);z-index:81;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);padding-bottom:env(safe-area-inset-bottom,0);}.drawer.on{transform:translateX(0);}
+.drawer-scrim{position:fixed;inset:0;background:rgba(0,0,0,0.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:120;}.drawer-scrim.on{opacity:1;pointer-events:auto;}
+.drawer{position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;height:100dvh;background:var(--bg);z-index:121;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(0,0,0,.12);padding-bottom:env(safe-area-inset-bottom,0);}.drawer.on{transform:translateX(0);}
 .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);}
 .drawer-head b{display:block;font-size:1.05rem;}.drawer-head small{color:var(--ink-3);font-size:0.78rem;}
 .drawer-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
@@ -2393,13 +2393,18 @@ const ProductDetailPage = ({ product, onAdd, products, navigate, onWish, isWishe
       )}
       {canOrder(product) && (
         <div className="product-sticky-bar">
-          <button className="btn btn-primary lg" onClick={()=>onAdd(cartItem)}>+ أضف للسلة</button>
+          {!BUY_NOW_ONLY_CODES.has(String(product.code||"").toUpperCase()) && (
+            <button className="btn btn-primary lg" onClick={()=>onAdd(cartItem)}>+ أضف للسلة</button>
+          )}
           <button className="btn btn-dark lg" onClick={()=>{onAdd(cartItem);navigate("checkout");}}>اشترِ الآن</button>
         </div>
       )}
     </div>
   );
 };
+
+// Products whose mobile sticky bar shows only "Buy now" (no add-to-cart).
+const BUY_NOW_ONLY_CODES = new Set(["THKTHP41667"]);
 
 /* ─── Checkout ───────────────────────────────────────────────────────────── */
 const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToast }) => {
