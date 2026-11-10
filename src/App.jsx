@@ -538,6 +538,7 @@ input,select,textarea{font-family:inherit;}
 .btn-dark{background:var(--ink);color:var(--bg);}.btn-dark:hover{opacity:.85;}
 .btn-ghost{border-color:var(--line-2);color:var(--ink);background:var(--bg);}.btn-ghost:hover{border-color:var(--ink);}
 .btn-block{width:100%;justify-content:center;}
+.checkout-cta{position:relative;justify-content:center;text-align:center;}.checkout-cta .cta-ico{position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;}
 .icon-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:var(--radius);border:1px solid var(--line);background:var(--bg);flex-shrink:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .icon-btn:hover{border-color:var(--ink);}
 
@@ -1958,7 +1959,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate, pr
               <div className="drawer-row"><span>المجموع الفرعي</span><b>{fmtEGP(total)} ج.م</b></div>
               <div className="drawer-row"><span>الشحن</span><b style={{color:"var(--ink-3)"}}>يُحسب حسب المحافظة</b></div>
               <div className="drawer-row total"><span>الإجمالي</span><b>{fmtEGP(total)} ج.م +شحن</b></div>
-              <button className="btn btn-primary btn-block" style={{border:0}} onClick={()=>{
+              <button className="btn btn-primary btn-block checkout-cta" style={{border:0}} onClick={()=>{
                 window.fbq?.('track', 'InitiateCheckout', {
                   num_items: items.reduce((s, it) => s + it.qty, 0),
                   value: Number(total) || 0,
@@ -1966,7 +1967,7 @@ const CartDrawer = ({ open, items, onClose, onInc, onDec, onRemove, navigate, pr
                 });
                 logAnalytics('checkout_view');
                 navigate("checkout");
-              }}>إتمام الشراء <Icon name="arrow" size={13}/></button>
+              }}><span>إتمام الشراء</span><span className="cta-ico"><Icon name="arrow" size={13}/></span></button>
               <small className="drawer-note"><Icon name="shield" size={11}/> دفع آمن • إرجاع خلال ٧ أيام</small>
             </div>
           </>
@@ -2793,7 +2794,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <p style={{textAlign:"center",fontSize:"0.72rem",color:"var(--ink-3)",marginTop:8}}>بالضغط توافق على شروط الخدمة.</p>
           <SuggestionStrip
             items={smartSuggestions(cart, products, { limit: 6, excludeIds: cart.map(i=>i.id) })}
-            onAdd={(p)=>{ setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; }); showToast("تمت الإضافة للسلة ✓"); }}
+            onAdd={(p)=>{ setCart(c=>{ const ex=c.find(i=>i.id===p.id); if(ex) return c.map(i=>i.id===p.id?{...i,qty:i.qty+1}:i); return [...c,{...p,qty:1}]; }); showToast("تمت الإضافة للسلة ✓", "success", 1200); }}
             navigate={navigate}
             title="أضف قبل ما تنهي طلبك"
             dense={true}
@@ -3218,8 +3219,8 @@ const ComingSoon = ({ settings, logoSrc }) => {
 };
 
 /* ─── Toast ──────────────────────────────────────────────────────────────── */
-const Toast = ({ msg, type }) => (
-  <div className="toast" style={{background:type==="error"?"var(--red)":"var(--green)",color:"#fff"}}>{msg}</div>
+const Toast = ({ msg, type, top }) => (
+  <div className="toast" style={{background:type==="error"?"var(--red)":"var(--green)",color:"#fff",...(top?{bottom:"auto",top:"calc(16px + env(safe-area-inset-top,0px))"}:{})}}>{msg}</div>
 );
 
 /* ─── Admin bar ──────────────────────────────────────────────────────────── */
@@ -3487,7 +3488,8 @@ export default function App() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),2800); };
+  const toastTimer = useRef(null);
+  const showToast = (msg, type="success", ms=2800) => { clearTimeout(toastTimer.current); setToast({msg,type}); toastTimer.current = setTimeout(()=>setToast(null),ms); };
 
 const navigate = (p, data=null) => {
     setCartOpen(false);
@@ -3524,7 +3526,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
       value: Number(p.is_offer && p.offer_price ? p.offer_price : p.price) * (p.qty || 1) || 0,
       currency: 'EGP',
     });
-    showToast("تمت الإضافة للسلة ✓");
+    showToast("تمت الإضافة للسلة ✓", "success", 1200);
   };
   const inc = id => setCart(c=>c.map(i=>i.id===id?{...i,qty:i.qty+1}:i));
   const dec = id => setCart(c=>c.map(i=>i.id===id?{...i,qty:Math.max(1,i.qty-1)}:i));
@@ -3602,12 +3604,12 @@ window.history.pushState({ page: "cart" }, "", "/cart");
         if (window.location.pathname === "/cart") {
           try { window.history.replaceState({}, "", "/"); } catch(_) {}
         }
-      }} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate} products={products} onAdd={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓"); }}/>
+      }} onInc={inc} onDec={dec} onRemove={remove} navigate={navigate} products={products} onAdd={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓", "success", 1200); }}/>
       <WishlistDrawer
         open={wishlistOpen}
         items={wishlist}
         onClose={()=>setWishlistOpen(false)}
-        onAddToCart={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓"); }}
+        onAddToCart={(p)=>{ addToCart(p); showToast("تمت الإضافة للسلة ✓", "success", 1200); }}
         onRemove={toggleWish}
       />
 
@@ -3625,7 +3627,7 @@ window.history.pushState({ page: "cart" }, "", "/cart");
         </div>
       )}
 
-      {toast && <Toast msg={toast.msg} type={toast.type}/>}
+      {toast && <Toast msg={toast.msg} type={toast.type} top={cartOpen}/>}
 
       {!comingSoon && (
         <a
