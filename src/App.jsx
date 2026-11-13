@@ -3412,11 +3412,13 @@ export default function App() {
     productsLoadingRef.current = true;
     const setStatus = (v) => { productsStatusRef.current = v; setProductsStatus(v); };
     setStatus("loading");
-    const delays = [0, 1000, 2000, 4000, 8000];
+    const delays = [0, 500, 1000, 2000, 4000];
     for (let i = 0; i < delays.length; i++) {
       if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
       try {
-        const d = await sb("store_products?select=*&order=sort_order.asc,id.asc" + (i ? `&_r=${i}` : ""), { timeout: 12000 });
+        // Short first wait so a stalled request is retried fast; longer later
+        // waits so a genuinely slow connection still gets to finish.
+        const d = await sb("store_products?select=*&order=sort_order.asc,id.asc" + (i ? `&_r=${i}` : ""), { timeout: [6000, 10000, 15000, 20000, 20000][i] });
         if (Array.isArray(d) && d.length) {
           setProducts(d);
           try { localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(d)); } catch {}
