@@ -94,18 +94,31 @@ const adminSignOut = () => {
   try { localStorage.removeItem("protech_admin_refresh"); sessionStorage.removeItem("protech_admin_unlocked"); } catch {}
 };
 
+// Every request gets a time limit: the Facebook/Instagram in-app browser
+// sometimes stalls a request forever, which left customers on an endless
+// spinner. A stalled request is aborted and reported as an error instead.
 const sb = async (path, opts = {}) => {
-  const { prefer, ...fetchOpts } = opts;
-  const doFetch = (token) => fetch(`${SB_URL}/rest/v1/${path}`, {
-    headers: {
-      apikey: SB_KEY,
-      Authorization: `Bearer ${token || SB_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: prefer || "return=representation",
-      ...opts.headers,
-    },
-    ...fetchOpts,
-  });
+  const { prefer, timeout = 25000, ...fetchOpts } = opts;
+  const doFetch = async (token) => {
+    const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), timeout) : null;
+    try {
+      return await fetch(`${SB_URL}/rest/v1/${path}`, {
+        headers: {
+          apikey: SB_KEY,
+          Authorization: `Bearer ${token || SB_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: prefer || "return=representation",
+          ...opts.headers,
+        },
+        ...(ctrl ? { signal: ctrl.signal } : {}),
+        ...fetchOpts,
+      });
+    } catch (e) {
+      if (e?.name === "AbortError") throw new Error("SB_TIMEOUT");
+      throw e;
+    } finally { if (timer) clearTimeout(timer); }
+  };
   let res = await doFetch(adminToken);
   // If the admin JWT has expired (401 / PGRST303), refresh it once and retry — and if
   // the refresh fails, retry with the public key so customer actions (like ordering)
@@ -114,7 +127,7 @@ const sb = async (path, opts = {}) => {
     const ok = await adminRefresh();
     res = await doFetch(ok ? adminToken : null);
   }
-  if (!res.ok) { const t = await res.text(); throw new Error(t); }
+  if (!res.ok) { const t = await res.text(); const err = new Error(t); err.status = res.status; throw err; }
   return res.json().catch(() => null);
 };
 
@@ -2576,11 +2589,30 @@ const grand = total + shipping;
         est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
       };
       if (phone2Trim) orderPayload.second_phone = phone2Trim;
+      // Save the order with a time limit and up to 3 tries. The order id is
+      // the table's primary key, so if an earlier try reached the server but
+      // its answer was lost, the retry gets "duplicate key" — which means the
+      // order IS saved, never a second copy.
+      const insertOrder = async (payload) => {
+        let lastErr;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await sb("orders", { method:"POST", prefer:"return=minimal", timeout: 15000, body: JSON.stringify(payload) });
+            return;
+          } catch (err) {
+            const m = String(err?.message || err);
+            if (/23505|duplicate key|orders_pkey/i.test(m)) return;
+            lastErr = err;
+            // Only retry network problems; a real database rejection won't fix itself.
+            const transient = (err?.status >= 500) || /SB_TIMEOUT|Failed to fetch|NetworkError|Load failed|network/i.test(m);
+            if (!transient) throw err;
+            await new Promise(r => setTimeout(r, 1500));
+          }
+        }
+        throw lastErr;
+      };
       try {
-        await sb("orders", {
-          method:"POST", prefer:"return=minimal",
-          body: JSON.stringify(orderPayload),
-        });
+        await insertOrder(orderPayload);
       } catch (err) {
         // Fallback: if the `second_phone` column doesn't exist yet in Supabase
         // the insert will fail with "Could not find the 'second_phone' column".
@@ -2588,10 +2620,7 @@ const grand = total + shipping;
         // second number because /api/bosta reads it from the body separately.
         if (phone2Trim && /second_phone/i.test(String(err?.message || err))) {
           const { second_phone: _drop, ...fallback } = orderPayload;
-          await sb("orders", {
-            method:"POST", prefer:"return=minimal",
-            body: JSON.stringify(fallback),
-          });
+          await insertOrder(fallback);
         } else { throw err; }
       }
 
@@ -2673,8 +2702,12 @@ const grand = total + shipping;
 navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,total:grand,city:form.city});
     } catch(e) {
       console.error('order submit failed:', e);
-      const detail = e?.message ? String(e.message).replace(/\s+/g,' ').slice(0,200) : '';
-      showToast(detail ? `حدث خطأ: ${detail}` : "حدث خطأ. حاول مرة أخرى.","error");
+      const raw = String(e?.message || '');
+      const isNetwork = /SB_TIMEOUT|Failed to fetch|NetworkError|Load failed|network/i.test(raw);
+      const detail = raw ? raw.replace(/\s+/g,' ').slice(0,200) : '';
+      showToast(isNetwork
+        ? "تعذر إرسال الطلب بسبب ضعف الاتصال. اضغط «اشترِ الآن» مرة أخرى."
+        : (detail ? `حدث خطأ: ${detail}` : "حدث خطأ. حاول مرة أخرى."), "error");
       submittingRef.current = false;
     }
     setLoading(false);
@@ -3383,7 +3416,7 @@ export default function App() {
     for (let i = 0; i < delays.length; i++) {
       if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
       try {
-        const d = await sb("store_products?select=*&order=sort_order.asc,id.asc" + (i ? `&_r=${i}` : ""));
+        const d = await sb("store_products?select=*&order=sort_order.asc,id.asc" + (i ? `&_r=${i}` : ""), { timeout: 12000 });
         if (Array.isArray(d) && d.length) {
           setProducts(d);
           try { localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(d)); } catch {}
