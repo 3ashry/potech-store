@@ -179,6 +179,8 @@ const logAnalytics = (eventType, extra = {}) => {
   } catch (e) {}
 };
 
+const PRODUCTS_CACHE_KEY = "protech_products_cache_v1";
+
 const CATS = [
   { id: "electric",  ar: "أدوات كهربائية",    en: "Electric Tools",      icon: "bolt" },
   { id: "battery",   ar: "أدوات بطارية",      en: "Battery Tools",       icon: "battery" },
@@ -1586,7 +1588,7 @@ const TopSellingSection = ({ products, onAdd, navigate, onWish, isWished }) => {
         <button className="tabs-filter" style={{border:"1px solid var(--line)",background:"none",cursor:"pointer"}}><Icon name="filter" size={13}/> فرز</button>
       </div>
       {items.length===0
-        ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>لا توجد منتجات بعد.</div>
+        ? <div style={{textAlign:"center",padding:"32px 0",color:"var(--ink-3)"}}>{products.length ? "لا توجد منتجات بعد." : "جاري تحميل المنتجات…"}</div>
         : <Carousel>{sortTopSelling(items, PINNED_TOP_SELLING, ranked).slice(0,12).map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} onNavigate={navigate} onWish={onWish} isWished={isWished?.(p.id)}/>)}</Carousel>
       }
     </Section>
@@ -3369,6 +3371,31 @@ const parseUrl = (pathname, search, products) => {
 /* ─── App ────────────────────────────────────────────────────────────────── */
 export default function App() {
   const [products, setProducts] = useState([]);
+  const [productsStatus, setProductsStatus] = useState("loading"); // loading | ok | error
+  const productsStatusRef = useRef("loading");
+  const productsLoadingRef = useRef(false);
+  const loadProducts = async () => {
+    if (productsLoadingRef.current) return;
+    productsLoadingRef.current = true;
+    const setStatus = (v) => { productsStatusRef.current = v; setProductsStatus(v); };
+    setStatus("loading");
+    const delays = [0, 1000, 2000, 4000, 8000];
+    for (let i = 0; i < delays.length; i++) {
+      if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
+      try {
+        const d = await sb("store_products?select=*&order=sort_order.asc,id.asc" + (i ? `&_r=${i}` : ""));
+        if (Array.isArray(d) && d.length) {
+          setProducts(d);
+          try { localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(d)); } catch {}
+          setStatus("ok");
+          productsLoadingRef.current = false;
+          return;
+        }
+      } catch {}
+    }
+    setStatus("error");
+    productsLoadingRef.current = false;
+  };
   const [settings, setSettings] = useState({});
   // Full transparent-background logo (icon + بروتيك + PROTECH) hosted on
   // Supabase Storage. This one image replaces the previous icon-only mark
@@ -3422,10 +3449,15 @@ export default function App() {
     // already filters to published, so no is_published filter is needed.
     // Prefer the cost-free view; if it isn't there (or errors) fall back to
     // the products table so the store can never go empty mid-migration.
-    sb("store_products?select=*&order=sort_order.asc,id.asc")
-      .then(d=>setProducts(d||[]))
-      .catch(()=> sb("products?select=*&is_published=eq.true&order=sort_order.asc,id.asc")
-        .then(d=>setProducts(d||[])).catch(()=>{}));
+    // The Facebook/Instagram in-app browser sometimes drops this request even
+    // though the server answers it, which left ad visitors on an empty store
+    // until they refreshed. So: show the last good copy saved on this phone
+    // instantly, then load fresh data with retries.
+    try {
+      const cached = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || "null");
+      if (Array.isArray(cached) && cached.length) setProducts(cached);
+    } catch {}
+    loadProducts();
     sb("site_settings?select=*").then(rows=>{ if(!rows) return; const map={}; rows.forEach(r=>{map[r.key]=r;}); setSettings(map); }).catch(()=>{});
     // Skip the Supabase JPG override — JPGs have no alpha channel so they
     // always carry a solid background. The local transparent SVG set as the
@@ -3434,6 +3466,14 @@ export default function App() {
     // show real visitor numbers (not just people who opened a product).
     try { if (!sessionStorage.getItem("protech_visit_logged")) { logAnalytics("visit"); sessionStorage.setItem("protech_visit_logged","1"); } }
     catch { logAnalytics("visit"); }
+  }, []);
+  // Retry when the phone comes back online or the tab becomes visible again.
+  useEffect(() => {
+    const again = () => { if (productsStatusRef.current === "error") loadProducts(); };
+    const onVis = () => { if (document.visibilityState === "visible") again(); };
+    window.addEventListener("online", again);
+    document.addEventListener("visibilitychange", onVis);
+    return () => { window.removeEventListener("online", again); document.removeEventListener("visibilitychange", onVis); };
   }, []);
   // Parse URL once products are loaded
   useEffect(() => {
@@ -3556,6 +3596,12 @@ window.history.pushState({ page: "cart" }, "", "/cart");
         />
         <FlashCountdownBanner settings={settings} page={page} navigate={navigate}/>
       </div>
+      {productsStatus === "error" && !products.length && (
+        <div style={{margin:"16px",padding:"16px",border:"1px solid var(--line)",borderRadius:10,background:"var(--bg-2)",textAlign:"center"}}>
+          <div style={{fontWeight:800,marginBottom:6}}>تعذر تحميل المنتجات بسبب ضعف الاتصال</div>
+          <button className="btn btn-primary" style={{border:0}} onClick={loadProducts}>إعادة المحاولة</button>
+        </div>
+      )}
 
       {page==="home" && (
         <>
