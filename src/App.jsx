@@ -8,6 +8,21 @@ const TRACK_URL = (awb) => awb
   ? `https://www.aramex.com/eg/ar/track/results?ShipmentNumber=${encodeURIComponent(awb)}`
   : "https://www.aramex.com/eg/ar/track/shipments";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحبا اريد الاستفسار عن منتج")}`;
+// WhatsApp message for the page the customer is on. On a product page it names
+// the product, its code, price and link, so we know what they're asking about.
+const whatsappLinkFor = (product) => {
+  if (!product || !product.code) return WHATSAPP_LINK;
+  const price = product.is_offer && product.offer_price ? product.offer_price : product.price;
+  const url = `${window.location.origin}/products/${encodeURIComponent(String(product.code).toLowerCase())}`;
+  const msg = [
+    "مرحبا، عايز أستفسر عن المنتج ده:",
+    product.name,
+    `كود المنتج: ${product.code}`,
+    price ? `السعر: ${Number(price).toLocaleString("en-US")} ج.م` : null,
+    url,
+  ].filter(Boolean).join("\n");
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+};
 // Contact page details. Leave CONTACT_EMAIL empty to hide the email card.
 const CONTACT_EMAIL = "support@protechstores.com";
 // ─── Aramex shipping price (E-commerce Domestic price list, CAI) ──────────
@@ -3484,6 +3499,21 @@ export default function App() {
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [page, setPage] = useState("home");
   const [pageData, setPageData] = useState(null);
+  // Every WhatsApp button on the site points at WHATSAPP_LINK. When one is
+  // clicked on a product page, swap in a message that names that product
+  // (code, price, link) just before the browser follows the link.
+  const waCtxRef = useRef({ page: "home", product: null });
+  useEffect(() => { waCtxRef.current = { page, product: page === "product" ? pageData?.product : null }; }, [page, pageData]);
+  useEffect(() => {
+    const onClick = (e) => {
+      const a = e.target?.closest?.(`a[href^="https://wa.me/${WHATSAPP_NUMBER}"]`);
+      if (!a) return;
+      const { product } = waCtxRef.current;
+      a.href = product ? whatsappLinkFor(product) : WHATSAPP_LINK;
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
   const [toast, setToast] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
