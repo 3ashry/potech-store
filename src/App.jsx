@@ -194,6 +194,21 @@ const logAnalytics = (eventType, extra = {}) => {
 
 const PRODUCTS_CACHE_KEY = "protech_products_cache_v1";
 
+// Phone input helpers: customers type Arabic digits (٠١٢…), spaces, dashes or
+// +20. phoneDigits() runs while typing (digits only, Arabic → Latin);
+// normEgMobile() runs on blur and turns +20 / 0020 / missing leading 0 into 01XXXXXXXXX.
+const phoneDigits = (v) => String(v || "")
+  .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+  .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+  .replace(/[^0-9]/g, "");
+const normEgMobile = (v) => {
+  let d = phoneDigits(v);
+  if (d.startsWith("0020") && d.length === 14) d = "0" + d.slice(4);
+  else if (d.startsWith("20") && d.length === 12) d = "0" + d.slice(2);
+  else if (d.startsWith("1") && d.length === 10) d = "0" + d;
+  return d;
+};
+
 const CATS = [
   { id: "electric",  ar: "أدوات كهربائية",    en: "Electric Tools",      icon: "bolt" },
   { id: "battery",   ar: "أدوات بطارية",      en: "Battery Tools",       icon: "battery" },
@@ -2420,6 +2435,7 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const submittingRef = useRef(false);
   // Promo code (free shipping). Single-use is enforced server-side in promo_codes.
   const [promo, setPromo] = useState("");
+  const [promoOpen, setPromoOpen] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState("");
@@ -2511,7 +2527,7 @@ const grand = total + shipping;
     if(!form.address.trim() || form.address.trim().length < 10) e.address="العنوان مطلوب (١٠ أحرف على الأقل)";
     if(!form.city) e.city="المحافظة مطلوبة";
     setErrors(e);
-    return !Object.keys(e).length;
+    return e;
   };
 
   // Checkout upsell: some products ship with only ONE 4A battery — if any of
@@ -2547,7 +2563,18 @@ const grand = total + shipping;
   const [showBatteryUpsell, setShowBatteryUpsell] = useState(false);
 
   const submit = async () => {
-    if(!validate()||!cart.length) return;
+    if(!cart.length) return;
+    const errs = validate();
+    const bad = ["name","phone","phone2","city","address"].filter(k => errs[k]);
+    if (bad.length) {
+      // The errors sit next to the fields at the top of the form; on a phone
+      // the button is far below them, so without this the customer just sees
+      // "the button does nothing". Jump to the first problem and say what it is.
+      const el = document.getElementById("co-" + bad[0]);
+      if (el) { el.scrollIntoView({ behavior:"smooth", block:"center" }); setTimeout(()=>{ try { el.focus({ preventScroll:true }); } catch {} }, 400); }
+      showToast("⚠️ " + errs[bad[0]] + (bad.length > 1 ? ` (+${bad.length-1} خانة أخرى)` : ""), "error", 4000);
+      return;
+    }
     // Synchronous guard: a fast double-click / re-submit can fire before the
     // disabled state re-renders, which double-counts the order (incl. on Meta Pixel).
     if(submittingRef.current) return;
@@ -2713,7 +2740,13 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
     setLoading(false);
   };
 
-  const inp = (f) => ({ className:`form-input${errors[f]?" err":""}`, value:form[f], onChange:e=>setForm(x=>({...x,[f]:e.target.value})) });
+  const isPhoneField = (f) => f === "phone" || f === "phone2";
+  const inp = (f) => ({
+    id: "co-" + f,
+    className:`form-input${errors[f]?" err":""}`, value:form[f],
+    onChange:e=>{ const v = isPhoneField(f) ? phoneDigits(e.target.value) : e.target.value; setForm(x=>({...x,[f]:v})); if (errors[f]) setErrors(er=>({ ...er, [f]: undefined })); },
+    ...(isPhoneField(f) ? { onBlur:e=>{ const v = normEgMobile(e.target.value); setForm(x=>({...x,[f]:v})); } } : {}),
+  });
 
   if(!cart.length) return <div style={{textAlign:"center",padding:"80px 16px"}}><h2>سلتك فارغة</h2><button className="btn btn-primary" style={{marginTop:20,border:0}} onClick={()=>navigate("shop")}>العودة للتسوق</button></div>;
 
@@ -2749,7 +2782,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <div className="checkout-section">
             <h3><span className="step-num">٢</span> عنوان التوصيل</h3>
             <div className="form-group"><label>المحافظة *</label>
-              <select className={`form-input${errors.city?" err":""}`} value={form.city} onChange={e=>setForm(x=>({...x,city:e.target.value}))}>
+              <select id="co-city" className={`form-input${errors.city?" err":""}`} value={form.city} onChange={e=>{ setForm(x=>({...x,city:e.target.value})); if (errors.city) setErrors(er=>({ ...er, city: undefined })); }}>
                 <option value="">اختر المحافظة</option>
               {["القاهرة","الجيزة","الإسكندرية","الشرقية","الدقهلية","القليوبية","المنوفية","الغربية","كفر الشيخ","البحيرة","الإسماعيلية","السويس","بورسعيد","دمياط","سوهاج","أسيوط","المنيا","الفيوم","بني سويف","قنا","الأقصر","أسوان","مرسي مطروح","الساحل الشمالي","البحر الأحمر","الوادي الجديد","جنوب سيناء"].map(g=><option key={g}>{g}</option>)}
               </select>
@@ -2797,9 +2830,16 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
                 : `${fmtEGP(shipping)} ج.م`}
             </b>
           </div>
-          {/* Promo code — free shipping, single use */}
+          {/* Promo code — free shipping, single use. Collapsed behind a small
+              link so customers don't think it's a required field. */}
+          {!promoOpen && !promoApplied ? (
+            <button type="button" onClick={()=>setPromoOpen(true)}
+              style={{display:"block",margin:"8px 0 4px",padding:0,background:"none",border:0,color:"var(--ink-3)",fontSize:"0.8rem",textDecoration:"underline",cursor:"pointer",fontFamily:"inherit"}}>
+              🎟️ عندك كود خصم؟ (اختياري)
+            </button>
+          ) : (
           <div style={{margin:"8px 0 4px",padding:"12px",background:"var(--bg-2)",border:`1px solid ${promoApplied?"var(--green)":"var(--line)"}`,borderRadius:"var(--radius)"}}>
-            <label style={{display:"block",fontSize:"0.82rem",fontWeight:800,marginBottom:6}}>🎟️ كود الخصم</label>
+            <label style={{display:"block",fontSize:"0.82rem",fontWeight:800,marginBottom:6}}>🎟️ كود الخصم <span style={{fontWeight:600,color:"var(--ink-3)"}}>(اختياري — اتركه فارغاً لو مش معاك كود)</span></label>
             <div style={{display:"flex",gap:8}}>
               <input className="form-input" style={{flex:1}} value={promo} dir="ltr"
                 onChange={e=>setPromo(e.target.value)} placeholder="بروتيك-XXXX" disabled={promoApplied}
@@ -2812,6 +2852,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             </div>
             {promoMsg && <div style={{fontSize:"0.78rem",marginTop:6,fontWeight:700,color:promoApplied?"var(--green)":"var(--brand)"}}>{promoMsg}</div>}
           </div>
+          )}
           <div className="summary-total"><span>الإجمالي</span><span className="amt">{fmtEGP(grand)} ج.م</span></div>
           <button className="btn btn-primary btn-block" style={{marginTop:18,padding:14,fontSize:"0.95rem",border:0}} onClick={submit} disabled={loading}>
             {loading?"جاري إتمام الطلب…":"اشترِ الآن 🛒"}
