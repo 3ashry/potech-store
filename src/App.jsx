@@ -3585,9 +3585,13 @@ export default function App() {
   // visible. Restores back at the top.
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
+    // Two thresholds (hysteresis). Compacting makes the header up to ~150px
+    // shorter, which moves the page and the scroll position by that much; with
+    // a single 80px threshold that flipped it straight back, so the header
+    // shook on every slow scroll. Shrink past 200px, grow back only near the top.
     const onScroll = () => {
-      const s = window.scrollY > 80;
-      setScrolled(prev => (prev === s ? prev : s));
+      const y = window.scrollY;
+      setScrolled(prev => (prev ? y > 10 : y > 200));
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
