@@ -2453,6 +2453,9 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+  // What the applied code gives: { kind:'free_shipping' } or
+  // { kind:'product_off', amount, minItemPrice } (e.g. فن_النجاره100).
+  const [promoInfo, setPromoInfo] = useState(null);
   const [promoMsg, setPromoMsg] = useState("");
   const [promoChecking, setPromoChecking] = useState(false);
 
@@ -2472,9 +2475,15 @@ const CheckoutPage = ({ cart, navigate, setCart, products, setProducts, showToas
     return dbP && dbP.free_shipping === true;
   });
   const baseShipping = form.city ? getShipping(form.city) : 0;
-  // Free shipping if: promo code applied, OR the cart contains a free-shipping product.
-  const shipping = (promoApplied || cartHasFreeShippingItem) ? 0 : baseShipping;
-const grand = total + shipping;
+  // Free shipping if: a free-shipping code is applied, OR the cart contains a free-shipping product.
+  const promoFreeShip = promoApplied && (!promoInfo || promoInfo.kind === 'free_shipping');
+  const shipping = (promoFreeShip || cartHasFreeShippingItem) ? 0 : baseShipping;
+  // Amount-off code: once per order, only if the cart has a product priced at
+  // the code's minimum or more.
+  const promoOffEligible = promoApplied && promoInfo?.kind === 'product_off'
+    && cart.some(i => Number(getPrice(i)) >= Number(promoInfo.minItemPrice || 0));
+  const promoDiscount = promoOffEligible ? Math.min(Number(promoInfo.amount) || 0, total) : 0;
+const grand = total + shipping - promoDiscount;
 
   // Check a promo code with the server (does NOT consume it — that happens on order
   // placement). Applies free shipping in the UI if the code is valid and unused.
@@ -2490,9 +2499,15 @@ const grand = total + shipping;
       const d = await r.json();
       if (d.valid) {
         setPromoApplied(true); setPromoCode(d.code || c);
-        setPromoMsg("✓ تم تفعيل الكود — شحن مجاني 🎉");
+        const info = d.kind === 'product_off'
+          ? { kind:'product_off', amount:Number(d.amount)||0, minItemPrice:Number(d.minItemPrice)||0 }
+          : { kind:'free_shipping' };
+        setPromoInfo(info);
+        setPromoMsg(info.kind === 'product_off'
+          ? `✓ تم تفعيل الكود — خصم ${fmtEGP(info.amount)} ج.م على المنتجات من ${fmtEGP(info.minItemPrice)} ج.م فأكثر`
+          : "✓ تم تفعيل الكود — شحن مجاني 🎉");
       } else {
-        setPromoApplied(false); setPromoCode("");
+        setPromoApplied(false); setPromoCode(""); setPromoInfo(null);
         setPromoMsg(d.reason || "كود غير صالح أو مستخدم من قبل");
       }
     } catch (e) {
@@ -2501,7 +2516,7 @@ const grand = total + shipping;
     }
     setPromoChecking(false);
   };
-  const clearPromo = () => { setPromoApplied(false); setPromoCode(""); setPromo(""); setPromoMsg(""); };
+  const clearPromo = () => { setPromoApplied(false); setPromoCode(""); setPromoInfo(null); setPromo(""); setPromoMsg(""); };
 
   // Abandoned-cart capture: save the cart with a PLAIN insert (once per checkout session)
   // so the dashboard can follow up if they don't finish. A plain insert avoids the RLS
@@ -2627,6 +2642,7 @@ const grand = total + shipping;
         // is hidden, which is worse than leaving it absent.
         products: cart.map(i=>({ id:i.id, code:i.code, name:i.name, qty:i.qty, price:getPrice(i) })),
         total:grand, status:"Processing",
+        ...(promoApplied && promoCode ? { promo_code: promoCode, discount: promoDiscount } : {}),
         date: new Date().toISOString().split("T")[0],
         est_shipping:shipping, actual_shipping:0, warehouse_confirmed:false,
       };
@@ -2838,7 +2854,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <div className="summary-row">
             <span style={{color:"var(--ink-3)"}}>الشحن {form.city ? `(${form.city})` : ""}</span>
             <b style={{color:shipping===0?"var(--green)":undefined}}>
-              {promoApplied ? "مجاني 🎉 (كود خصم)"
+              {promoFreeShip ? "مجاني 🎉 (كود خصم)"
                 : cartHasFreeShippingItem ? "مجاني 🎉 (شحن مجاني)"
                 : !form.city ? "اختر المحافظة"
                 : shipping===0 ? "مجاني 🎉"
@@ -2856,7 +2872,7 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
           <div style={{margin:"8px 0 4px",padding:"12px",background:"var(--bg-2)",border:`1px solid ${promoApplied?"var(--green)":"var(--line)"}`,borderRadius:"var(--radius)"}}>
             <label style={{display:"block",fontSize:"0.82rem",fontWeight:800,marginBottom:6}}>🎟️ كود الخصم <span style={{fontWeight:600,color:"var(--ink-3)"}}>(اختياري — اتركه فارغاً لو مش معاك كود)</span></label>
             <div style={{display:"flex",gap:8}}>
-              <input className="form-input" style={{flex:1}} value={promo} dir="ltr"
+              <input className="form-input" style={{flex:1}} value={promo} dir="auto"
                 onChange={e=>setPromo(e.target.value)} placeholder="بروتيك-XXXX" disabled={promoApplied}
                 onKeyDown={e=>{ if(e.key==='Enter'){ e.preventDefault(); applyPromo(); } }}/>
               {promoApplied
@@ -2867,6 +2883,14 @@ navigate("confirmation",{orderCode:code,customerName:form.name,phone:form.phone,
             </div>
             {promoMsg && <div style={{fontSize:"0.78rem",marginTop:6,fontWeight:700,color:promoApplied?"var(--green)":"var(--brand)"}}>{promoMsg}</div>}
           </div>
+          )}
+          {promoApplied && promoInfo?.kind === 'product_off' && (
+            <div className="summary-row">
+              <span style={{color:"var(--ink-3)"}}>خصم الكود ({promoCode})</span>
+              <b style={{color: promoDiscount ? "var(--green)" : "var(--ink-3)"}}>
+                {promoDiscount ? `− ${fmtEGP(promoDiscount)} ج.م` : `يعمل على المنتجات من ${fmtEGP(promoInfo.minItemPrice)} ج.م فأكثر`}
+              </b>
+            </div>
           )}
           <div className="summary-total"><span>الإجمالي</span><span className="amt">{fmtEGP(grand)} ج.م</span></div>
           <button className="btn btn-primary btn-block" style={{marginTop:18,padding:14,fontSize:"0.95rem",border:0}} onClick={submit} disabled={loading}>
